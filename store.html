@@ -80,34 +80,125 @@
     </nav>
 
     <section class="featured-products">
-      <h2>Featured Products</h2>
+      <div class="section-header">
+        <h2>Featured Products</h2>
+        <a href="#" class="view-all"
+          >View All <i class="fas fa-arrow-right" style="margin-left: 8px"></i
+        ></a>
+      </div>
       <div class="products-grid">
         <div class="product-card">
-          <img
-            src="https://via.placeholder.com/200x150"
-            alt="Product placeholder"
-          />
-          <h3>Hero Force</h3>
-          <div class="price">$14.99</div>
+          <span class="sale-tag">Sale 50%</span>
+          <img src="images/products/amistar.png" alt="Amistar" />
+          <div class="product-info">
+            <h3>Amistar</h3>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+            <div class="price">199</div>
+            <button class="add-to-cart">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
         </div>
-        <!-- Add more featured products -->
+
+        <div class="product-card">
+          <img src="images/products/hexa-force.png" alt="Hexa Force" />
+          <div class="product-info">
+            <h3>Hexa Force</h3>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="far fa-star"></i>
+            </div>
+            <div class="price">149</div>
+            <button class="add-to-cart">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <img src="images/products/valipro.png" alt="Valipro" />
+          <div class="product-info">
+            <h3>Valipro</h3>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+            <div class="price">14.99</div>
+            <button class="add-to-cart">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <img src="images/products/dimoxa.png" alt="Dimoxa" />
+          <div class="product-info">
+            <h3>Dimoxa</h3>
+            <div class="rating">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="far fa-star"></i>
+            </div>
+            <div class="price">14.99</div>
+            <button class="add-to-cart">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </section>
 
     <section class="categories">
-      <h2>Shop by Top Categories</h2>
+      <div class="section-header">
+        <h2>Shop by Top Categories</h2>
+        <a href="#" class="view-all"
+          >View All <i class="fas fa-arrow-right" style="margin-left: 8px"></i
+        ></a>
+      </div>
       <div class="categories-grid">
         <div class="category-card" data-category="herbicides">
+          <i class="fas fa-leaf fa-2x" style="color: #00a651"></i>
           <h3>Herbicides</h3>
-          <p>105 Products</p>
+          <p>165 Products</p>
         </div>
         <div class="category-card" data-category="pesticides">
+          <i class="fas fa-bug fa-2x" style="color: #00a651"></i>
           <h3>Pesticides</h3>
           <p>89 Products</p>
         </div>
         <div class="category-card" data-category="fertilizers">
+          <i class="fas fa-seedling fa-2x" style="color: #00a651"></i>
           <h3>Fertilizers</h3>
           <p>76 Products</p>
+        </div>
+        <div class="category-card" data-category="seeds">
+          <i class="fas fa-wheat-awn fa-2x" style="color: #00a651"></i>
+          <h3>Seeds</h3>
+          <p>165 Products</p>
+        </div>
+        <div class="category-card" data-category="machinery">
+          <i class="fas fa-tractor fa-2x" style="color: #00a651"></i>
+          <h3>Machinery</h3>
+          <p>48 Products</p>
+        </div>
+        <div class="category-card" data-category="insecticides">
+          <i class="fas fa-spider fa-2x" style="color: #00a651"></i>
+          <h3>Insecticides</h3>
+          <p>165 Products</p>
         </div>
       </div>
     </section>
@@ -122,21 +213,31 @@
     </div>
 
     <footer>
-      <div class="footer-column">
-        <h4>Contact</h4>
-        <p>Phone: +861248058</p>
-        <p>Email: Agriconnact@gmail.com</p>
-        <p>Website: Agri_Connect</p>
-      </div>
-      <div class="footer-column">
-        <h4>My Account</h4>
-        <p>Order History</p>
-        <p>Agricultural Systems</p>
-      </div>
-      <div class="footer-column">
-        <h4>Help</h4>
-        <p>Terms & Conditions</p>
-        <p>Shipping Cart</p>
+      <div class="footer-content">
+        <div class="footer-column">
+          <h4>Contact</h4>
+          <p>Phone: +861248058</p>
+          <p>Email: Agriconnect@gmail.com</p>
+          <p>Website: Agri_Connect</p>
+        </div>
+        <div class="footer-column">
+          <h4>My Account</h4>
+          <p>Order History</p>
+          <p>Agricultural Systems</p>
+          <p>Wishlist</p>
+        </div>
+        <div class="footer-column">
+          <h4>Help</h4>
+          <p>Terms & Conditions</p>
+          <p>Privacy Policy</p>
+          <p>Shipping Information</p>
+        </div>
+        <div class="footer-column">
+          <h4>About Us</h4>
+          <p>Our Story</p>
+          <p>Blog</p>
+          <p>Contact Us</p>
+        </div>
       </div>
     </footer>
 
@@ -232,6 +333,23 @@
 
           modal.style.display = "block";
         }
+
+        // User menu dropdown
+        const userIcon = document.getElementById("userIcon");
+        const dropdownMenu = document.querySelector(".dropdown-menu");
+
+        userIcon.addEventListener("click", () => {
+          dropdownMenu.classList.toggle("show");
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener("click", (e) => {
+          if (!e.target.matches("#userIcon")) {
+            if (dropdownMenu.classList.contains("show")) {
+              dropdownMenu.classList.remove("show");
+            }
+          }
+        });
       });
     </script>
   </body>
