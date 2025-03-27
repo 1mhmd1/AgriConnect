@@ -4,14 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AgriGPT - Agricultural AI Assistant</title>
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/nav.css" />
     <link rel="stylesheet" href="css/agrigpt.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- Mobile Menu and Dark Mode Styles -->
     <style>
-      /* Add any additional styles here */
+      /* Mobile Menu Button */
       .mobile-menu-btn {
         display: none;
         background: none;
@@ -22,17 +24,7 @@
         padding: 0.5rem;
       }
 
-      @media (max-width: 768px) {
-        .mobile-menu-btn {
-          display: block;
-          position: fixed;
-          top: 15px;
-          left: 15px;
-          z-index: 1001;
-        }
-      }
-
-      /* Dark mode styles */
+      /* Dark Mode Styles */
       body.dark-mode {
         background-color: #1a1a1a;
         color: #fff;
@@ -56,6 +48,17 @@
         color: #fff;
         border-color: #444;
       }
+
+      /* Mobile Responsive Styles */
+      @media (max-width: 768px) {
+        .mobile-menu-btn {
+          display: block;
+          position: fixed;
+          top: 15px;
+          left: 15px;
+          z-index: 1001;
+        }
+      }
     </style>
   </head>
   <body>
@@ -72,7 +75,7 @@
       </div>
     </div>
 
-    <!-- Navbar -->
+    <!-- Navigation -->
     <nav class="nav">
       <div class="logo">
         <a href="index.html">
@@ -96,10 +99,11 @@
     </nav>
 
     <!-- Mobile Menu Button -->
-    <button class="mobile-menu-btn">
+    <button class="mobile-menu-btn" aria-label="Toggle Menu">
       <i class="fas fa-bars"></i>
     </button>
 
+    <!-- Main Container -->
     <div class="agrigpt-container">
       <!-- Sidebar -->
       <aside class="sidebar">
@@ -169,17 +173,20 @@
           <textarea
             class="chat-input"
             placeholder="Type your message here..."
+            aria-label="Chat message input"
           ></textarea>
-          <button class="send-button">
+          <button class="send-button" aria-label="Send message">
             <i class="fas fa-paper-plane"></i>
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Scripts -->
+    <script src="js/nav.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Mobile menu button
+        // Mobile menu functionality
         const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
         const sidebar = document.querySelector(".sidebar");
 
@@ -196,7 +203,7 @@
           document.body.classList.toggle("dark-mode");
         });
 
-        // New chat button
+        // New chat functionality
         const newChatBtn = document.querySelector(".new-chat-btn");
         newChatBtn.addEventListener("click", function () {
           const chatContainer = document.querySelector(".chat-container");

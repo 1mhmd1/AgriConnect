@@ -1,80 +1,94 @@
-document.addEventListener("DOMContentLoaded", function () {
+/**
+ * Navigation functionality for AgriConnect
+ * Handles user menu dropdown, scroll behavior, and responsive design
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+  // DOM Elements
   const userIcon = document.getElementById("userIcon");
   const userMenu = document.querySelector(".user-menu");
   const dropdownMenu = document.querySelector(".dropdown-menu");
   const nav = document.querySelector(".nav");
+
+  // State variables
   let lastScrollTop = 0;
   let isMouseNearTop = false;
+  const MOBILE_BREAKPOINT = 768;
+  const NAV_HEIGHT = 70;
 
-  // Only use click events for mobile
-  if (window.innerWidth <= 768) {
-    userIcon.addEventListener("click", function (e) {
-      e.stopPropagation();
-      dropdownMenu.classList.toggle("show");
-    });
+  // Event Handlers
+  const handleMobileClick = (e) => {
+    e.stopPropagation();
+    dropdownMenu.classList.toggle("show");
+  };
 
-    // Close dropdown when clicking anywhere else on mobile
-    document.addEventListener("click", function (e) {
-      if (!userMenu.contains(e.target)) {
-        dropdownMenu.classList.remove("show");
-      }
-    });
-  }
+  const handleDocumentClick = (e) => {
+    if (!userMenu.contains(e.target)) {
+      dropdownMenu.classList.remove("show");
+    }
+  };
 
-  // Close dropdown when pressing Escape key
-  document.addEventListener("keydown", function (e) {
+  const handleEscapeKey = (e) => {
     if (e.key === "Escape") {
       dropdownMenu.classList.remove("show");
     }
-  });
+  };
 
-  // Handle scroll events
-  window.addEventListener("scroll", () => {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const handleScroll = () => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
     if (!isMouseNearTop) {
-      if (scrollTop > lastScrollTop && scrollTop > 70) {
-        // Scrolling down & past navbar height
-        nav.style.transform = "translateY(-100%)";
-      } else {
-        // Scrolling up
-        nav.style.transform = "translateY(0)";
-      }
+      nav.style.transform =
+        scrollTop > lastScrollTop && scrollTop > NAV_HEIGHT
+          ? "translateY(-100%)"
+          : "translateY(0)";
     }
 
     lastScrollTop = scrollTop;
-  });
+  };
 
-  // Handle mouse movement
-  document.addEventListener("mousemove", (e) => {
-    // Check if mouse is within 70px of the top of the page
-    isMouseNearTop = e.clientY <= 70;
+  const handleMouseMove = (e) => {
+    isMouseNearTop = e.clientY <= NAV_HEIGHT;
 
     if (isMouseNearTop) {
       nav.style.transform = "translateY(0)";
-    } else if (window.pageYOffset > lastScrollTop && window.pageYOffset > 70) {
+    } else if (
+      window.pageYOffset > lastScrollTop &&
+      window.pageYOffset > NAV_HEIGHT
+    ) {
       nav.style.transform = "translateY(-100%)";
     }
-  });
+  };
 
-  // Handle window resize
-  window.addEventListener("resize", function () {
-    if (window.innerWidth <= 768) {
-      // Switch to click behavior on mobile
+  const handleResize = () => {
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
       dropdownMenu.classList.remove("show");
     }
-  });
+  };
 
-  // Smooth hover behavior for desktop
-  userMenu.addEventListener("mouseenter", function () {
-    if (window.innerWidth > 768) {
-      this.classList.add("active");
+  const handleMouseEnter = () => {
+    if (window.innerWidth > MOBILE_BREAKPOINT) {
+      userMenu.classList.add("active");
     }
-  });
+  };
 
-  userMenu.addEventListener("mouseleave", function () {
-    if (window.innerWidth > 768) {
-      this.classList.remove("active");
+  const handleMouseLeave = () => {
+    if (window.innerWidth > MOBILE_BREAKPOINT) {
+      userMenu.classList.remove("active");
     }
-  });
+  };
+
+  // Mobile-specific event listeners
+  if (window.innerWidth <= MOBILE_BREAKPOINT) {
+    userIcon.addEventListener("click", handleMobileClick);
+    document.addEventListener("click", handleDocumentClick);
+  }
+
+  // Global event listeners
+  document.addEventListener("keydown", handleEscapeKey);
+  window.addEventListener("scroll", handleScroll);
+  document.addEventListener("mousemove", handleMouseMove);
+  window.addEventListener("resize", handleResize);
+  userMenu.addEventListener("mouseenter", handleMouseEnter);
+  userMenu.addEventListener("mouseleave", handleMouseLeave);
 });

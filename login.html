@@ -4,12 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AgriConnect - Login</title>
+
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/all.min.css" />
     <link rel="stylesheet" href="css/login.css" />
     <link rel="stylesheet" href="css/nav.css" />
+
+    <!-- Scripts -->
     <script src="js/nav.js"></script>
   </head>
   <body>
+    <!-- Navigation -->
     <nav class="nav">
       <div class="logo">
         <a href="index.html">
@@ -26,28 +31,33 @@
         <i class="fa-solid fa-user" id="userIcon"></i>
         <div class="dropdown-menu">
           <a href="profile.html">Profile</a>
-          <a href="login.html">Login</a>
+          <a href="login.html" class="active">Login</a>
           <a href="logout.php">Sign out</a>
         </div>
       </div>
     </nav>
 
+    <!-- Welcome Section -->
     <div class="welcome">
       <div class="welcome-content">
         <div class="text-row">
+          <!-- Left Column - Login Form -->
           <div class="left-column">
             <div class="welcome-text">
               <h1 class="welcome-heading">Welcome back!</h1>
               <p class="welcome-subtext">
                 Enter your credentials to access your account
               </p>
+
+              <!-- Login Form -->
               <form class="login-form" method="POST" action="login.php">
                 <input type="hidden" name="csrf_token" />
 
                 <div class="form-group">
-                  <label class="input-label">Email Address</label>
+                  <label class="input-label" for="email">Email Address</label>
                   <input
                     type="email"
+                    id="email"
                     name="email"
                     placeholder="Enter your email"
                     required
@@ -55,9 +65,10 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="input-label">Password</label>
+                  <label class="input-label" for="password">Password</label>
                   <input
                     type="password"
+                    id="password"
                     name="password"
                     placeholder="Enter your password"
                     required
@@ -75,6 +86,7 @@
             </div>
           </div>
 
+          <!-- Right Column - Marketing Content -->
           <div class="right-column">
             <div class="violet-text">
               <p>

@@ -6,11 +6,12 @@
     <link rel="stylesheet" href="css/all.min.css" />
     <link rel="stylesheet" href="css/nav.css" />
     <script src="js/nav.js"></script>
-    <title>Billing Information</title>
+    <title>Billing Information - AgriConnect</title>
     <style>
       body {
         font-family: Arial, sans-serif;
-        padding: 0px;
+        padding: 0;
+        margin: 0;
       }
       html,
       body {
@@ -46,19 +47,12 @@
       }
 
       .site-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
+        position: static;
         background-color: #f8f8f8;
         padding: 20px;
         border-top: 1px solid #ddd;
-        z-index: 1000;
       }
 
-      .site-footer {
-        position: static;
-      }
       .footer-content {
         display: flex;
         grid-template-columns: repeat(3, 1fr);
@@ -177,8 +171,13 @@
     </nav>
     <div class="search-container">
       <div class="search-wrapper">
-        <input type="text" class="search-box" placeholder="Search..." />
-        <button class="search-button">Search</button>
+        <input
+          type="text"
+          class="search-box"
+          placeholder="Search..."
+          aria-label="Search"
+        />
+        <button class="search-button" aria-label="Search">Search</button>
       </div>
     </div>
     <div class="image-container">
@@ -188,83 +187,93 @@
         class="header-image"
       />
     </div>
-    <h1>Billing Information</h1>
+    <main>
+      <h1>Billing Information</h1>
 
-    <section>
-      <h2>First name</h2>
-      <div class="form-group">
-        <input type="text" placeholder="Your first name" />
-      </div>
-      <h2>last name</h2>
-      <div class="form-group">
-        <input type="text" placeholder="Your last name" />
-      </div>
-      <h2>Company Name (optional)</h2>
-      <div class="form-group">
-        <input type="text" placeholder="Company Name (optional)" />
-      </div>
-    </section>
+      <section>
+        <h2>First name</h2>
+        <div class="form-group">
+          <input type="text" placeholder="Your first name" required />
+        </div>
+        <h2>Last name</h2>
+        <div class="form-group">
+          <input type="text" placeholder="Your last name" required />
+        </div>
+        <h2>Company Name (optional)</h2>
+        <div class="form-group">
+          <input type="text" placeholder="Company Name (optional)" />
+        </div>
+      </section>
 
-    <section>
-      <h2>Street Address</h2>
-      <div class="form-group">
-        <input type="text" placeholder="Street Address" />
-      </div>
-      <h2>Email</h2>
-      <div class="form-group">
-        <input type="email" placeholder="Email" />
-      </div>
-      <h2>Country / Region</h2>
-      <div class="form-group">
-        <select>
-          <option value="">Country / Region</option>
-          <option value="stokes">Stokes</option>
-        </select>
-      </div>
-      <h2>Phone number</h2>
-      <div class="form-group">
-        <input type="tel" placeholder="Phone number" />
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="different-address" />
-        <label for="different-address">Ship to a different address</label>
-      </div>
-    </section>
+      <section>
+        <h2>Street Address</h2>
+        <div class="form-group">
+          <input type="text" placeholder="Street Address" required />
+        </div>
+        <h2>Email</h2>
+        <div class="form-group">
+          <input type="email" placeholder="Email" required />
+        </div>
+        <h2>Country / Region</h2>
+        <div class="form-group">
+          <select required>
+            <option value="">Country / Region</option>
+            <option value="stokes">Stokes</option>
+          </select>
+        </div>
+        <h2>Phone number</h2>
+        <div class="form-group">
+          <input type="tel" placeholder="Phone number" required />
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="different-address" />
+          <label for="different-address">Ship to a different address</label>
+        </div>
+      </section>
 
-    <section>
-      <h2>Additional Info</h2>
-      <h3>Order Notes (Optional)</h3>
-      <textarea
-        rows="4"
-        placeholder="Notes about your order, e.g. special notes for delivery"
-      ></textarea>
-    </section>
+      <section>
+        <h2>Additional Info</h2>
+        <h3>Order Notes (Optional)</h3>
+        <textarea
+          rows="4"
+          placeholder="Notes about your order, e.g. special notes for delivery"
+        ></textarea>
+      </section>
+    </main>
+
     <footer class="site-footer">
       <div class="footer-content">
         <div class="footer-section">
           <h4>Contact</h4>
           <p>Phone: +861248058</p>
-          <p>Email: Agricornaci@gmail.com</p>
+          <p>Email: Agriconnect@gmail.com</p>
           <p>Website: Agri_Connect</p>
         </div>
 
         <div class="footer-section">
           <h4>My Account</h4>
           <p>Order History</p>
-          <p>Shipping Cart</p>
-          <p>wishlist</p>
+          <p>Agricultural Systems</p>
+          <p>Wishlist</p>
         </div>
 
         <div class="footer-section">
           <h4>Help</h4>
-          <p>faqs</p>
           <p>Terms & Conditions</p>
           <p>Privacy Policy</p>
+          <p>Shipping Information</p>
+        </div>
+
+        <div class="footer-section">
+          <h4>About Us</h4>
+          <p>Our Story</p>
+          <p>Blog</p>
+          <p>Contact Us</p>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <p>Agricultural Systems</p>
+        <p>&copy; 2024 AgriConnect. All rights reserved.</p>
       </div>
     </footer>
   </body>
