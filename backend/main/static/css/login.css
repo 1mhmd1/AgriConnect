@@ -1,0 +1,196 @@
+/* ===================== */
+/* BASE STYLES */
+/* ===================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #c5f4c1;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===================== */
+/* MAIN CONTENT */
+/* ===================== */
+.welcome {
+  background-color: #c5f4c1;
+  min-height: 70vh;
+  padding: 40px;
+  position: relative;
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 auto;
+  min-height: 70vh;
+  padding: 30px 0;
+  width: 90%;
+}
+
+.text-row {
+  display: flex;
+  gap: 40px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.left-column {
+  flex: 1;
+  max-width: 50%;
+}
+
+.right-column {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 40px;
+  position: relative;
+}
+
+/* ===================== */
+/* TYPOGRAPHY */
+/* ===================== */
+.welcome-heading {
+  color: #000;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.welcome-subtext {
+  color: #333;
+  font-size: 16px;
+  margin-top: 0;
+}
+
+.violet-text {
+  color: #2d5f4d;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.violet-text span {
+  color: #4f2d5f;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* ===================== */
+/* FORM STYLES */
+/* ===================== */
+.login-form {
+  margin-top: 20px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.input-label {
+  color: #0e0e0e;
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.login-form input {
+  background-color: #c5f4c1;
+  border: 2px solid #1e6b40;
+  border-radius: 25px;
+  font-size: 14px;
+  padding: 14px 25px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.login-form input:focus {
+  border-color: #155235;
+  box-shadow: 0 0 8px rgba(21, 82, 53, 0.2);
+  outline: none;
+}
+
+.login-form button {
+  background-color: #1e6b40;
+  border: none;
+  border-radius: 25px;
+  color: white;
+  cursor: pointer;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 15px 0 0;
+  padding: 14px 30px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+.login-form button:hover {
+  background-color: #155235;
+}
+
+/* ===================== */
+/* UTILITY STYLES */
+/* ===================== */
+.signup-prompt {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.signup-prompt p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.signup-prompt a {
+  color: #1e6b40;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.signup-prompt a:hover {
+  color: #155235;
+  text-decoration: underline;
+}
+
+/* ===================== */
+/* RESPONSIVE DESIGN */
+/* ===================== */
+@media (max-width: 768px) {
+  .text-row,
+  .right-column {
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  .left-column {
+    max-width: 100%;
+  }
+
+  .violet-text {
+    font-size: 1.3rem;
+    padding-left: 0;
+    text-align: center;
+  }
+
+  .login-form button {
+    width: 100%;
+  }
+}

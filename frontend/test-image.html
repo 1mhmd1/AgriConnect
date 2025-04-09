@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Test</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      .image-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #ddd;
+      }
+      .direct-path {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="image-container">
+      <h1>Image Test</h1>
+      <p>Testing if the background image can be displayed:</p>
+
+      <div
+        style="
+          background-image: url('assets/images/backgrounds/main-slider-1-1 1.png');
+          background-size: cover;
+          background-position: center;
+          height: 300px;
+          width: 100%;
+          border: 1px solid #ddd;
+        "
+      ></div>
+
+      <p>Direct image tag test:</p>
+      <img
+        src="assets/images/backgrounds/main-slider-1-1 1.png"
+        alt="Background Image Test"
+      />
+
+      <div class="direct-path">
+        <p>Image path: assets/images/backgrounds/main-slider-1-1 1.png</p>
+      </div>
+    </div>
+  </body>
+</html>

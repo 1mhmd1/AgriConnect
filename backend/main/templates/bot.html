@@ -1,0 +1,184 @@
+{% extends 'base.html' %} {% load static %} {% block title %}AgriGPT -
+Agricultural AI Assistant{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/agrigpt.css' %}" />
+<style>
+  /* Mobile Menu Button */
+  .mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #c5f4c1;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+
+  /* Dark Mode Styles */
+  body.dark-mode {
+    background-color: #1a1a1a;
+    color: #fff;
+  }
+
+  body.dark-mode .main-content {
+    background-color: #1a1a1a;
+  }
+
+  body.dark-mode .feature-card {
+    background-color: #2d2d2d;
+    color: #fff;
+  }
+
+  body.dark-mode .chat-input-container {
+    background-color: #2d2d2d;
+  }
+
+  body.dark-mode .chat-input {
+    background-color: #1a1a1a;
+    color: #fff;
+    border-color: #444;
+  }
+
+  /* Mobile Responsive Styles */
+  @media (max-width: 768px) {
+    .mobile-menu-btn {
+      display: block;
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- Mobile Menu Button -->
+<button class="mobile-menu-btn" aria-label="Toggle Menu">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Main Container -->
+<div class="agrigpt-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <button class="new-chat-btn">
+      <i class="fas fa-plus"></i>
+      New Chat
+    </button>
+
+    <div class="sidebar-menu">
+      <a href="#" class="sidebar-item">
+        <i class="fas fa-message"></i>
+        Clear History
+      </a>
+      <a href="#" class="sidebar-item">
+        <i class="fas fa-sitemap"></i>
+        Create User Flow
+      </a>
+      <a href="#" class="sidebar-item">
+        <i class="fas fa-pencil"></i>
+        Design Strategy
+      </a>
+      <a href="#" class="sidebar-item">
+        <i class="fas fa-road"></i>
+        Roadmap
+      </a>
+      <a href="#" class="sidebar-item">
+        <i class="fas fa-moon"></i>
+        Dark Mode
+      </a>
+      <a href="#" class="sidebar-item">
+        <i class="fas fa-circle-info"></i>
+        Updates & FAQ
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="chat-container">
+      <div class="chat-header">
+        <h1>AgriGPT</h1>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <i class="fas fa-lightbulb"></i>
+          <h3>Examples</h3>
+          <p>"What is the best pesticides for this type of plant?"</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-bolt"></i>
+          <h3>Capabilities</h3>
+          <p>Remembers what user said earlier in the conversation</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-triangle-exclamation"></i>
+          <h3>Limitations</h3>
+          <p>May occasionally generate incorrect information</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Chat Input -->
+  <div class="chat-input-container">
+    <div class="chat-input-box">
+      <textarea
+        class="chat-input"
+        placeholder="Type your message here..."
+        aria-label="Chat message input"
+      ></textarea>
+      <button class="send-button" aria-label="Send message">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Mobile menu functionality
+    const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
+    const sidebar = document.querySelector(".sidebar");
+
+    mobileMenuBtn.addEventListener("click", function () {
+      sidebar.classList.toggle("show");
+    });
+
+    // Dark mode toggle
+    const darkModeToggle = document.querySelector(
+      ".sidebar-item i.fa-moon"
+    ).parentElement;
+    darkModeToggle.addEventListener("click", function (e) {
+      e.preventDefault();
+      document.body.classList.toggle("dark-mode");
+    });
+
+    // New chat functionality
+    const newChatBtn = document.querySelector(".new-chat-btn");
+    newChatBtn.addEventListener("click", function () {
+      const chatContainer = document.querySelector(".chat-container");
+      const chatHeader = document.querySelector(".chat-header").outerHTML;
+      chatContainer.innerHTML =
+        chatHeader +
+        `
+        <div class="features-grid">
+          <div class="feature-card">
+            <i class="fas fa-lightbulb"></i>
+            <h3>Examples</h3>
+            <p>"What is the best pesticides for this type of plant?"</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-bolt"></i>
+            <h3>Capabilities</h3>
+            <p>Remembers what user said earlier in the conversation</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-triangle-exclamation"></i>
+            <h3>Limitations</h3>
+            <p>May occasionally generate incorrect information</p>
+          </div>
+        </div>`;
+    });
+  });
+</script>
+{% endblock %}

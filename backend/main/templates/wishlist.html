@@ -1,0 +1,15 @@
+{% extends 'base.html' %} {% load static %} {% block title %}My Wishlist -
+Agri-Connect{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/wishlist.css' %}" />
+{% endblock %} {% block content %}
+<main class="wishlist-container">
+  <div class="wishlist-header">
+    <h1>My Wishlist</h1>
+    <p class="wishlist-count">0 Items</p>
+  </div>
+
+  <div class="wishlist-grid">
+    <!-- Items will be loaded dynamically via JavaScript -->
+  </div>
+</main>
+{% endblock %}

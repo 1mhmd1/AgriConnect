@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+    <script src="{% static 'js/nav.js' %}"></script>
+    <script src="{% static 'js/common.js' %}"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    {% block extra_css %}{% endblock %}
+    <title>{% block title %}Agri-Connect{% endblock %}</title>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="logo">
+        <a href="{% url 'index' %}">
+          <img src="{% static 'images/agri23.png' %}" alt="Agri-Connect Logo" />
+        </a>
+      </div>
+      <div class="elements">
+        <a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>Home</a>
+        <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' %}class="active"{% endif %}>Agri-Store</a>
+        <a href="{% url 'bot' %}" {% if request.resolver_match.url_name == 'bot' %}class="active"{% endif %}>Agri-Bot</a>
+        <a href="#">Others</a>
+      </div>
+      <div class="user-menu">
+        <i class="fa-solid fa-user" id="userIcon"></i>
+        <div class="dropdown-menu">
+          <a href="{% url 'profile' %}">Profile</a>
+          <a href="{% url 'login' %}">Login</a>
+          <a href="{% url 'wishlist' %}">My Wishlist</a>
+          <a href="{% url 'logout' %}">Sign out</a>
+        </div>
+      </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-column">
+          <h4>Contact</h4>
+          <p>Phone: +861248058</p>
+          <p>Email: Agriconnect@gmail.com</p>
+          <p>Website: Agri_Connect</p>
+        </div>
+        <div class="footer-column">
+          <h4>My Account</h4>
+          <p>Order History</p>
+          <p>Agricultural Systems</p>
+          <p>Wishlist</p>
+        </div>
+        <div class="footer-column">
+          <h4>Help</h4>
+          <p>Terms & Conditions</p>
+          <p>Privacy Policy</p>
+          <p>Shipping Information</p>
+        </div>
+        <div class="footer-column">
+          <h4>About Us</h4>
+          <p>Our Story</p>
+          <p>Blog</p>
+          <p>Contact Us</p>
+        </div>
+      </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html> 

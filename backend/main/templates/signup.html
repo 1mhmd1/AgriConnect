@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriConnect - Sign Up</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+    <script src="{% static 'js/nav.js' %}"></script>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="logo">
+        <a href="{% url 'index' %}">
+          <img src="{% static 'images/agri23.png' %}" alt="Agri-Connect Logo" />
+        </a>
+      </div>
+      <div class="elements">
+        <a href="{% url 'index' %}">Home</a>
+        <a href="{% url 'store' %}">Agri-Store</a>
+        <a href="{% url 'bot' %}">Agri-Bot</a>
+        <a href="#">Others</a>
+      </div>
+      <div class="user-menu">
+        <i class="fa-solid fa-user" id="userIcon"></i>
+        <div class="dropdown-menu">
+          <a href="{% url 'profile' %}">Profile</a>
+          <a href="{% url 'login' %}">Login</a>
+          <a href="{% url 'logout' %}">Sign out</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="welcome">
+      <div class="welcome-content">
+        <div class="text-row">
+          <div class="left-column">
+            <div class="welcome-text">
+              <h1 class="welcome-heading">Get started now</h1>
+              <p class="welcome-subtext">Create your account to continue</p>
+
+              <form
+                class="login-form"
+                method="POST"
+                action="{% url 'signup' %}"
+              >
+                {% csrf_token %}
+
+                <div class="form-group">
+                  <label class="input-label">Full Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="input-label">Email Address</label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="input-label">Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Create a password"
+                    required
+                    minlength="8"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="input-label">Confirm Password</label>
+                  <input
+                    type="password"
+                    name="confirm_password"
+                    placeholder="Confirm your password"
+                    required
+                    minlength="8"
+                  />
+                </div>
+
+                <button type="submit">Sign Up</button>
+
+                <div class="signup-prompt">
+                  <p>
+                    Already have an account?
+                    <a href="{% url 'login' %}">Login</a>
+                  </p>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="right-column">
+            <div class="violet-text">
+              <p>
+                Reach your <br />
+                goal faster, <br />
+                <span>With Us.</span>
+              </p>
+            </div>
+            <div class="fresh">
+              <img
+                src="{% static 'images/fresh.png' %}"
+                alt="Fresh vegetables image"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile Settings - AgriConnect</title>
+    {% load static %}
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+    <script src="{% static 'js/profile.js' %}"></script>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="nav">
+      <div class="logo">
+        <a href="{% url 'index' %}">
+          <img src="{% static 'images/agri23.png' %}" alt="Agri-Connect Logo" />
+        </a>
+      </div>
+      <div class="elements">
+        <a href="{% url 'index' %}">Home</a>
+        <a href="{% url 'store' %}">Agri-Store</a>
+        <a href="{% url 'bot' %}">Agri-Bot</a>
+        <a href="#">Others</a>
+      </div>
+      <div class="user-menu">
+        <i class="fa-solid fa-user" id="userIcon"></i>
+        <div class="dropdown-menu">
+          <a href="{% url 'profile' %}" class="active">Profile</a>
+          <a href="{% url 'login' %}">Login</a>
+          <a href="{% url 'logout' %}">Sign out</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="profile-layout">
+      <!-- Sidebar -->
+      <div class="profile-sidebar">
+        <div class="back-button" id="backButton">
+          <i class="fas fa-arrow-left"></i>
+          <span>Back</span>
+        </div>
+
+        <div class="sidebar-menu">
+          <a
+            href="#edit-profile"
+            class="menu-item active"
+            data-section="edit-profile"
+          >
+            <i class="fas fa-user-edit"></i>
+            <span>Edit Profile</span>
+          </a>
+          <a href="#security" class="menu-item" data-section="security">
+            <i class="fas fa-shield-alt"></i>
+            <span>Security</span>
+          </a>
+          <a
+            href="#notifications"
+            class="menu-item"
+            data-section="notifications"
+          >
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+          </a>
+          <a href="#help" class="menu-item" data-section="help">
+            <i class="fas fa-question-circle"></i>
+            <span>Help</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="profile-content">
+        <!-- Edit Profile Section -->
+        <div class="content-section active" id="edit-profile">
+          <div class="profile-header">
+            <!-- Profile Image Section -->
+            <div class="profile-image-container">
+              <img
+                src="{% static 'images/default-profile.png' %}"
+                id="profileImage"
+              />
+              <input type="file" id="profileImageInput" accept="image/*" />
+            </div>
+            <div class="profile-tabs">
+              <button class="tab-btn active" data-tab="base">
+                Base Profile
+              </button>
+              <button class="tab-btn" data-tab="farmer">Farmer Profile</button>
+              <button class="tab-btn" data-tab="landowner">
+                Landowner Profile
+              </button>
+            </div>
+          </div>
+
+          <div class="tab-content">
+            <!-- Base Profile Tab -->
+            <div class="tab-pane active" id="base-tab">
+              <form class="profile-form" id="baseProfileForm">
+                <div class="form-group">
+                  <label for="fullName">Full Name</label>
+                  <input type="text" id="fullName" value="John Doe" />
+                </div>
+                <div class="form-group">
+                  <label for="username">Username</label>
+                  <input type="text" id="username" value="@johndoe" readonly />
+                </div>
+                <div class="form-group">
+                  <label for="email">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    value="john@example.com"
+                    readonly
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="phone">Phone</label>
+                  <input type="tel" id="phone" value="+1234567890" />
+                </div>
+                <div class="form-group">
+                  <label for="location">Location</label>
+                  <input type="text" id="location" value="New York, USA" />
+                </div>
+                <button type="submit" class="save-btn">Save Changes</button>
+              </form>
+            </div>
+
+            <!-- Farmer Profile Tab -->
+            <div class="tab-pane" id="farmer-tab">
+              <h2>Farmer Information</h2>
+              <form class="profile-form" id="farmerProfileForm">
+                <div class="form-group">
+                  <label for="crops">Crops Grown</label>
+                  <div class="tags-input">
+                    <div class="tag">Wheat</div>
+                    <div class="tag">Tomatoes</div>
+                    <input type="text" id="crops" placeholder="Add crop..." />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="livestock">Livestock</label>
+                  <div class="tags-input">
+                    <div class="tag">Cattle</div>
+                    <div class="tag">Poultry</div>
+                    <input
+                      type="text"
+                      id="livestock"
+                      placeholder="Add livestock..."
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="equipment">Equipment</label>
+                  <div class="tags-input">
+                    <div class="tag">Tractor</div>
+                    <div class="tag">Irrigation System</div>
+                    <input
+                      type="text"
+                      id="equipment"
+                      placeholder="Add equipment..."
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="farmingMethod">Farming Method</label>
+                  <select id="farmingMethod">
+                    <option value="traditional">Traditional</option>
+                    <option value="hydroponic">Hydroponic</option>
+                    <option value="organic">Organic</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="experience">Years of Experience</label>
+                  <input type="number" id="experience" min="0" value="5" />
+                </div>
+                <button type="submit" class="save-btn">Save Changes</button>
+              </form>
+            </div>
+
+            <!-- Landowner Profile Tab -->
+            <div class="tab-pane" id="landowner-tab">
+              <h2>Landowner Information</h2>
+              <div class="land-listings">
+                <div class="land-card">
+                  <h3>Land Listing #1</h3>
+                  <form class="profile-form" id="landownerProfileForm">
+                    <div class="form-group">
+                      <label for="landImages">Land Images (Required)</label>
+                      <div class="image-upload-container">
+                        <div class="image-preview-grid" id="landImagesPreview">
+                          <!-- Images will be previewed here -->
+                        </div>
+                        <div class="image-upload-box">
+                          <input
+                            type="file"
+                            id="landImages"
+                            accept="image/*"
+                            multiple
+                            required
+                          />
+                          <label for="landImages" class="upload-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Click to upload images</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="landSize">Size (Acres)</label>
+                      <input
+                        type="number"
+                        id="landSize"
+                        min="0"
+                        step="0.1"
+                        value="10.5"
+                        required
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="soilType">Soil Type</label>
+                      <select id="soilType" required>
+                        <option value="loam">Loam</option>
+                        <option value="clay">Clay</option>
+                        <option value="sandy">Sandy</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="waterSource">Water Source</label>
+                      <select id="waterSource" required>
+                        <option value="well">Well</option>
+                        <option value="river">River</option>
+                        <option value="canal">Canal</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Lease Terms</label>
+                      <div class="checkbox-group">
+                        <label
+                          ><input type="checkbox" value="short-term" />
+                          Short-Term</label
+                        >
+                        <label
+                          ><input type="checkbox" value="long-term" />
+                          Long-Term</label
+                        >
+                        <label
+                          ><input type="checkbox" value="lease-to-own" />
+                          Lease-to-Own</label
+                        >
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="pricePerAcre">Price per Acre</label>
+                      <input
+                        type="number"
+                        id="pricePerAcre"
+                        min="0"
+                        step="0.01"
+                        value="500"
+                      />
+                    </div>
+                    <button type="submit" class="save-btn">Save Changes</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Section -->
+        <div class="content-section" id="security">
+          <h2>Security Settings</h2>
+          <form class="security-form" id="securityForm">
+            <div class="form-group">
+              <label for="currentPassword">Current Password</label>
+              <input type="password" id="currentPassword" required />
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input type="password" id="newPassword" required />
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input type="password" id="confirmPassword" required />
+            </div>
+            <button type="submit" class="save-btn">Update Password</button>
+          </form>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="content-section" id="notifications">
+          <h2>Notification Settings</h2>
+          <div class="notifications-container">
+            <p>Notification settings will be available soon.</p>
+          </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="content-section" id="help">
+          <h2>Help & Support</h2>
+          <div class="contact-cards">
+            <div class="contact-card">
+              <i class="fas fa-envelope"></i>
+              <h3>Email Support</h3>
+              <p>support@agriconnect.com</p>
+            </div>
+            <div class="contact-card">
+              <i class="fas fa-phone-alt"></i>
+              <h3>Phone Support</h3>
+              <p>+1 (234) 567-8900</p>
+            </div>
+            <div class="contact-card">
+              <i class="fas fa-comments"></i>
+              <h3>Live Chat</h3>
+              <p>Available 24/7</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'js/nav.js' %}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Profile image upload functionality
+        const profileImage = document.getElementById("profileImage");
+        const profileImageInput = document.getElementById("profileImageInput");
+
+        profileImageInput.addEventListener("change", function () {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              profileImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // Tab switching functionality
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        const tabPanes = document.querySelectorAll(".tab-pane");
+
+        tabButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            // Remove active class from all buttons and panes
+            tabButtons.forEach((btn) => btn.classList.remove("active"));
+            tabPanes.forEach((pane) => pane.classList.remove("active"));
+
+            // Add active class to clicked button and corresponding pane
+            this.classList.add("active");
+            const tabId = this.getAttribute("data-tab");
+            document.getElementById(`${tabId}-tab`).classList.add("active");
+          });
+        });
+
+        // Sidebar menu functionality
+        const menuItems = document.querySelectorAll(".menu-item");
+        const contentSections = document.querySelectorAll(".content-section");
+
+        menuItems.forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            // Remove active class from all menu items and content sections
+            menuItems.forEach((mi) => mi.classList.remove("active"));
+            contentSections.forEach((cs) => cs.classList.remove("active"));
+
+            // Add active class to clicked menu item and corresponding content section
+            this.classList.add("active");
+            const sectionId = this.getAttribute("data-section");
+            document.getElementById(sectionId).classList.add("active");
+          });
+        });
+
+        // Back button functionality
+        const backButton = document.getElementById("backButton");
+        backButton.addEventListener("click", function () {
+          window.history.back();
+        });
+
+        // Form submission handling
+        const forms = document.querySelectorAll("form");
+        forms.forEach((form) => {
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            alert("Changes saved successfully!");
+          });
+        });
+
+        // Land images preview functionality - fixed to prevent duplicate uploads
+        const landImagesInput = document.getElementById("landImages");
+        const landImagesPreview = document.getElementById("landImagesPreview");
+
+        // Clear any existing event listeners by cloning and replacing the element
+        const newLandImagesInput = landImagesInput.cloneNode(true);
+        landImagesInput.parentNode.replaceChild(
+          newLandImagesInput,
+          landImagesInput
+        );
+
+        newLandImagesInput.addEventListener("change", function () {
+          landImagesPreview.innerHTML = "";
+          for (let i = 0; i < this.files.length; i++) {
+            const file = this.files[i];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = function (e) {
+                const imgContainer = document.createElement("div");
+                imgContainer.className = "image-preview-container";
+                imgContainer.style.position = "relative";
+                imgContainer.style.display = "inline-block";
+                imgContainer.style.margin = "5px";
+
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.width = "100px";
+                img.style.height = "100px";
+                img.style.objectFit = "cover";
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "delete-image-btn";
+                deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                deleteBtn.style.position = "absolute";
+                deleteBtn.style.top = "-5px";
+                deleteBtn.style.right = "-5px";
+                deleteBtn.style.background = "white";
+                deleteBtn.style.color = "#ff4444";
+                deleteBtn.style.border = "none";
+                deleteBtn.style.borderRadius = "50%";
+                deleteBtn.style.width = "20px";
+                deleteBtn.style.height = "20px";
+                deleteBtn.style.cursor = "pointer";
+                deleteBtn.style.display = "flex";
+                deleteBtn.style.justifyContent = "center";
+                deleteBtn.style.alignItems = "center";
+                deleteBtn.style.fontSize = "12px";
+                deleteBtn.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+                deleteBtn.style.transition = "all 0.2s";
+
+                deleteBtn.addEventListener("mouseover", function () {
+                  this.style.background = "#ff4444";
+                  this.style.color = "white";
+                });
+
+                deleteBtn.addEventListener("mouseout", function () {
+                  this.style.background = "white";
+                  this.style.color = "#ff4444";
+                });
+
+                deleteBtn.addEventListener("click", function () {
+                  imgContainer.remove();
+                });
+
+                imgContainer.appendChild(img);
+                imgContainer.appendChild(deleteBtn);
+                landImagesPreview.appendChild(imgContainer);
+              };
+              reader.readAsDataURL(file);
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

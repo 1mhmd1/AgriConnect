@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriConnect - Login</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/all.min.css" />
+    <link rel="stylesheet" href="css/login.css" />
+    <link rel="stylesheet" href="css/nav.css" />
+
+    <!-- Scripts -->
+    <script src="js/nav.js"></script>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="nav">
+      <div class="logo">
+        <a href="index.html">
+          <img src="images/agri23.png" alt="Agri-Connect Logo" />
+        </a>
+      </div>
+      <div class="elements">
+        <a href="index.html">Home</a>
+        <a href="store.html">Agri-Store</a>
+        <a href="bot.html">Agri-Bot</a>
+        <a href="#">Others</a>
+      </div>
+      <div class="user-menu">
+        <i class="fa-solid fa-user" id="userIcon"></i>
+        <div class="dropdown-menu">
+          <a href="profile.html">Profile</a>
+          <a href="login.html" class="active">Login</a>
+          <a href="logout.php">Sign out</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Welcome Section -->
+    <div class="welcome">
+      <div class="welcome-content">
+        <div class="text-row">
+          <!-- Left Column - Login Form -->
+          <div class="left-column">
+            <div class="welcome-text">
+              <h1 class="welcome-heading">Welcome back!</h1>
+              <p class="welcome-subtext">
+                Enter your credentials to access your account
+              </p>
+
+              <!-- Login Form -->
+              <form class="login-form" method="POST" action="login.php">
+                <input type="hidden" name="csrf_token" />
+
+                <div class="form-group">
+                  <label class="input-label" for="email">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="input-label" for="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+
+                <button type="submit">Login</button>
+
+                <div class="signup-prompt">
+                  <p>
+                    Don't have an account? <a href="signup.html">Sign Up</a>
+                  </p>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Right Column - Marketing Content -->
+          <div class="right-column">
+            <div class="violet-text">
+              <p>
+                Reach your <br />
+                goal faster, <br />
+                <span>With Us.</span>
+              </p>
+            </div>
+            <div class="fresh">
+              <img src="images/fresh.png" alt="Fresh vegetables image" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

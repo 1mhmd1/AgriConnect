@@ -1,0 +1,635 @@
+/* ===== CSS Variables ===== */
+:root {
+  /* Colors */
+  --primary-color: #1e6b40;
+  --primary-dark: #174d2f;
+  --text-primary: #333;
+  --text-secondary: #666;
+  --bg-light: #f8f9fa;
+  --bg-white: #ffffff;
+  --border-color: #ddd;
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --error-color: #dc3545;
+  --error-dark: #c82333;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 15px;
+  --radius-full: 50%;
+
+  /* Transitions */
+  --transition-default: all 0.3s ease;
+
+  /* Shadows */
+  --shadow-default: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Reset & Base Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* ===== Layout ===== */
+.profile-layout {
+  display: flex;
+  max-width: 1400px;
+  margin: 70px auto 0; /* Added margin-top to account for navbar */
+  padding: 2rem;
+  gap: 2rem;
+  min-height: calc(100vh - 70px); /* Make it full height minus navbar */
+}
+
+/* ===== Sidebar ===== */
+.profile-sidebar {
+  width: 280px;
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  position: sticky; /* Make sidebar sticky */
+  top: 70px; /* Align with navbar */
+  height: calc(100vh - 90px); /* Full height minus navbar and padding */
+  overflow-y: auto; /* Allow scrolling if content is too long */
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-color);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.back-button:hover {
+  color: var(--primary-color);
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: var(--light-bg);
+  color: var(--primary-color);
+}
+
+.menu-item.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.menu-item i {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+/* ===== Main Content ===== */
+.profile-content {
+  flex: 1;
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  min-height: calc(100vh - 90px); /* Match sidebar height */
+}
+
+.content-section {
+  display: none;
+}
+
+.content-section.active {
+  display: block;
+}
+
+/* ===== Profile Header ===== */
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.profile-image-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 2rem;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  border: 3px solid #ccc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-image-container:hover {
+  border-color: #1e6b40;
+  background-color: #f0f0f0;
+}
+
+.profile-image-container::before {
+  content: "Change Photo";
+  position: absolute;
+  bottom: -30px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.profile-image-container:hover::before {
+  bottom: 10px;
+  color: #1e6b40;
+}
+
+.profile-image-container::after {
+  content: "\f03e";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 2.5rem;
+  color: #ccc;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.profile-image-container:hover::after {
+  color: #1e6b40;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.profile-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-image-container input[type="file"] {
+  display: none;
+}
+
+/* ===== Profile Tabs ===== */
+.profile-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  border-bottom: 2px solid var(--border-color);
+  width: 100%;
+  padding-bottom: var(--spacing-sm);
+}
+
+.tab-btn {
+  padding: 0.75rem var(--spacing-md);
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  position: relative;
+  transition: var(--transition-default);
+}
+
+.tab-btn.active {
+  color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1rem;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--primary-color);
+}
+
+/* Tab Content */
+.tab-content {
+  margin-top: var(--spacing-lg);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Base Profile Tab */
+#base-tab {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Farmer Profile Tab */
+#farmer-tab {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#farmer-tab .tags-input {
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Landowner Profile Tab */
+#landowner-tab {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+#landowner-tab .land-listings {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+#landowner-tab .land-card {
+  background: var(--bg-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-default);
+}
+
+#landowner-tab .land-card h3 {
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+/* ===== Forms ===== */
+.profile-form,
+.security-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  transition: var(--transition-default);
+}
+
+input:focus,
+select:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+input[readonly] {
+  background: var(--bg-light);
+  cursor: not-allowed;
+}
+
+/* ===== Buttons ===== */
+.save-btn {
+  background: var(--primary-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.75rem var(--spacing-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+  transition: var(--transition-default);
+}
+
+.save-btn:hover {
+  background: var(--primary-dark);
+}
+
+.delete-btn {
+  background: var(--error-color);
+  color: var(--bg-white);
+  border: none;
+  padding: 0.75rem var(--spacing-md);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+  transition: var(--transition-default);
+  margin-top: var(--spacing-sm);
+}
+
+.delete-btn:hover {
+  background: var(--error-dark);
+}
+
+/* ===== Tags Input ===== */
+.tags-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.tag {
+  background: var(--primary-color);
+  color: var(--bg-white);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.tags-input input {
+  border: none;
+  outline: none;
+  padding: 0.25rem;
+  flex: 1;
+  min-width: 120px;
+}
+
+/* ===== Image Upload ===== */
+.image-upload-container {
+  border: 2px dashed var(--border-color);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.image-preview {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-default);
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: var(--radius-full);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--error-color);
+  font-size: 0.8rem;
+  transition: var(--transition-default);
+}
+
+.remove-image:hover {
+  background: var(--error-color);
+  color: var(--bg-white);
+}
+
+.image-upload-box {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-lg);
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-default);
+}
+
+.image-upload-box:hover {
+  border-color: var(--primary-color);
+  background: var(--bg-light);
+}
+
+.image-upload-box input[type="file"] {
+  display: none;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.upload-label i {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Checkbox Group Styles */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* ===== Help Section ===== */
+.contact-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.contact-card {
+  background: var(--bg-light);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: var(--transition-default);
+}
+
+.contact-card:hover {
+  transform: translateY(-5px);
+}
+
+.contact-card i {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+.contact-card h3 {
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-primary);
+}
+
+.contact-card p {
+  color: var(--text-secondary);
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+  .profile-layout {
+    flex-direction: column;
+    padding: 1rem;
+    margin-top: 60px; /* Adjust for mobile navbar */
+  }
+
+  .profile-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    top: 0;
+  }
+
+  .profile-content {
+    min-height: auto;
+  }
+
+  .profile-tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .contact-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-layout {
+    padding: var(--spacing-sm);
+  }
+
+  .profile-content {
+    padding: var(--spacing-sm);
+  }
+
+  .form-group {
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+/* Existing styles for farmer and landowner sections */
+.role-badges {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.role-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.role-badge.farmer {
+  background: #e8f5e9;
+  color: #1e6b40;
+}
+
+.role-badge.landowner {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.role-badge.buyer {
+  background: #fff3e0;
+  color: #f57c00;
+}
