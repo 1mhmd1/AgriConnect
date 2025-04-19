@@ -1,0 +1,357 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Agri-Connect{% endblock %}
+
+{% block extra_css %}
+<style>
+  .product-detail {
+    padding: 2rem 4rem;
+    background-color: #fff;
+  }
+
+  .product-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .product-image {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-image img {
+    width: 100%;
+    height: 500px;
+    object-fit: contain;
+    background: #f8f9fa;
+    padding: 2rem;
+  }
+
+  .product-info {
+    padding: 1rem;
+  }
+
+  .product-info h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .category-badge {
+    display: inline-block;
+    background: #00a651;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .price-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .current-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00a651;
+  }
+
+  .original-price {
+    font-size: 1.5rem;
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  .sale-badge {
+    background: #ff4444;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .stock-status {
+    color: #666;
+    margin: 1rem 0;
+  }
+
+  .description {
+    color: #666;
+    line-height: 1.6;
+    margin: 1.5rem 0;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .add-to-cart,
+  .add-to-wishlist {
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .add-to-cart {
+    background: #00a651;
+    color: white;
+  }
+
+  .add-to-cart:hover {
+    background: #008542;
+  }
+
+  .add-to-wishlist {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+
+  .add-to-wishlist:hover {
+    background: #e9ecef;
+  }
+
+  .add-to-wishlist.active {
+    color: #ff4444;
+    border-color: #ff4444;
+  }
+
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .stars {
+    color: #ffa41c;
+  }
+
+  .related-products {
+    padding: 2rem 4rem;
+    background: #f8f9fa;
+  }
+
+  .related-products h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .product-detail {
+      padding: 1rem;
+    }
+
+    .product-container {
+      grid-template-columns: 1fr;
+    }
+
+    .product-image img {
+      height: 300px;
+    }
+
+    .related-products {
+      padding: 1rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+  <div class="product-container">
+    <div class="product-image">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}">
+    </div>
+    <div class="product-info">
+      <span class="category-badge">{{ product.category.name }}</span>
+      <h1>{{ product.name }}</h1>
+      
+      <div class="rating">
+        <div class="stars">
+          {% for i in "12345"|make_list %}
+            {% if forloop.counter <= product.rating %}
+              <i class="fas fa-star"></i>
+            {% elif forloop.counter <= product.rating|add:"0.5" %}
+              <i class="fas fa-star-half-alt"></i>
+            {% else %}
+              <i class="far fa-star"></i>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <span>{{ product.rating }} out of 5</span>
+      </div>
+
+      <div class="price-container">
+        {% if product.is_on_sale %}
+          <span class="current-price">${{ product.sale_price }}</span>
+          <span class="original-price">${{ product.price }}</span>
+          <span class="sale-badge">Sale!</span>
+        {% else %}
+          <span class="current-price">${{ product.price }}</span>
+        {% endif %}
+      </div>
+
+      <div class="stock-status">
+        {% if product.stock > 0 %}
+          <i class="fas fa-check-circle" style="color: #00a651"></i>
+          <span>In Stock ({{ product.stock }} available)</span>
+        {% else %}
+          <i class="fas fa-times-circle" style="color: #ff4444"></i>
+          <span>Out of Stock</span>
+        {% endif %}
+      </div>
+
+      <div class="description">
+        {{ product.description|linebreaks }}
+      </div>
+
+      <div class="action-buttons">
+        <button class="add-to-cart" {% if product.stock == 0 %}disabled{% endif %}>
+          <i class="fas fa-shopping-cart"></i>
+          Add to Cart
+        </button>
+        <button class="add-to-wishlist">
+          <i class="fas fa-heart"></i>
+          Add to Wishlist
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if related_products %}
+<div class="related-products">
+  <h2>Related Products</h2>
+  <div class="related-grid">
+    {% for related in related_products %}
+      <div class="product-card">
+        <div class="product-actions">
+          <button class="action-btn wishlist-btn">
+            <i class="fas fa-heart"></i>
+          </button>
+          <button class="action-btn cart-btn">
+            <i class="fas fa-shopping-cart"></i>
+          </button>
+        </div>
+        <img src="{{ related.image.url }}" alt="{{ related.name }}">
+        <div class="product-info">
+          <h3>{{ related.name }}</h3>
+          <div class="rating">
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= related.rating %}
+                <i class="fas fa-star"></i>
+              {% elif forloop.counter <= related.rating|add:"0.5" %}
+                <i class="fas fa-star-half-alt"></i>
+              {% else %}
+                <i class="far fa-star"></i>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <div class="price">
+            {% if related.is_on_sale %}
+              ${{ related.sale_price }}
+            {% else %}
+              ${{ related.price }}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Wishlist functionality
+  const wishlistBtn = document.querySelector('.add-to-wishlist');
+  const productId = '{{ product.id }}';
+  const productData = {
+    id: productId,
+    name: '{{ product.name }}',
+    price: '{{ product.sale_price|default:product.price }}',
+    image: '{{ product.image.url }}',
+    rating: {{ product.rating }}
+  };
+
+  // Check if product is in wishlist
+  let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+  if (wishlist.some(item => item.id === productId)) {
+    wishlistBtn.classList.add('active');
+    wishlistBtn.querySelector('i').style.color = '#ff4444';
+  }
+
+  wishlistBtn.addEventListener('click', function() {
+    if (wishlistBtn.classList.contains('active')) {
+      wishlist = wishlist.filter(item => item.id !== productId);
+      wishlistBtn.classList.remove('active');
+      wishlistBtn.querySelector('i').style.color = '';
+    } else {
+      wishlist.push(productData);
+      wishlistBtn.classList.add('active');
+      wishlistBtn.querySelector('i').style.color = '#ff4444';
+    }
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+  });
+
+  // Initialize related products wishlist buttons
+  document.querySelectorAll('.related-grid .wishlist-btn').forEach(button => {
+    const productCard = button.closest('.product-card');
+    const relatedProductData = {
+      id: productCard.dataset.id,
+      name: productCard.querySelector('h3').textContent,
+      price: productCard.querySelector('.price').textContent,
+      image: productCard.querySelector('img').src,
+      rating: productCard.querySelector('.rating').innerHTML
+    };
+
+    if (wishlist.some(item => item.id === relatedProductData.id)) {
+      button.classList.add('active');
+      button.querySelector('i').style.color = '#ff4444';
+    }
+
+    button.addEventListener('click', function() {
+      if (button.classList.contains('active')) {
+        wishlist = wishlist.filter(item => item.id !== relatedProductData.id);
+        button.classList.remove('active');
+        button.querySelector('i').style.color = '';
+      } else {
+        wishlist.push(relatedProductData);
+        button.classList.add('active');
+        button.querySelector('i').style.color = '#ff4444';
+      }
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    });
+  });
+});
+</script>
+{% endblock %} 

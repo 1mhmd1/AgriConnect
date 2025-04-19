@@ -12,4 +12,9 @@ Agri-Connect{% endblock %} {% block extra_css %}
     <!-- Items will be loaded dynamically via JavaScript -->
   </div>
 </main>
+{% endblock %} {% block extra_js %}
+<script>
+  // Ensure static URL is available to JavaScript
+  window.STATIC_URL = "{% static '' %}";
+</script>
 {% endblock %}

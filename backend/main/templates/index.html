@@ -1,81 +1,193 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agri-Connect</title>
+{% extends 'base.html' %} {% load static %} {% block title %}AgriConnect -
+Home{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/index.css' %}" />
+<link rel="stylesheet" href="{% static 'css/common.css' %}" />
+<link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+<style>
+  footer {
+    display: none;
+  }
 
-    {% load static %}
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/index.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+  .hero-section {
+    background-image: url("{% static 'images/hero-bg.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+  }
 
-    <!-- Scripts -->
-    <script src="{% static 'js/nav.js' %}"></script>
-  </head>
-  <body>
-    <!-- Header -->
-    <header>
-      <nav class="nav">
-        <div class="logo">
-          <a href="{% url 'index' %}">
-            <img
-              src="{% static 'images/agri23.png' %}"
-              alt="Agri-Connect Logo"
-            />
-          </a>
-        </div>
+  .hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+  }
 
-        <div class="elements">
-          <a href="{% url 'index' %}" class="active">Home</a>
-          <a href="{% url 'store' %}">Agri-Store</a>
-          <a href="{% url 'bot' %}">Agri-Bot</a>
-          <a href="#">Others</a>
-        </div>
+  .section-content {
+    position: relative;
+    z-index: 1;
+    color: white;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
 
-        <div class="user-menu">
-          <i class="fa-solid fa-user" id="userIcon"></i>
-          <div class="dropdown-menu">
-            <a href="{% url 'profile' %}">Profile</a>
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'logout' %}">Sign out</a>
-          </div>
-        </div>
-      </nav>
-    </header>
+  .welcome-text {
+    text-transform: uppercase;
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards;
+  }
 
-    <!-- Main Content -->
-    <main>
-      <div
-        class="hero-section"
-        style="
-          background-image: url('{% static 'images/background.png' %}');
-          background-repeat: no-repeat;
-          background-position: center;
-          background-size: cover;
-          min-height: 100vh;
-          width: 100%;
-        "
-      >
-        <div class="section-content">
-          <div class="hero-details">
-            <div class="left-side-content">
-              <h1>
-                Welcome to <br />
-                Agri-Connect
-              </h1>
-              <p>Connecting farmers and landowners for agricultural success</p>
-              <div class="buttons">
-                <a href="{% url 'signup' %}" class="button Sign-Up">Sign-Up</a>
-                <a href="{% url 'login' %}" class="button Log-In">Log-In</a>
-              </div>
-            </div>
-          </div>
-        </div>
+  .brand-name {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: bold;
+    color: white;
+    margin: 1rem 0;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards 0.2s;
+  }
+
+  .tagline {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    margin-bottom: 2rem;
+    max-width: 600px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards 0.4s;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: clamp(0.5rem, 2vw, 1rem);
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards 0.6s;
+  }
+
+  .cta-button {
+    padding: clamp(0.6rem, 2vw, 0.8rem) clamp(1.5rem, 3vw, 2rem);
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    transition: all 0.4s ease;
+  }
+
+  .signup-btn,
+  .login-btn {
+    background-color: #f4b840;
+    color: white;
+    border: 2px solid #f4b840;
+  }
+
+  .signup-btn::before,
+  .login-btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+    z-index: -1;
+  }
+
+  .signup-btn:hover::before,
+  .login-btn:hover::before {
+    width: 200%;
+    height: 200%;
+  }
+
+  .signup-btn:hover,
+  .login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(244, 184, 64, 0.4);
+    background-color: #f5c265;
+    border-color: #f5c265;
+  }
+
+  .signup-btn:active,
+  .login-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(244, 184, 64, 0.3);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Responsive Design */
+  @media screen and (max-width: 768px) {
+    .hero-section {
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .section-content {
+      padding: 0 1rem;
+    }
+
+    .cta-buttons {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-button {
+      min-width: 140px;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .hero-section {
+      padding: 1rem;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .cta-button {
+      width: 100%;
+      text-align: center;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<main>
+  <section class="hero-section">
+    <div class="section-content">
+      <h2 class="welcome-text">WELCOME TO AGRICULTURAL SYSTEM.</h2>
+      <h1 class="brand-name">AGRI-<br />CONNECT</h1>
+      <p class="tagline">
+        Bridging Farmers, Land, and Innovation for a Sustainable Future!
+      </p>
+      <div class="cta-buttons">
+        <a href="{% url 'signup' %}" class="cta-button signup-btn">SignUp</a>
+        <a href="{% url 'login' %}" class="cta-button login-btn">Login</a>
       </div>
-    </main>
-  </body>
-</html>
+    </div>
+  </section>
+</main>
+{% endblock %}

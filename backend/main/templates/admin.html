@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Agri-Connect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+  <div class="sidebar">
+    <div class="admin-header">
+      <h2>Admin Dashboard</h2>
+    </div>
+    <nav class="admin-nav">
+      <ul>
+        <li class="active" data-section="products">
+          <i class="fas fa-box"></i> Products
+        </li>
+        <li data-section="orders">
+          <i class="fas fa-shopping-cart"></i> Orders
+        </li>
+        <li data-section="users">
+          <i class="fas fa-users"></i> Users
+        </li>
+        <li data-section="categories">
+          <i class="fas fa-tags"></i> Categories
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <!-- Products Section -->
+    <section id="products" class="admin-section active">
+      <div class="section-header">
+        <h3>Product Management</h3>
+        <button class="add-product-btn">
+          <i class="fas fa-plus"></i> Add Product
+        </button>
+      </div>
+
+      <div class="products-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for product in products %}
+            <tr>
+              <td>
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+              </td>
+              <td>{{ product.name }}</td>
+              <td>{{ product.category }}</td>
+              <td>${{ product.price }}</td>
+              <td>{{ product.quantity }}</td>
+              <td>
+                <button class="edit-btn" data-id="{{ product.id }}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-btn" data-id="{{ product.id }}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Orders Section -->
+    <section id="orders" class="admin-section">
+      <div class="section-header">
+        <h3>Order Management</h3>
+      </div>
+      <div class="orders-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+            <tr>
+              <td>#{{ order.id }}</td>
+              <td>{{ order.buyer.user.username }}</td>
+              <td>{{ order.created_at }}</td>
+              <td>${{ order.total_price }}</td>
+              <td>
+                <select class="status-select" data-id="{{ order.id }}">
+                  <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                  <option value="processing" {% if order.status == 'processing' %}selected{% endif %}>Processing</option>
+                  <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                  <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+              </td>
+              <td>
+                <button class="view-btn" data-id="{{ order.id }}">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Users Section -->
+    <section id="users" class="admin-section">
+      <div class="section-header">
+        <h3>User Management</h3>
+      </div>
+      <div class="users-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+            <tr>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.profile.role }}</td>
+              <td>{{ user.date_joined }}</td>
+              <td>
+                <button class="edit-btn" data-id="{{ user.id }}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-btn" data-id="{{ user.id }}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section id="categories" class="admin-section">
+      <div class="section-header">
+        <h3>Category Management</h3>
+        <button class="add-category-btn">
+          <i class="fas fa-plus"></i> Add Category
+        </button>
+      </div>
+      <div class="categories-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Products</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for category in categories %}
+            <tr>
+              <td>{{ category.name }}</td>
+              <td>{{ category.product_count }}</td>
+              <td>
+                <button class="edit-btn" data-id="{{ category.id }}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="delete-btn" data-id="{{ category.id }}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div class="modal" id="productModal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Add New Product</h3>
+    <form id="productForm" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="productName">Product Name</label>
+        <input type="text" id="productName" name="name" required />
+      </div>
+      <div class="form-group">
+        <label for="productCategory">Category</label>
+        <select id="productCategory" name="category" required>
+          <option value="">Select Category</option>
+          {% for category in categories %}
+          <option value="{{ category.id }}">{{ category.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="productPrice">Price</label>
+        <input type="number" id="productPrice" name="price" step="0.01" required />
+      </div>
+      <div class="form-group">
+        <label for="productQuantity">Quantity</label>
+        <input type="number" id="productQuantity" name="quantity" required />
+      </div>
+      <div class="form-group">
+        <label for="productImage">Product Image</label>
+        <input type="file" id="productImage" name="image" accept="image/*" required />
+      </div>
+      <div class="form-group">
+        <label for="productDescription">Description</label>
+        <textarea id="productDescription" name="description" required></textarea>
+      </div>
+      <button type="submit" class="save-btn">Save Product</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/admin.js' %}"></script>
+{% endblock %} 

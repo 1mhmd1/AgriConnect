@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
     <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <script src="{% static 'js/profile.js' %}"></script>
   </head>
   <body>
@@ -20,17 +24,19 @@
         </a>
       </div>
       <div class="elements">
-        <a href="{% url 'index' %}">Home</a>
-        <a href="{% url 'store' %}">Agri-Store</a>
-        <a href="{% url 'bot' %}">Agri-Bot</a>
-        <a href="#">Others</a>
+        <a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>Home</a>
+        <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Store</a>
+        <a href="{% url 'bot' %}" {% if request.resolver_match.url_name == 'bot' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Bot</a>
+        <a href="#" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Others</a>
       </div>
       <div class="user-menu">
         <i class="fa-solid fa-user" id="userIcon"></i>
         <div class="dropdown-menu">
-          <a href="{% url 'profile' %}" class="active">Profile</a>
-          <a href="{% url 'login' %}">Login</a>
-          <a href="{% url 'logout' %}">Sign out</a>
+          <a href="{% url 'profile' %}" class="active"><i class="fas fa-user-circle"></i> Profile</a>
+          <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
+          <a href="{% url 'wishlist' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-heart"></i> My Wishlist</a>
+          <a href="{% url 'cart' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-shopping-cart"></i> My Cart</a>
+          <a href="{% url 'logout' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-sign-out-alt"></i> Sign out</a>
         </div>
       </div>
     </nav>
@@ -88,10 +94,14 @@
               <button class="tab-btn active" data-tab="base">
                 Base Profile
               </button>
+              {% if 'farmer' in accessible_profiles %}
               <button class="tab-btn" data-tab="farmer">Farmer Profile</button>
+              {% endif %}
+              {% if 'landowner' in accessible_profiles %}
               <button class="tab-btn" data-tab="landowner">
                 Landowner Profile
               </button>
+              {% endif %}
             </div>
           </div>
 
@@ -101,28 +111,28 @@
               <form class="profile-form" id="baseProfileForm">
                 <div class="form-group">
                   <label for="fullName">Full Name</label>
-                  <input type="text" id="fullName" value="John Doe" />
+                  <input type="text" id="fullName" value="{{ user.first_name }} {{ user.last_name }}" />
                 </div>
                 <div class="form-group">
                   <label for="username">Username</label>
-                  <input type="text" id="username" value="@johndoe" readonly />
+                  <input type="text" id="username" value="{{ user.username }}" readonly />
                 </div>
                 <div class="form-group">
                   <label for="email">Email</label>
                   <input
                     type="email"
                     id="email"
-                    value="john@example.com"
+                    value="{{ user.email }}"
                     readonly
                   />
                 </div>
                 <div class="form-group">
                   <label for="phone">Phone</label>
-                  <input type="tel" id="phone" value="+1234567890" />
+                  <input type="tel" id="phone" value="{{ profile.phone }}" />
                 </div>
                 <div class="form-group">
                   <label for="location">Location</label>
-                  <input type="text" id="location" value="New York, USA" />
+                  <input type="text" id="location" value="{{ profile.location }}" />
                 </div>
                 <button type="submit" class="save-btn">Save Changes</button>
               </form>
@@ -387,7 +397,40 @@
         forms.forEach((form) => {
           form.addEventListener("submit", function (e) {
             e.preventDefault();
-            alert("Changes saved successfully!");
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Send form data to server
+            fetch(window.location.href, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-CSRFToken': csrfToken
+              }
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === 'success') {
+                // Update the form fields with the saved values
+                if (data.phone) {
+                  document.getElementById('phone').value = data.phone;
+                }
+                if (data.location) {
+                  document.getElementById('location').value = data.location;
+                }
+                alert(data.message);
+              } else {
+                alert('Error saving changes: ' + data.message);
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Error saving changes. Please try again.');
+            });
           });
         });
 

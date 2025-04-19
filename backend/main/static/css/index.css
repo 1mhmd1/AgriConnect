@@ -67,97 +67,151 @@ body {
   background-size: cover;
   background-attachment: fixed;
   min-height: 100vh;
+  padding-top: 70px;
 }
 
 /* Hero Section */
 .hero-section {
-  min-height: 100vh;
+  background: url("../images/background.png") no-repeat center/cover;
+  min-height: calc(100vh - 70px);
   width: 100%;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: cover;
   position: relative;
   display: flex;
   align-items: center;
-  padding-top: 80px;
-}
-
-.hero-section::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
+  justify-content: center;
 }
 
 .section-content {
-  position: relative;
-  z-index: 2;
   width: 100%;
-  padding: 0 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
 }
 
 .hero-details {
-  max-width: 800px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .left-side-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  max-width: 600px;
 }
 
 .left-side-content h1 {
-  font-family: "Poppins", sans-serif;
-  font-weight: 700;
-  font-size: 65px;
-  line-height: 90px;
-  color: #fff;
-  text-transform: uppercase;
-  margin-bottom: 20px;
+  font-size: 3.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.2;
 }
 
 .left-side-content p {
-  font-family: "Poppins", sans-serif;
-  font-weight: 400;
-  font-size: 22px;
-  line-height: 24px;
-  color: #fff;
-  margin-bottom: 40px;
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 2rem;
 }
 
 .buttons {
   display: flex;
-  gap: 20px;
+  gap: 1rem;
 }
 
 .button {
   padding: 12px 30px;
-  border-radius: var(--border-radius-m);
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
   text-decoration: none;
-  font-weight: var(--font-weight-medium);
   transition: all 0.3s ease;
 }
 
 .Sign-Up {
-  background-color: var(--white-color);
-  color: #000;
+  background-color: #00a651;
+  color: white;
 }
 
 .Sign-Up:hover {
-  background-color: transparent;
-  color: var(--white-color);
-  border: 2px solid var(--white-color);
+  background-color: #008542;
+  transform: translateY(-2px);
 }
 
 .Log-In {
-  background-color: transparent;
-  color: var(--white-color);
-  border: 2px solid var(--white-color);
+  background-color: white;
+  color: #00a651;
+  border: 2px solid #00a651;
 }
 
 .Log-In:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #f0fff7;
+  transform: translateY(-2px);
+}
+
+/* Search Container */
+.search-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.search-wrapper {
+  display: inline-flex;
+  width: 60%;
+  max-width: 600px;
+}
+
+.search-box {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #ddd;
+  border-radius: 25px 0 0 25px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.search-button {
+  padding: 12px 25px;
+  background: #00a651;
+  color: white;
+  border: none;
+  border-radius: 0 25px 25px 0;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.search-button:hover {
+  background: #008542;
+}
+
+.search-box:focus {
+  border-color: #00a651;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .left-side-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .left-side-content p {
+    font-size: 1rem;
+  }
+
+  .search-wrapper {
+    width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .left-side-content h1 {
+    font-size: 2rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+    text-align: center;
+  }
 }

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {% load static %}
+    {% csrf_token %}
+    
+    <!-- Core styles -->
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+    
+    <!-- Page specific styles -->
+    {% block extra_css %}{% endblock %}
+    
+    <title>{% block title %}Agri-Connect{% endblock %}</title>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="nav">
+      <div class="logo">
+        <a href="{% url 'index' %}">
+          <img src="{% static 'images/agri23.png' %}" alt="Agri-Connect Logo" />
+        </a>
+      </div>
+      <div class="elements">
+        <a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>Home</a>
+        <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Store</a>
+        <a href="{% url 'bot' %}" {% if request.resolver_match.url_name == 'bot' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Bot</a>
+        <a href="#" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Others</a>
+      </div>
+      <div class="user-menu">
+        <i class="fa-solid fa-user" id="userIcon"></i>
+        <div class="dropdown-menu">
+          <a href="{% url 'profile' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-user-circle"></i> Profile</a>
+          <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
+          <a href="{% url 'wishlist' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-heart"></i> My Wishlist</a>
+          <a href="{% url 'cart' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-shopping-cart"></i> My Cart</a>
+          <a href="{% url 'logout' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-sign-out-alt"></i> Sign out</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    {% block content %}{% endblock %}
+
+    <!-- Core JavaScript -->
+    <script src="{% static 'js/common.js' %}"></script>
+    
+    <!-- Page specific JavaScript -->
+    {% block extra_js %}{% endblock %}
+  </body>
+</html> 

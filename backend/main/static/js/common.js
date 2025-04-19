@@ -36,11 +36,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const price = card.querySelector(".price").textContent;
     const rating = card.querySelector(".rating").innerHTML;
 
+    // Convert relative URL to absolute URL if needed
+    let imageUrl = img.src;
+    if (imageUrl.startsWith("/")) {
+      imageUrl = window.location.origin + imageUrl;
+    }
+
     return {
       id: name.toLowerCase().replace(/\s+/g, "-"),
       name: name,
       price: price,
-      image: img.src,
+      image: imageUrl,
       rating: rating,
     };
   }
@@ -90,10 +96,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function createWishlistItem(item) {
+      // Handle image URL
+      let imageUrl = item.image;
+      if (imageUrl.startsWith("images/")) {
+        imageUrl = window.STATIC_URL + imageUrl;
+      }
+
       return `
                 <div class="wishlist-item" data-id="${item.id}">
                     <div class="item-image">
-                        <img src="${item.image}" alt="${item.name}" />
+                        <img src="${imageUrl}" alt="${item.name}" />
                         <button class="remove-btn">
                             <i class="fas fa-times"></i>
                         </button>
@@ -103,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <div class="rating">
                             ${item.rating}
                         </div>
-                        <div class="price">$${item.price}</div>
+                        <div class="price">${item.price}</div>
                         <button class="add-to-cart-btn">
                             <i class="fas fa-shopping-cart"></i>
                             Add to Cart

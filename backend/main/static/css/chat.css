@@ -1,0 +1,460 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: white; /* Changed to white */
+}
+
+.container-fluid {
+  height: 100vh;
+  padding: 0;
+  background: white; /* Added white background */
+}
+
+.row {
+  height: 100%;
+  margin: 0;
+}
+
+.chat {
+  height: 100%;
+  padding: 0;
+}
+
+.contacts-column,
+.chat-column {
+  height: 100%;
+  padding: 0;
+}
+
+.card {
+  height: 100%;
+  border-radius: 0;
+  margin: 0;
+  background-color: white !important; /* Changed to white */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Added subtle shadow */
+}
+
+.contacts_body {
+  padding: 0.75rem 0;
+  overflow-y: auto;
+  white-space: nowrap;
+  height: calc(100% - 120px);
+  background-color: white; /* Changed to white */
+}
+
+.msg_card_body {
+  overflow-y: auto;
+  height: calc(100% - 120px);
+  background-color: #f9f9f9; /* Light gray background for message area */
+}
+
+.card-header {
+  border-radius: 0;
+  border-bottom: 1px solid #e0e0e0 !important; /* Light gray border */
+  background-color: white !important; /* Changed to white */
+}
+
+.card-footer {
+  border-radius: 0;
+  border-top: 1px solid #e0e0e0 !important; /* Light gray border */
+  background-color: white !important; /* Changed to white */
+}
+
+.search {
+  border-radius: 15px 0 0 15px;
+  background-color: #f5f5f5 !important; /* Light gray */
+  border: 1px solid #e0e0e0 !important; /* Light gray border */
+  color: #333 !important; /* Dark text */
+}
+
+.search:focus {
+  box-shadow: none;
+  outline: 0px;
+}
+
+.type_msg {
+  background-color: #f5f5f5 !important; /* Light gray */
+  border: 1px solid #e0e0e0 !important; /* Light gray border */
+  color: #333 !important; /* Dark text */
+  height: 60px;
+  overflow-y: auto;
+}
+
+.type_msg:focus {
+  box-shadow: none;
+  outline: 0px;
+}
+
+.attach_btn,
+.send_btn,
+.search_btn {
+  border-radius: 15px;
+  background-color: #f5f5f5 !important; /* Light gray */
+  border: 1px solid #e0e0e0 !important; /* Light gray border */
+  color: #333 !important; /* Dark text */
+  cursor: pointer;
+}
+
+.contacts {
+  list-style: none;
+  padding: 0;
+}
+
+.contacts li {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #f0f0f0; /* Very light gray border */
+}
+
+.active {
+  background-color: #f0f7ff !important; /* Very light blue for active state */
+}
+
+.user_img {
+  height: 60px;
+  width: 60px;
+  border: 1.5px solid #e0e0e0; /* Light gray border */
+}
+
+.user_img_msg {
+  height: 40px;
+  width: 40px;
+  border: 1.5px solid #e0e0e0; /* Light gray border */
+}
+
+.img_cont {
+  position: relative;
+  height: 70px;
+  width: 70px;
+}
+
+.img_cont_msg {
+  height: 40px;
+  width: 40px;
+}
+
+.online_icon {
+  position: absolute;
+  height: 15px;
+  width: 15px;
+  background-color: #4caf50; /* Green for online */
+  border-radius: 50%;
+  bottom: 13px;
+  right: 13px;
+  border: 1.5px solid white;
+}
+
+.offline {
+  background-color: #f44336 !important; /* Red for offline */
+}
+
+.user_info {
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 15px;
+}
+
+.user_info span {
+  font-size: 20px;
+  color: #333; /* Dark text */
+}
+
+.user_info p {
+  font-size: 10px;
+  color: #757575; /* Medium gray text */
+}
+
+.video_cam {
+  margin-left: 50px;
+  margin-top: 5px;
+}
+
+.video_cam span {
+  color: #333; /* Dark text */
+  font-size: 20px;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+.msg_cotainer {
+  margin-top: auto;
+  margin-bottom: 15px;
+  margin-left: 10px;
+  border-radius: 25px;
+  background-color: #e3f2fd; /* Light blue message bubble */
+  padding: 10px;
+  position: relative;
+  color: #333; /* Dark text */
+}
+
+.msg_cotainer_send {
+  margin-top: auto;
+  margin-bottom: 15px;
+  margin-right: 10px;
+  border-radius: 25px;
+  background-color: #c8e6c9; /* Light green message bubble */
+  padding: 10px;
+  position: relative;
+  color: #333; /* Dark text */
+}
+
+.msg_time {
+  position: absolute;
+  left: 0;
+  bottom: -15px;
+  color: #757575; /* Medium gray text */
+  font-size: 10px;
+}
+
+.msg_time_send {
+  position: absolute;
+  right: 0;
+  bottom: -15px;
+  color: #757575; /* Medium gray text */
+  font-size: 10px;
+}
+
+.msg_head {
+  position: relative;
+}
+
+#action_menu_btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #333; /* Dark text */
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.action_menu {
+  z-index: 1;
+  position: absolute;
+  padding: 15px 0;
+  background-color: white;
+  color: #333;
+  border-radius: 15px;
+  top: 30px;
+  right: 15px;
+  display: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.action_menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.action_menu ul li {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 5px;
+}
+
+.action_menu ul li i {
+  padding-right: 10px;
+  color: #333;
+}
+
+.action_menu ul li:hover {
+  cursor: pointer;
+  background-color: #f5f5f5;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+@media (max-width: 768px) {
+  .contacts_card {
+    height: 40vh !important;
+  }
+  .chat-column {
+    height: 60vh !important;
+  }
+}
+/* Add this to your existing CSS */
+.card-header {
+  position: relative; /* Needed for absolute positioning of the title */
+}
+
+.chat-title {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  color: #4caf50; /* Green color */
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Adjust the search bar to make space for the title */
+.card-header .input-group {
+  margin-top: 40px; /* Creates space for the title */
+}
+/* Add these styles to your existing CSS */
+
+/* Header with black background */
+.card-header {
+  background-color: black !important; /* Changed to black */
+  padding: 15px;
+  position: relative;
+  border-bottom: none !important;
+}
+
+/* Green Agri-Chat title */
+.chat-title {
+  color: #4caf50; /* Green color */
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding: 0 15px; /* Match search bar padding */
+}
+
+/* Search bar styling */
+.input-group {
+  background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent */
+  border-radius: 20px;
+  padding: 5px;
+  margin-top: 5px; /* Space below title */
+}
+
+.search {
+  background-color: transparent !important;
+  border: none !important;
+  color: white !important;
+}
+
+.search_btn {
+  background-color: transparent !important;
+  border: none !important;
+  color: white !important;
+}
+
+/* Action menu button */
+#action_menu_btn {
+  color: white; /* White icon */
+}
+/* Fancy Header Styles */
+.fancy-chat-header {
+  display: flex;
+  align-items: center;
+  padding: 0 15px 10px;
+  position: relative;
+}
+
+.chat-title-main {
+  font-size: 22px;
+  font-weight: 800;
+  color: #4caf50;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chat-title-secondary {
+  font-size: 22px;
+  font-weight: 800;
+  color: #4caf50;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header-underline {
+  position: absolute;
+  bottom: 5px;
+  left: 15px;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, #4caf50, transparent);
+  border-radius: 3px;
+}
+
+/* Search bar styling */
+.input-group {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 25px;
+  padding: 5px 15px;
+  margin: 0 15px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search {
+  background-color: transparent !important;
+  border: none !important;
+  color: white !important;
+  font-size: 14px;
+}
+
+.search::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.search_btn {
+  background-color: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+/* Modify these styles in your existing CSS */
+
+.card-header {
+  padding: 15px 15px 15px 0; /* Right padding reduced */
+  position: relative;
+}
+
+.input-group {
+  margin-left: 15px; /* Push search bar left */
+  margin-right: 50px; /* Space for menu button */
+  width: auto; /* Allow natural width */
+}
+
+/* Keep your existing fancy header styles */
+.fancy-chat-header {
+  padding-left: 15px; /* Align with search bar */
+}
+/* Ensure full black backgrounds */
+.contacts-column,
+.chat-column {
+  background-color: black !important;
+}
+
+/* Remove search bar completely */
+.search-container {
+  display: none;
+}
+
+/* Ensure headings are white */
+h1,
+.h1 {
+  color: #ffffff !important;
+  margin: 0;
+  padding: 15px;
+}
+
+/* Override any potential conflicts */
+.card h1,
+.card-header h1,
+.chat-column h1,
+.contacts-column h1 {
+  color: #ffffff !important;
+}
