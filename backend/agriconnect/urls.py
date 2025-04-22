@@ -33,6 +33,8 @@ urlpatterns = [
     path('checkout/', views.checkout_view, name='checkout'),
     path('wishlist/', views.wishlist_view, name='wishlist'),
     path('api/', include('main.urls')),
+    path('admin/orders/<int:order_id>/', views.admin_orders, name='admin_orders'),
+    path('admin/categories/', views.create_category, name='create_category'),
 ]
 
 # Serve static files in development

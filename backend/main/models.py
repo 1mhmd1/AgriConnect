@@ -7,6 +7,7 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=20, choices=[
         ('buyer', 'Buyer'),
         ('farmer', 'Farmer'),
+        ('landowner', 'Landowner'),
         ('admin', 'Admin')
     ], default='buyer')
     username = models.CharField(max_length=150, unique=True, null=True)
@@ -143,3 +144,51 @@ class UserPaymentInfo(models.Model):
         if len(self.card_number) > 4:
             self.card_number = self.card_number[-4:]
         super().save(*args, **kwargs)
+
+class Wishlist(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Wishlist for {self.user.username}"
+
+    @property
+    def total_items(self):
+        return self.items.count()
+
+class WishlistItem(models.Model):
+    wishlist = models.ForeignKey(Wishlist, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('wishlist', 'product')
+
+    def __str__(self):
+        return f"{self.product.name} in wishlist {self.wishlist.id}"
+
+class Land(models.Model):
+    LAND_TYPES = (
+        ('Agricultural', 'Agricultural'),
+        ('Residential', 'Residential'),
+        ('Commercial', 'Commercial'),
+        ('Natural', 'Natural'),
+        ('Resort', 'Resort'),
+    )
+    
+    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='lands')
+    title = models.CharField(max_length=100, default="Land Property")
+    location = models.CharField(max_length=100, default="Unknown")
+    size = models.DecimalField(max_digits=10, decimal_places=2, help_text="Size in square meters", default=0)
+    land_type = models.CharField(max_length=20, choices=LAND_TYPES, default='Agricultural')
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='land_images/', blank=True, null=True)
+    is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.location}"

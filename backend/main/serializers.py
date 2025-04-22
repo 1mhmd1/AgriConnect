@@ -21,9 +21,30 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return profile
 
 class ProductSerializer(serializers.ModelSerializer):
+    category = serializers.SerializerMethodField()
+    sale_price = serializers.SerializerMethodField()
+    is_on_sale = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'quantity', 'farmer', 'image', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'description', 'price', 'sale_price', 'is_on_sale', 
+                 'stock', 'rating', 'image', 'category', 'created_at', 'updated_at']
+
+    def get_category(self, obj):
+        return {
+            'id': obj.category.id,
+            'name': obj.category.name
+        } if obj.category else None
+
+    def get_sale_price(self, obj):
+        return str(obj.sale_price) if hasattr(obj, 'sale_price') else None
+
+    def get_is_on_sale(self, obj):
+        return hasattr(obj, 'sale_price') and obj.sale_price is not None
+
+    def get_rating(self, obj):
+        return obj.rating if hasattr(obj, 'rating') else 0
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:

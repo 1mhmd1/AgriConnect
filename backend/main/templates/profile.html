@@ -27,7 +27,7 @@
         <a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>Home</a>
         <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Store</a>
         <a href="{% url 'bot' %}" {% if request.resolver_match.url_name == 'bot' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Bot</a>
-        <a href="#" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Others</a>
+        <a href="{% url 'landowner' %}" {% if request.resolver_match.url_name == 'landowner' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Lands</a>
       </div>
       <div class="user-menu">
         <i class="fa-solid fa-user" id="userIcon"></i>
@@ -85,7 +85,7 @@
             <!-- Profile Image Section -->
             <div class="profile-image-container">
               <img
-                src="{% static 'images/default-profile.png' %}"
+                src="{% static 'images/fresh.png' %}"
                 id="profileImage"
               />
               <input type="file" id="profileImageInput" accept="image/*" />
@@ -109,6 +109,7 @@
             <!-- Base Profile Tab -->
             <div class="tab-pane active" id="base-tab">
               <form class="profile-form" id="baseProfileForm">
+                {% csrf_token %}
                 <div class="form-group">
                   <label for="fullName">Full Name</label>
                   <input type="text" id="fullName" value="{{ user.first_name }} {{ user.last_name }}" />
@@ -196,7 +197,9 @@
               <div class="land-listings">
                 <div class="land-card">
                   <h3>Land Listing #1</h3>
-                  <form class="profile-form" id="landownerProfileForm">
+                  <form class="profile-form" id="landownerProfileForm" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="landowner_profile">
                     <div class="form-group">
                       <label for="landImages">Land Images (Required)</label>
                       <div class="image-upload-container">
@@ -207,11 +210,13 @@
                           <input
                             type="file"
                             id="landImages"
+                            name="land_images"
                             accept="image/*"
                             multiple
                             required
+                            style="opacity: 0; position: absolute; width: 100%; height: 100%; cursor: pointer;"
                           />
-                          <label for="landImages" class="upload-label">
+                          <label for="landImages" class="upload-label" style="display: block; width: 100%; height: 100%; cursor: pointer;">
                             <i class="fas fa-cloud-upload-alt"></i>
                             <span>Click to upload images</span>
                           </label>
@@ -223,6 +228,7 @@
                       <input
                         type="number"
                         id="landSize"
+                        name="land_size"
                         min="0"
                         step="0.1"
                         value="10.5"
@@ -231,7 +237,7 @@
                     </div>
                     <div class="form-group">
                       <label for="soilType">Soil Type</label>
-                      <select id="soilType" required>
+                      <select id="soilType" name="soil_type" required>
                         <option value="loam">Loam</option>
                         <option value="clay">Clay</option>
                         <option value="sandy">Sandy</option>
@@ -239,7 +245,7 @@
                     </div>
                     <div class="form-group">
                       <label for="waterSource">Water Source</label>
-                      <select id="waterSource" required>
+                      <select id="waterSource" name="water_source" required>
                         <option value="well">Well</option>
                         <option value="river">River</option>
                         <option value="canal">Canal</option>
@@ -248,18 +254,9 @@
                     <div class="form-group">
                       <label>Lease Terms</label>
                       <div class="checkbox-group">
-                        <label
-                          ><input type="checkbox" value="short-term" />
-                          Short-Term</label
-                        >
-                        <label
-                          ><input type="checkbox" value="long-term" />
-                          Long-Term</label
-                        >
-                        <label
-                          ><input type="checkbox" value="lease-to-own" />
-                          Lease-to-Own</label
-                        >
+                        <label><input type="checkbox" name="lease_terms" value="short-term"> Short-Term</label>
+                        <label><input type="checkbox" name="lease_terms" value="long-term"> Long-Term</label>
+                        <label><input type="checkbox" name="lease_terms" value="lease-to-own"> Lease-to-Own</label>
                       </div>
                     </div>
                     <div class="form-group">
@@ -267,9 +264,11 @@
                       <input
                         type="number"
                         id="pricePerAcre"
+                        name="price_per_acre"
                         min="0"
                         step="0.01"
                         value="500"
+                        required
                       />
                     </div>
                     <button type="submit" class="save-btn">Save Changes</button>
@@ -329,6 +328,96 @@
             </div>
           </div>
         </div>
+
+        <!-- Landowner Profile Section -->
+        {% if 'landowner' in accessible_profiles %}
+        <div class="profile-section" id="landowner-profile" style="display: none;">
+          <h3>Landowner Profile</h3>
+          <div class="form-container">
+            <form id="landowner-form" method="POST" enctype="multipart/form-data" action="{% url 'profile' %}">
+              {% csrf_token %}
+              <input type="hidden" name="form_type" value="landowner_profile">
+              
+              <div class="mb-3">
+                <label for="land-title" class="form-label">Land Title</label>
+                <input type="text" class="form-control" id="land-title" name="land_title" placeholder="e.g. Green Valley" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="land-location" class="form-label">Location</label>
+                <input type="text" class="form-control" id="land-location" name="land_location" placeholder="e.g. Bekaa" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="land-size" class="form-label">Size (m²)</label>
+                <input type="number" class="form-control" id="land-size" name="land_size" placeholder="e.g. 10000" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="land-type" class="form-label">Land Type</label>
+                <select class="form-control" id="land-type" name="land_type" required>
+                  <option value="Agricultural">Agricultural</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Natural">Natural</option>
+                  <option value="Resort">Resort</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="land-price" class="form-label">Price ($)</label>
+                <input type="number" class="form-control" id="land-price" name="land_price" placeholder="e.g. 150000" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="land-description" class="form-label">Description</label>
+                <textarea class="form-control" id="land-description" name="land_description" rows="3" placeholder="Describe your land..."></textarea>
+              </div>
+              
+              <div class="mb-3">
+                <label for="land-image" class="form-label">Land Image</label>
+                <input type="file" class="form-control" id="land-image" name="land_image">
+              </div>
+              
+              <button type="submit" class="btn btn-primary">Save Land</button>
+            </form>
+          </div>
+          
+          <div class="my-lands-section mt-4">
+            <h4>My Land Listings</h4>
+            <div id="land-listings" class="row">
+              {% if lands %}
+                {% for land in lands %}
+                  <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card">
+                      {% if land.image %}
+                        <img src="{{ land.image.url }}" class="card-img-top" alt="{{ land.title }}">
+                      {% else %}
+                        <img src="{% static 'images/fresh.png' %}" class="card-img-top" alt="{{ land.title }}">
+                      {% endif %}
+                      <div class="card-body">
+                        <h5 class="card-title">{{ land.title }}</h5>
+                        <p class="card-text"><strong>Location:</strong> {{ land.location }}</p>
+                        <p class="card-text"><strong>Size:</strong> {{ land.size }} m²</p>
+                        <p class="card-text"><strong>Type:</strong> {{ land.land_type }}</p>
+                        <p class="card-text"><strong>Price:</strong> ${{ land.price }}</p>
+                        <div class="d-flex justify-content-between mt-3">
+                          <a href="#" class="btn btn-sm btn-primary edit-land" data-id="{{ land.id }}">Edit</a>
+                          <a href="#" class="btn btn-sm btn-danger delete-land" data-id="{{ land.id }}">Delete</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="col-12">
+                  <p>You haven't listed any lands yet. Use the form above to add your first land.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
       </div>
     </div>
 
@@ -401,35 +490,52 @@
             // Get form data
             const formData = new FormData(this);
             
-            // Add CSRF token
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            // Add CSRF token if not already present
+            if (!formData.has('csrfmiddlewaretoken')) {
+              const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+              formData.append('csrfmiddlewaretoken', csrfToken);
+            }
             
             // Send form data to server
             fetch(window.location.href, {
               method: 'POST',
               body: formData,
               headers: {
-                'X-CSRFToken': csrfToken
+                'X-Requested-With': 'XMLHttpRequest'
               }
             })
-            .then(response => response.json())
+            .then(response => {
+              if (response.redirected) {
+                window.location.href = response.url;
+                return;
+              }
+              return response.json();
+            })
             .then(data => {
-              if (data.status === 'success') {
-                // Update the form fields with the saved values
-                if (data.phone) {
-                  document.getElementById('phone').value = data.phone;
+              if (data && data.status === 'success') {
+                showNotification(data.message || 'Changes saved successfully');
+                
+                // If this is a landowner form submission, reload the page to show the new land listing
+                if (this.id === 'landownerProfileForm') {
+                  window.location.reload();
+                } else {
+                  // Update form fields with saved values if applicable
+                  if (data.phone) {
+                    document.getElementById('phone').value = data.phone;
+                  }
+                  if (data.location) {
+                    document.getElementById('location').value = data.location;
+                  }
                 }
-                if (data.location) {
-                  document.getElementById('location').value = data.location;
-                }
-                alert(data.message);
+              } else if (data && data.error) {
+                showNotification(data.error, 'error');
               } else {
-                alert('Error saving changes: ' + data.message);
+                showNotification('Changes saved successfully');
               }
             })
             .catch(error => {
               console.error('Error:', error);
-              alert('Error saving changes. Please try again.');
+              showNotification('Error saving changes. Please try again.', 'error');
             });
           });
         });
@@ -510,3 +616,5 @@
     </script>
   </body>
 </html>
+
+

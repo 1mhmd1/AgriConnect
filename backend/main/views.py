@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from .models import UserProfile, Product, Order, Category, Cart, CartItem, UserShippingInfo, UserPaymentInfo
+from .models import UserProfile, Product, Order, Category, Cart, CartItem, UserShippingInfo, UserPaymentInfo, Wishlist, WishlistItem, Land
 from .serializers import UserSerializer, UserProfileSerializer, ProductSerializer, OrderSerializer
 from django.utils import timezone
 import os
@@ -37,10 +37,21 @@ def profile_view(request):
         accessible_profiles.append('landowner')
     
     if request.method == 'POST':
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        # Debug form data
+        print("Form submitted!")
+        print("Form Type:", request.POST.get('form_type'))
+        print("POST data:", request.POST)
+        print("FILES:", request.FILES)
+        
         # Check if this is a profile picture upload
         if 'profile_picture' in request.FILES:
             profile.profile_picture = request.FILES['profile_picture']
             profile.save()
+            if is_ajax:
+                return JsonResponse({'status': 'success', 'message': 'Profile picture updated successfully'})
             return redirect('profile')
 
         # Check if this is a security form submission
@@ -51,6 +62,8 @@ def profile_view(request):
             
             # Verify current password
             if not request.user.check_password(current_password):
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'Current password is incorrect'}, status=400)
                 return render(request, 'profile.html', {
                     'profile': profile,
                     'user': request.user,
@@ -60,6 +73,8 @@ def profile_view(request):
                 
             # Verify new passwords match
             if new_password != confirm_password:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'New passwords do not match'}, status=400)
                 return render(request, 'profile.html', {
                     'profile': profile,
                     'user': request.user,
@@ -74,7 +89,59 @@ def profile_view(request):
             user = authenticate(username=request.user.username, password=new_password)
             if user:
                 login(request, user)
+            if is_ajax:
+                return JsonResponse({'status': 'success', 'message': 'Password updated successfully'})
             return redirect('profile')
+        
+        # Handle landowner profile form submission
+        if request.POST.get('form_type') == 'landowner_profile':
+            try:
+                # Set user as landowner
+                profile.role = 'landowner'
+                profile.save()
+                
+                # Debug
+                print("Trying to create land with:")
+                print("Title:", request.POST.get('land_title'))
+                print("Location:", request.POST.get('land_location'))
+                print("Size:", request.POST.get('land_size'))
+                print("Land Type:", request.POST.get('land_type'))
+                print("Price:", request.POST.get('land_price'))
+                
+                # Create new land listing
+                land = Land(
+                    owner=profile,
+                    title=request.POST.get('land_title'),
+                    location=request.POST.get('land_location'),
+                    size=request.POST.get('land_size'),
+                    land_type=request.POST.get('land_type'),
+                    price=request.POST.get('land_price'),
+                    description=request.POST.get('land_description')
+                )
+                
+                if 'land_image' in request.FILES:
+                    land.image = request.FILES['land_image']
+                
+                land.save()
+                print("Land saved successfully with ID:", land.id)
+                
+                if is_ajax:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'Land listing created successfully',
+                        'land_id': land.id
+                    })
+                return redirect('profile')
+            except Exception as e:
+                print("Error saving land:", str(e))
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'profile.html', {
+                    'profile': profile,
+                    'user': request.user,
+                    'error': str(e),
+                    'accessible_profiles': accessible_profiles
+                })
 
         # Handle base profile form submission
         if request.POST.get('form_type') == 'base_profile':
@@ -103,40 +170,6 @@ def profile_view(request):
                     'message': str(e)
                 }, status=400)
 
-        # Handle land listing submission (only for landowners)
-        if request.POST.get('form_type') == 'land_listing' and 'landowner' in accessible_profiles:
-            # Get existing land listings or initialize empty list
-            land_listings = profile.land_listings if profile.land_listings else []
-            
-            # Create new land listing object
-            new_listing = {
-                'images': [],  # This will be handled separately for file uploads
-                'size': request.POST.get('landSize'),
-                'soil_type': request.POST.get('soilType'),
-                'water_source': request.POST.get('waterSource'),
-                'lease_terms': request.POST.getlist('lease_terms[]'),
-                'price_per_acre': request.POST.get('pricePerAcre'),
-                'created_at': timezone.now().isoformat()
-            }
-            
-            # Handle land images if uploaded
-            if 'landImages' in request.FILES:
-                for image in request.FILES.getlist('landImages'):
-                    # Save the image and get its path
-                    image_path = f'land_images/{request.user.id}_{timezone.now().timestamp()}_{image.name}'
-                    with open(f'media/{image_path}', 'wb+') as destination:
-                        for chunk in image.chunks():
-                            destination.write(chunk)
-                    new_listing['images'].append(image_path)
-            
-            # Add new listing to the list
-            land_listings.append(new_listing)
-            
-            # Update profile with new land listings
-            profile.land_listings = land_listings
-            profile.save()
-            return redirect('profile')
-
         # Handle profile type updates (farmer, base, etc)
         profile_type = request.POST.get('profile_type')
         
@@ -154,6 +187,11 @@ def profile_view(request):
             if request.POST.get('equipment'):
                 profile.equipment = request.POST.get('equipment').split(',')
                 
+            profile.save()
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Farmer profile updated successfully'
+            })
         else:
             # Handle base profile updates
             # Handle full name
@@ -194,6 +232,11 @@ def profile_view(request):
         'user': request.user,
         'accessible_profiles': accessible_profiles
     }
+    
+    # Add lands to context if user is a landowner
+    if 'landowner' in accessible_profiles:
+        context['lands'] = Land.objects.filter(owner=profile)
+    
     return render(request, 'profile.html', context)
 
 def login_view(request):
@@ -334,19 +377,10 @@ def category_products(request, category_id):
         return JsonResponse({'error': 'Category not found'}, status=404)
 
 def category_products_api(request, category_id):
-    try:
-        category = Category.objects.get(id=category_id)
-        products = category.products.all()
-        products_data = [{
-            'id': product.id,
-            'name': product.name,
-            'price': str(product.price),
-            'image': request.build_absolute_uri(product.image.url) if product.image else '',
-            'stock': product.stock,
-        } for product in products]
-        return JsonResponse(products_data, safe=False)
-    except Category.DoesNotExist:
-        return JsonResponse({'error': 'Category not found'}, status=404)
+    category = get_object_or_404(Category, id=category_id)
+    products = Product.objects.filter(category=category)
+    data = ProductSerializer(products, many=True).data
+    return JsonResponse(data, safe=False)
 
 def bot_view(request):
     return render(request, 'bot.html')
@@ -677,3 +711,121 @@ def get_product_details(request, product_id):
     }
     
     return JsonResponse(data)
+
+@login_required
+def toggle_wishlist(request, product_id):
+    if request.method == 'POST':
+        try:
+            product = Product.objects.get(id=product_id)
+            wishlist, created = Wishlist.objects.get_or_create(user=request.user)
+            
+            # Check if product is already in wishlist
+            wishlist_item = WishlistItem.objects.filter(wishlist=wishlist, product=product).first()
+            
+            if wishlist_item:
+                # Remove from wishlist
+                wishlist_item.delete()
+                return JsonResponse({'status': 'removed', 'message': 'Product removed from wishlist'})
+            else:
+                # Add to wishlist
+                WishlistItem.objects.create(wishlist=wishlist, product=product)
+                return JsonResponse({'status': 'added', 'message': 'Product added to wishlist'})
+                
+        except Product.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Product not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+@login_required
+def add_to_cart(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            quantity = data.get('quantity', 1)
+            
+            product = Product.objects.get(id=product_id)
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            
+            # Check if product is already in cart
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                product=product,
+                defaults={'quantity': quantity}
+            )
+            
+            if not created:
+                cart_item.quantity += quantity
+                cart_item.save()
+            
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Product added to cart',
+                'cart_total': cart.total_items
+            })
+            
+        except Product.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Product not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+@login_required
+def get_wishlist_status(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        wishlist = Wishlist.objects.filter(user=request.user).first()
+        
+        is_in_wishlist = False
+        if wishlist:
+            is_in_wishlist = WishlistItem.objects.filter(wishlist=wishlist, product=product).exists()
+        
+        return JsonResponse({
+            'status': 'success',
+            'is_in_wishlist': is_in_wishlist
+        })
+        
+    except Product.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Product not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["POST"])
+def create_category(request):
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        category = Category.objects.create(
+            name=data['name'],
+            icon=data['icon'],
+            description=data.get('description', '')
+        )
+        return JsonResponse({
+            'success': True,
+            'category': {
+                'id': category.id,
+                'name': category.name,
+                'icon': category.icon,
+                'description': category.description
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def landowner(request):
+    # Get all available lands with their owner information
+    lands = Land.objects.filter(is_available=True).select_related('owner__user')
+    
+    context = {
+        'lands': lands
+    }
+    return render(request, 'landowner.html', context)

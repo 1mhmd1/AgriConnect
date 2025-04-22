@@ -28,7 +28,7 @@
         <a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>Home</a>
         <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Store</a>
         <a href="{% url 'bot' %}" {% if request.resolver_match.url_name == 'bot' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Bot</a>
-        <a href="#" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Others</a>
+        <a href="{% url 'landowner' %}" {% if request.resolver_match.url_name == 'landowner' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Lands</a>
       </div>
       <div class="user-menu">
         <i class="fa-solid fa-user" id="userIcon"></i>

@@ -131,6 +131,81 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Category Modal Functionality
+  const categoryModal = document.getElementById("categoryModal");
+  const addCategoryBtn = document.querySelector(".add-category-btn");
+  const closeBtnCategory = categoryModal.querySelector(".close");
+  const categoryForm = document.getElementById("categoryForm");
+  const iconSelect = document.getElementById("categoryIcon");
+  const iconPreview = document.getElementById("iconPreview");
+
+  // Populate icon dropdown
+  categoryIcons.forEach((icon) => {
+    const option = document.createElement("option");
+    option.value = icon.value;
+    option.textContent = icon.label;
+    iconSelect.appendChild(option);
+  });
+
+  // Update icon preview when selection changes
+  iconSelect.addEventListener("change", function () {
+    iconPreview.className = "fas " + this.value;
+  });
+
+  // Open modal
+  addCategoryBtn.addEventListener("click", function () {
+    categoryModal.style.display = "block";
+    categoryForm.reset();
+    iconPreview.className = "fas";
+  });
+
+  // Close modal
+  closeBtnCategory.addEventListener("click", function () {
+    categoryModal.style.display = "none";
+  });
+
+  // Close modal when clicking outside
+  window.addEventListener("click", function (event) {
+    if (event.target === categoryModal) {
+      categoryModal.style.display = "none";
+    }
+  });
+
+  // Handle form submission
+  categoryForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(categoryForm);
+    const data = {
+      name: formData.get("name"),
+      icon: formData.get("icon"),
+      description: formData.get("description"),
+    };
+
+    // Send data to server
+    fetch("/admin/categories/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Refresh the page or update the categories table
+          window.location.reload();
+        } else {
+          alert("Error: " + data.error);
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred while saving the category.");
+      });
+  });
+
   // Helper function to get CSRF token
   function getCookie(name) {
     let cookieValue = null;

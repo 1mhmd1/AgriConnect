@@ -1,0 +1,168 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Land Owner
+Dashboard{% endblock %} {% block extra_css %}
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+  }
+
+  .dashboard-container {
+    padding: 40px;
+  }
+
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .land-card {
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .land-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .land-info {
+    padding: 15px 20px;
+    flex-grow: 1;
+  }
+
+  .land-info h2 {
+    font-size: 20px;
+    margin: 0 0 10px;
+    color: #2c3e50;
+  }
+
+  .land-info p {
+    margin: 4px 0;
+    color: #555;
+    font-size: 14px;
+  }
+
+  .land-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+  }
+
+  .land-buttons button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.3s ease;
+  }
+
+  .land-buttons button:hover {
+    background-color: #2980b9;
+  }
+
+  .delete-btn {
+    background-color: #e74c3c !important;
+  }
+
+  .delete-btn:hover {
+    background-color: #c0392b !important;
+  }
+
+  .dashboard-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="dashboard-container">
+  <h1 class="dashboard-title">Land Listings</h1>
+
+  <div class="grid-container">
+    {% if lands %} {% for land in lands %}
+    <div class="land-card">
+      {% if land.image %}
+      <img
+        src="{{ land.image.url }}"
+        class="land-image"
+        alt="{{ land.title }}"
+      />
+      {% else %}
+      <img
+        src="{% static 'images/fresh.png' %}"
+        class="land-image"
+        alt="{{ land.title }}"
+      />
+      {% endif %}
+      <div class="land-info">
+        <h2>{{ land.title }}</h2>
+        <p><strong>Location:</strong> {{ land.location }}</p>
+        <p><strong>Size:</strong> {{ land.size }} m²</p>
+        <p><strong>Type:</strong> {{ land.land_type }}</p>
+        <p><strong>Price:</strong> ${{ land.price }}</p>
+      </div>
+      <div class="land-buttons">
+        {% if user.is_authenticated and land.owner.user.id == user.id %}
+        <button>Edit</button>
+        <button class="delete-btn">Delete</button>
+        {% else %}
+        <button>Contact Owner</button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <div
+      class="no-lands-message"
+      style="grid-column: 1 / -1; text-align: center; padding: 50px 0"
+    >
+      <p>No land listings available at the moment.</p>
+      {% if user.is_authenticated %}
+      <p>
+        {% if user.userprofile.role == 'landowner' %}
+        <a
+          href="{% url 'profile' %}"
+          class="btn btn-primary"
+          style="
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+          "
+          >Add Your Land</a
+        >
+        {% else %}
+        <a
+          href="{% url 'profile' %}"
+          class="btn btn-primary"
+          style="
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+          "
+          >Become a Landowner</a
+        >
+        {% endif %}
+      </p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+.icon-select {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.icon-select option {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.icon-select option::before {
+  font-family: "Font Awesome 5 Free";
+  margin-right: 8px;
+  font-weight: 900;
+}
+
+/* Add icon classes */
+.icon-select option[value="fa-seedling"]::before {
+  content: "\f4d8";
+}
+.icon-select option[value="fa-tractor"]::before {
+  content: "\f722";
+}
+.icon-select option[value="fa-leaf"]::before {
+  content: "\f06c";
+}
+.icon-select option[value="fa-apple-alt"]::before {
+  content: "\f5d1";
+}
+.icon-select option[value="fa-carrot"]::before {
+  content: "\f787";
+}
+.icon-select option[value="fa-wheat-awn"]::before {
+  content: "\e2cd";
+}
+.icon-select option[value="fa-cow"]::before {
+  content: "\f6c8";
+}
+.icon-select option[value="fa-egg"]::before {
+  content: "\f7fb";
+}
+.icon-select option[value="fa-fish"]::before {
+  content: "\f578";
+}
+.icon-select option[value="fa-bottle-water"]::before {
+  content: "\e4c5";
+}
+.icon-select option[value="fa-spray-can"]::before {
+  content: "\f5bd";
+}
+.icon-select option[value="fa-box"]::before {
+  content: "\f466";
+}
+.icon-select option[value="fa-tools"]::before {
+  content: "\f7d9";
+}
+.icon-select option[value="fa-warehouse"]::before {
+  content: "\f494";
+}
+.icon-select option[value="fa-truck"]::before {
+  content: "\f0d1";
+}
+.icon-select option[value="fa-shopping-basket"]::before {
+  content: "\f291";
+}
+.icon-select option[value="fa-tag"]::before {
+  content: "\f02b";
+}
+.icon-select option[value="fa-tags"]::before {
+  content: "\f02c";
+}
+.icon-select option[value="fa-store"]::before {
+  content: "\f54e";
+}
+.icon-select option[value="fa-shopping-cart"]::before {
+  content: "\f07a";
+}

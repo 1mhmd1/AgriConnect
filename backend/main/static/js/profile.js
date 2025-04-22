@@ -9,7 +9,70 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeTagsInput();
   initializeFormSubmissions();
   initializeBackButton();
+
+  // Tab switching functionality
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  if (tabButtons.length > 0) {
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        // Find the tab content container
+        const tabContent = this.closest(".profile-tabs")?.nextElementSibling;
+        if (!tabContent) return;
+
+        // Get all tab buttons and panes within this tab content
+        const allTabButtons =
+          this.closest(".profile-tabs")?.querySelectorAll(".tab-btn");
+        const allTabPanes = tabContent.querySelectorAll(".tab-pane");
+
+        if (!allTabButtons || !allTabPanes) return;
+
+        // Remove active class from all buttons and panes
+        allTabButtons.forEach((btn) => btn.classList.remove("active"));
+        allTabPanes.forEach((pane) => pane.classList.remove("active"));
+
+        // Add active class to clicked button
+        this.classList.add("active");
+
+        // Add active class to corresponding pane
+        const tabId = this.getAttribute("data-tab");
+        const targetPane = document.getElementById(`${tabId}-tab`);
+        if (targetPane) {
+          targetPane.classList.add("active");
+        } else {
+          console.error(`Tab pane with id ${tabId}-tab not found`);
+        }
+
+        // Additionally handle special case for landowner profile section
+        if (tabId === "landowner") {
+          const landownerProfile = document.getElementById("landowner-profile");
+          if (landownerProfile) {
+            landownerProfile.style.display = "block";
+          }
+        } else {
+          const landownerProfile = document.getElementById("landowner-profile");
+          if (landownerProfile) {
+            landownerProfile.style.display = "none";
+          }
+        }
+      });
+    });
+  }
 });
+
+// Notification function
+function showNotification(message, type = "success") {
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+
+  // Add to DOM
+  document.body.appendChild(notification);
+
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
+}
 
 // Menu Navigation (unchanged)
 function initializeMenuNavigation() {
@@ -405,4 +468,318 @@ function getCookie(name) {
     }
   }
   return cookieValue;
+}
+
+function initializeFormSubmissions() {
+  const forms = document.querySelectorAll("form");
+
+  forms.forEach((form) => {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Get form data
+      const formData = new FormData(this);
+
+      // Add CSRF token if not already present
+      if (!formData.has("csrfmiddlewaretoken")) {
+        const csrfToken = document.querySelector(
+          "[name=csrfmiddlewaretoken]"
+        ).value;
+        formData.append("csrfmiddlewaretoken", csrfToken);
+      }
+
+      // Send form data to server
+      fetch(window.location.href, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+      })
+        .then((response) => {
+          // Log response status and headers for debugging
+          console.log("Response status:", response.status);
+          console.log(
+            "Response headers:",
+            Object.fromEntries(response.headers.entries())
+          );
+
+          // Check if the response is a redirect
+          if (response.redirected) {
+            window.location.href = response.url;
+            return;
+          }
+
+          // Get the content type of the response
+          const contentType = response.headers.get("content-type");
+
+          // Handle JSON response
+          if (contentType && contentType.includes("application/json")) {
+            return response.json();
+          }
+
+          // Handle HTML response (likely an error page)
+          return response.text().then((html) => {
+            // Log the HTML response for debugging
+            console.log(
+              "Received HTML response:",
+              html.substring(0, 500) + "..."
+            );
+
+            // Check for specific error messages in the HTML
+            if (html.includes("CSRF verification failed")) {
+              throw new Error(
+                "Session expired. Please refresh the page and try again."
+              );
+            } else if (html.includes("403 Forbidden")) {
+              throw new Error(
+                "You don't have permission to perform this action."
+              );
+            } else if (html.includes("400 Bad Request")) {
+              throw new Error(
+                "Invalid form data. Please check your input and try again."
+              );
+            } else if (html.includes("500 Internal Server Error")) {
+              throw new Error("Server error. Please try again later.");
+            } else {
+              throw new Error(
+                "Server returned an unexpected response. Please try again."
+              );
+            }
+          });
+        })
+        .then((data) => {
+          if (data && data.status === "success") {
+            showNotification(data.message || "Changes saved successfully");
+
+            // If this is a landowner form submission, reload the page to show the new land listing
+            if (this.id === "landownerProfileForm") {
+              window.location.reload();
+            } else {
+              // Update form fields with saved values if applicable
+              if (data.phone) {
+                document.getElementById("phone").value = data.phone;
+              }
+              if (data.location) {
+                document.getElementById("location").value = data.location;
+              }
+            }
+          } else if (data && data.error) {
+            showNotification(data.error, "error");
+          } else {
+            showNotification("Changes saved successfully");
+          }
+        })
+        .catch((error) => {
+          console.error("Form submission error:", error);
+
+          // Check if the error has a response property
+          if (error.response) {
+            // Handle response errors
+            const status = error.response.status;
+            let errorMessage = "An error occurred while saving changes.";
+
+            switch (status) {
+              case 400:
+                errorMessage =
+                  "Invalid form data. Please check your input and try again.";
+                break;
+              case 403:
+                errorMessage =
+                  "You don't have permission to perform this action.";
+                break;
+              case 404:
+                errorMessage = "The requested resource was not found.";
+                break;
+              case 500:
+                errorMessage = "Server error. Please try again later.";
+                break;
+              default:
+                errorMessage = `Error (${status}): Please try again.`;
+            }
+
+            showNotification(errorMessage, "error");
+          } else {
+            // Handle other types of errors
+            showNotification(
+              error.message || "Error saving changes. Please try again.",
+              "error"
+            );
+          }
+        });
+    });
+  });
+}
+
+function initializeBackButton() {
+  const backButton = document.getElementById("backButton");
+  if (backButton) {
+    backButton.addEventListener("click", function () {
+      window.history.back();
+    });
+  }
+}
+
+// Helper function to handle form submission
+async function submitForm(form, formType) {
+  try {
+    const formData = new FormData(form);
+    formData.append("form_type", formType);
+
+    // Add CSRF token
+    const csrfToken = getCookie("csrftoken");
+    if (!csrfToken) {
+      throw new Error("CSRF token not found");
+    }
+
+    // Get the form's action URL or use the current URL
+    const actionUrl = form.getAttribute("action") || window.location.href;
+
+    const response = await fetch(actionUrl, {
+      method: "POST",
+      body: formData,
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": csrfToken,
+      },
+    });
+
+    // Log response details for debugging
+    console.log("Response status:", response.status);
+    console.log(
+      "Response headers:",
+      Object.fromEntries(response.headers.entries())
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Server error occurred");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Form submission error:", error);
+    throw error;
+  }
+}
+
+// Handle base profile form submission
+const baseProfileForm = document.getElementById("baseProfileForm");
+if (baseProfileForm) {
+  baseProfileForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    try {
+      const data = await submitForm(this, "base_profile");
+      if (data.status === "success") {
+        showNotification(data.message);
+        if (data.phone) {
+          document.querySelector(
+            ".profile-info p:nth-child(2)"
+          ).textContent = `Phone: ${data.phone}`;
+        }
+        if (data.location) {
+          document.querySelector(
+            ".profile-info p:nth-child(3)"
+          ).textContent = `Location: ${data.location}`;
+        }
+      } else {
+        showNotification(data.message, "error");
+      }
+    } catch (error) {
+      showNotification(
+        error.message || "An error occurred while updating your profile",
+        "error"
+      );
+    }
+  });
+}
+
+// Handle farmer profile form submission
+const farmerProfileForm = document.getElementById("farmerProfileForm");
+if (farmerProfileForm) {
+  farmerProfileForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    try {
+      const data = await submitForm(this, "farmer");
+      if (data.status === "success") {
+        showNotification(data.message);
+      } else {
+        showNotification(data.message, "error");
+      }
+    } catch (error) {
+      showNotification(
+        error.message || "An error occurred while updating your farmer profile",
+        "error"
+      );
+    }
+  });
+}
+
+// Handle landowner profile form submission
+const landownerProfileForm = document.getElementById("landownerProfileForm");
+if (landownerProfileForm) {
+  landownerProfileForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    try {
+      const data = await submitForm(this, "landowner_profile");
+      if (data.status === "success") {
+        showNotification(data.message);
+        window.location.reload();
+      } else {
+        showNotification(data.message, "error");
+      }
+    } catch (error) {
+      showNotification(
+        error.message || "An error occurred while creating your land listing",
+        "error"
+      );
+    }
+  });
+}
+
+// Handle security form submission
+const securityForm = document.getElementById("securityForm");
+if (securityForm) {
+  securityForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    try {
+      const data = await submitForm(this, "security");
+      if (data.status === "success") {
+        showNotification(data.message);
+        this.reset();
+      } else {
+        showNotification(data.message, "error");
+      }
+    } catch (error) {
+      showNotification(
+        error.message || "An error occurred while updating your password",
+        "error"
+      );
+    }
+  });
+}
+
+// Handle profile picture upload
+const profilePictureForm = document.getElementById("profilePictureForm");
+if (profilePictureForm) {
+  profilePictureForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    try {
+      const data = await submitForm(this, "profile_picture");
+      if (data.status === "success") {
+        showNotification(data.message);
+        window.location.reload();
+      } else {
+        showNotification(data.message, "error");
+      }
+    } catch (error) {
+      showNotification(
+        error.message ||
+          "An error occurred while updating your profile picture",
+        "error"
+      );
+    }
+  });
 }

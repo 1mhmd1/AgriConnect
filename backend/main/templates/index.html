@@ -39,8 +39,8 @@ Home{% endblock %} {% block extra_css %}
   }
 
   .welcome-text {
-    text-transform: uppercase;
-    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: bold;
     margin-bottom: 1rem;
     letter-spacing: 1px;
     opacity: 0;
@@ -52,78 +52,61 @@ Home{% endblock %} {% block extra_css %}
     font-weight: bold;
     color: white;
     margin: 1rem 0;
-    text-transform: uppercase;
     opacity: 0;
     animation: fadeInUp 0.8s ease forwards 0.2s;
   }
 
   .tagline {
-    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-size: clamp(1rem, 2.2vw, 1.5rem);
     margin-bottom: 2rem;
-    max-width: 600px;
+    max-width: 800px;
     opacity: 0;
     animation: fadeInUp 0.8s ease forwards 0.4s;
   }
 
   .cta-buttons {
     display: flex;
-    gap: clamp(0.5rem, 2vw, 1rem);
+    gap: clamp(1rem, 2vw, 1.5rem);
     opacity: 0;
     animation: fadeInUp 0.8s ease forwards 0.6s;
   }
 
   .cta-button {
-    padding: clamp(0.6rem, 2vw, 0.8rem) clamp(1.5rem, 3vw, 2rem);
-    font-size: clamp(0.9rem, 2vw, 1.1rem);
-    border-radius: 5px;
+    padding: clamp(0.8rem, 2vw, 1rem) clamp(2rem, 3vw, 2.5rem);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    border-radius: 30px;
     text-decoration: none;
     font-weight: 500;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    transition: all 0.4s ease;
+    transition: all 0.3s ease;
+    text-transform: capitalize;
   }
 
-  .signup-btn,
+  .signup-btn {
+    background-color: white;
+    color: #333;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+
   .login-btn {
-    background-color: #f4b840;
+    background-color: transparent;
     color: white;
-    border: 2px solid #f4b840;
+    border: 2px solid white;
+    transition: all 0.3s ease;
   }
 
-  .signup-btn::before,
-  .login-btn::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
-    z-index: -1;
+  .signup-btn:hover {
+    background-color: #f8f8f8;
+    transform: translateY(-2px);
+    border-color: #2ecc71;
+    color: #2ecc71;
   }
 
-  .signup-btn:hover::before,
-  .login-btn:hover::before {
-    width: 200%;
-    height: 200%;
-  }
-
-  .signup-btn:hover,
   .login-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(244, 184, 64, 0.4);
-    background-color: #f5c265;
-    border-color: #f5c265;
-  }
-
-  .signup-btn:active,
-  .login-btn:active {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(244, 184, 64, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: #2ecc71;
+    color: #2ecc71;
   }
 
   @keyframes fadeInUp {
@@ -141,7 +124,6 @@ Home{% endblock %} {% block extra_css %}
   @media screen and (max-width: 768px) {
     .hero-section {
       padding: 1.5rem;
-      text-align: center;
     }
 
     .section-content {
@@ -149,18 +131,18 @@ Home{% endblock %} {% block extra_css %}
     }
 
     .cta-buttons {
-      justify-content: center;
       flex-wrap: wrap;
     }
 
     .cta-button {
-      min-width: 140px;
+      min-width: 160px;
     }
   }
 
   @media screen and (max-width: 480px) {
     .hero-section {
       padding: 1rem;
+      text-align: center;
     }
 
     .cta-buttons {
@@ -178,14 +160,14 @@ Home{% endblock %} {% block extra_css %}
 <main>
   <section class="hero-section">
     <div class="section-content">
-      <h2 class="welcome-text">WELCOME TO AGRICULTURAL SYSTEM.</h2>
-      <h1 class="brand-name">AGRI-<br />CONNECT</h1>
+      <h1 class="welcome-text">WELCOME TO</h1>
+      <h1 class="brand-name">AGRI-CONNECT</h1>
       <p class="tagline">
-        Bridging Farmers, Land, and Innovation for a Sustainable Future!
+        Connecting farmers and landowners for agricultural success
       </p>
       <div class="cta-buttons">
-        <a href="{% url 'signup' %}" class="cta-button signup-btn">SignUp</a>
-        <a href="{% url 'login' %}" class="cta-button login-btn">Login</a>
+        <a href="{% url 'signup' %}" class="cta-button signup-btn">Sign-Up</a>
+        <a href="{% url 'login' %}" class="cta-button login-btn">Log-In</a>
       </div>
     </div>
   </section>

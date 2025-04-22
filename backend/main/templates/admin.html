@@ -199,6 +199,36 @@
   </div>
 </div>
 
+<!-- Add/Edit Category Modal -->
+<div class="modal" id="categoryModal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3>Add New Category</h3>
+    <form id="categoryForm">
+      <div class="form-group">
+        <label for="categoryName">Category Name</label>
+        <input type="text" id="categoryName" name="name" required />
+      </div>
+      <div class="form-group">
+        <label for="categoryIcon">Icon</label>
+        <div class="icon-selector">
+          <select id="categoryIcon" name="icon" required>
+            <option value="">Select an Icon</option>
+          </select>
+          <div class="icon-preview">
+            <i id="iconPreview" class="fas"></i>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="categoryDescription">Description</label>
+        <textarea id="categoryDescription" name="description"></textarea>
+      </div>
+      <button type="submit" class="save-btn">Save Category</button>
+    </form>
+  </div>
+</div>
+
 <!-- Add/Edit Product Modal -->
 <div class="modal" id="productModal">
   <div class="modal-content">
@@ -241,5 +271,6 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/category-icons.js' %}"></script>
 <script src="{% static 'js/admin.js' %}"></script>
 {% endblock %} 

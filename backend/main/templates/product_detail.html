@@ -233,13 +233,13 @@
       </div>
 
       <div class="action-buttons">
-        <button class="add-to-cart" {% if product.stock == 0 %}disabled{% endif %}>
+        <button class="add-to-cart" {% if product.stock == 0 %}disabled{% endif %} data-product-id="{{ product.id }}">
           <i class="fas fa-shopping-cart"></i>
           Add to Cart
         </button>
-        <button class="add-to-wishlist">
+        <button class="add-to-wishlist" data-product-id="{{ product.id }}">
           <i class="fas fa-heart"></i>
-          Add to Wishlist
+          <span>Add to Wishlist</span>
         </button>
       </div>
     </div>
@@ -290,68 +290,32 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Wishlist functionality
-  const wishlistBtn = document.querySelector('.add-to-wishlist');
-  const productId = '{{ product.id }}';
-  const productData = {
-    id: productId,
-    name: '{{ product.name }}',
-    price: '{{ product.sale_price|default:product.price }}',
-    image: '{{ product.image.url }}',
-    rating: {{ product.rating }}
-  };
+<script src="{% static 'js/product_detail.js' %}"></script>
+{% endblock %}
 
-  // Check if product is in wishlist
-  let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-  if (wishlist.some(item => item.id === productId)) {
-    wishlistBtn.classList.add('active');
-    wishlistBtn.querySelector('i').style.color = '#ff4444';
+<style>
+.notification {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
   }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
 
-  wishlistBtn.addEventListener('click', function() {
-    if (wishlistBtn.classList.contains('active')) {
-      wishlist = wishlist.filter(item => item.id !== productId);
-      wishlistBtn.classList.remove('active');
-      wishlistBtn.querySelector('i').style.color = '';
-    } else {
-      wishlist.push(productData);
-      wishlistBtn.classList.add('active');
-      wishlistBtn.querySelector('i').style.color = '#ff4444';
-    }
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-  });
+.add-to-wishlist.active {
+  background-color: #fff5f5;
+  border-color: #ff4444;
+  color: #ff4444;
+}
 
-  // Initialize related products wishlist buttons
-  document.querySelectorAll('.related-grid .wishlist-btn').forEach(button => {
-    const productCard = button.closest('.product-card');
-    const relatedProductData = {
-      id: productCard.dataset.id,
-      name: productCard.querySelector('h3').textContent,
-      price: productCard.querySelector('.price').textContent,
-      image: productCard.querySelector('img').src,
-      rating: productCard.querySelector('.rating').innerHTML
-    };
-
-    if (wishlist.some(item => item.id === relatedProductData.id)) {
-      button.classList.add('active');
-      button.querySelector('i').style.color = '#ff4444';
-    }
-
-    button.addEventListener('click', function() {
-      if (button.classList.contains('active')) {
-        wishlist = wishlist.filter(item => item.id !== relatedProductData.id);
-        button.classList.remove('active');
-        button.querySelector('i').style.color = '';
-      } else {
-        wishlist.push(relatedProductData);
-        button.classList.add('active');
-        button.querySelector('i').style.color = '#ff4444';
-      }
-      localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    });
-  });
-});
-</script>
-{% endblock %} 
+.add-to-wishlist.active i {
+  color: #ff4444;
+}
+</style> 

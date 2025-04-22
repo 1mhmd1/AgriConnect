@@ -31,23 +31,32 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function getProductData(card) {
-    const img = card.querySelector("img");
-    const name = card.querySelector("h3").textContent;
-    const price = card.querySelector(".price").textContent;
-    const rating = card.querySelector(".rating").innerHTML;
+    if (!card) {
+      console.error("Product card element not found");
+      return null;
+    }
 
-    // Convert relative URL to absolute URL if needed
-    let imageUrl = img.src;
-    if (imageUrl.startsWith("/")) {
-      imageUrl = window.location.origin + imageUrl;
+    // Get the product ID from the data attribute
+    const productId = card.dataset.productId;
+    if (!productId) {
+      console.error("Product ID not found in data attribute");
+      return null;
+    }
+
+    const img = card.querySelector("img");
+    const nameElement = card.querySelector("h3");
+    const priceElement = card.querySelector(".price");
+
+    if (!img || !nameElement || !priceElement) {
+      console.error("Missing product elements in card:", card);
+      return null;
     }
 
     return {
-      id: name.toLowerCase().replace(/\s+/g, "-"),
-      name: name,
-      price: price,
-      image: imageUrl,
-      rating: rating,
+      id: productId, // Use the actual product ID from data attribute
+      name: nameElement.textContent,
+      price: priceElement.textContent,
+      image: img.src,
     };
   }
 
@@ -57,7 +66,16 @@ document.addEventListener("DOMContentLoaded", function () {
   // Add click handlers to all wishlist buttons if they exist
   document.querySelectorAll(".wishlist-btn").forEach((button) => {
     const productCard = button.closest(".product-card");
+    if (!productCard) {
+      console.error("Product card not found for wishlist button");
+      return;
+    }
+
     const productData = getProductData(productCard);
+    if (!productData) {
+      console.error("Could not get product data");
+      return;
+    }
 
     // Set initial state
     const isInWishlist = wishlist.some((item) => item.id === productData.id);
