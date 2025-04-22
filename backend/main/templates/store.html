@@ -1,0 +1,670 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Agri-Store -
+Agri-Connect{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+/>
+<link rel="stylesheet" href="{% static 'css/store.css' %}" />
+<style>
+  /* Add modal styles here if not in external CSS */
+  .category-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background-color: white;
+    margin: 2% auto;
+    padding: 2rem;
+    width: 90%;
+    max-width: 1200px;
+    border-radius: 10px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .close-modal {
+    position: absolute;
+    right: 1.5rem;
+    top: 1rem;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #333;
+  }
+
+  .close-modal:hover {
+    color: #00a651;
+  }
+
+  .modal-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .modal-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .modal-product-card,
+  .category-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .modal-product-card:hover,
+  .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: #00a651;
+  }
+
+  .category-card {
+    cursor: pointer;
+  }
+
+  .category-card i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #00a651;
+  }
+
+  .category-card h3 {
+    color: #333;
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+  }
+
+  .category-card p {
+    color: #666;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .modal-title {
+    color: #333;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .modal-title:after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #00a651;
+    margin: 0.5rem auto;
+  }
+
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 95%;
+      padding: 1.5rem;
+      margin: 1rem auto;
+    }
+
+    .modal-categories-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .category-card {
+      padding: 1rem;
+    }
+
+    .category-card i {
+      font-size: 2rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+    }
+  }
+
+  .store-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .products-grid,
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .product-card {
+    position: relative;
+    border: 1px solid #eee;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    background-color: #f8f8f8;
+    padding: 0.5rem;
+  }
+
+  .product-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem 0;
+  }
+
+  .category-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-products-grid,
+  .modal-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+  }
+
+  @media (max-width: 1200px) {
+    .products-grid,
+    .categories-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .products-grid,
+    .categories-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-header h2 {
+    margin: 0;
+  }
+
+  .view-all-link {
+    color: #00a651;
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .view-all-link:hover {
+    color: #008c44;
+    transform: translateX(5px);
+  }
+
+  .view-all-link i {
+    font-size: 0.8em;
+  }
+
+  .product-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .wishlist-btn,
+  .cart-btn {
+    background: white;
+    border: 2px solid #eee;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wishlist-btn:hover,
+  .cart-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .wishlist-btn::before,
+  .cart-btn::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 166, 81, 0.1);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.3s ease;
+  }
+
+  .wishlist-btn:hover::before,
+  .cart-btn:hover::before {
+    transform: scale(1);
+  }
+
+  .wishlist-btn i {
+    color: #666;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    z-index: 1;
+  }
+
+  .cart-btn i {
+    color: #00a651;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    z-index: 1;
+  }
+
+  .wishlist-btn:hover i {
+    color: #ff4444;
+  }
+
+  .cart-btn:hover i {
+    color: #008c44;
+  }
+
+  .wishlist-btn.active {
+    border-color: #ff4444;
+    background: #fff5f5;
+  }
+
+  .wishlist-btn.active i {
+    color: #ff4444;
+  }
+
+  .cart-btn.active {
+    border-color: #00a651;
+    background: #f0fff7;
+  }
+
+  .notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #00a651;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .product-details-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .product-details-image {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-details-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: contain;
+    background: #f8f9fa;
+    padding: 2rem;
+  }
+
+  .product-details-info {
+    padding: 1rem;
+  }
+
+  .product-details-info h2 {
+    font-size: 2rem;
+    color: #333;
+    margin: 1rem 0;
+  }
+
+  .category-badge {
+    display: inline-block;
+    background: #00a651;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+  }
+
+  .price-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .current-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00a651;
+  }
+
+  .original-price {
+    font-size: 1.5rem;
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  .sale-badge {
+    background: #ff4444;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+
+  .stock-status {
+    color: #666;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .stock-status i {
+    font-size: 1.2rem;
+  }
+
+  .description {
+    color: #666;
+    line-height: 1.6;
+    margin: 1.5rem 0;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .add-to-cart,
+  .add-to-wishlist {
+    padding: 1rem 2rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .add-to-cart {
+    background: #00a651;
+    color: white;
+  }
+
+  .add-to-cart:hover {
+    background: #008542;
+  }
+
+  .add-to-wishlist {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+
+  .add-to-wishlist:hover {
+    background: #e9ecef;
+  }
+
+  .add-to-wishlist.active {
+    color: #ff4444;
+    border-color: #ff4444;
+  }
+
+  .rating {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .stars {
+    color: #ffa41c;
+  }
+
+  @media (max-width: 768px) {
+    .product-details-container {
+      grid-template-columns: 1fr;
+    }
+
+    .product-details-image img {
+      height: 300px;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="store-container">
+  <!-- Featured Products Section -->
+  <section class="featured-products">
+    <div class="section-header">
+      <h2>Featured Products</h2>
+      <a href="#" class="view-all-link" id="viewAllProducts">
+        View All <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="products-grid">
+      {% for product in featured_products|slice:":4" %}
+      <div
+        class="product-card"
+        data-product-id="{{ product.id }}"
+        style="cursor: pointer"
+      >
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+          <p class="price">${{ product.price }}</p>
+          <div class="product-actions">
+            <button class="wishlist-btn" data-product-id="{{ product.id }}">
+              <i class="fas fa-heart"></i>
+            </button>
+            <button class="cart-btn" data-product-id="{{ product.id }}">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="categories">
+    <div class="section-header">
+      <h2>Shop by Categories</h2>
+      <a href="#" class="view-all-link" id="viewAllCategories">
+        View All <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
+    <div class="categories-grid">
+      {% for category in categories|slice:":4" %}
+      <div class="category-card" data-category-id="{{ category.id }}">
+        <i class="fas {{ category.icon }} fa-2x"></i>
+        <h3>{{ category.name }}</h3>
+        <p>{{ category.products.count }} Products</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<!-- Category Products Modal -->
+<div class="category-modal" id="categoryModal">
+  <div class="modal-content">
+    <span class="close-modal" data-modal="categoryModal">&times;</span>
+    <h2 class="modal-title">Products in <span id="categoryName"></span></h2>
+    <div class="modal-products-grid" id="categoryProducts">
+      <!-- Products will be loaded here dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- All Products Modal -->
+<div class="category-modal" id="allProductsModal">
+  <div class="modal-content">
+    <span class="close-modal" data-modal="allProductsModal">&times;</span>
+    <h2 class="modal-title">All Products</h2>
+    <div class="modal-products-grid">
+      {% for product in featured_products %}
+      <div class="product-card">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+          <p class="price">${{ product.price }}</p>
+          <div class="product-actions">
+            <button class="wishlist-btn" data-product-id="{{ product.id }}">
+              <i class="fas fa-heart"></i>
+            </button>
+            <button class="cart-btn" data-product-id="{{ product.id }}">
+              <i class="fas fa-shopping-cart"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- All Categories Modal -->
+<div class="category-modal" id="allCategoriesModal">
+  <div class="modal-content">
+    <span class="close-modal" data-modal="allCategoriesModal">&times;</span>
+    <h2 class="modal-title">All Categories</h2>
+    <div class="modal-categories-grid">
+      {% for category in categories %}
+      <div class="category-card" data-category-id="{{ category.id }}">
+        <i class="fas {{ category.icon }} fa-2x"></i>
+        <h3>{{ category.name }}</h3>
+        <p>{{ category.products.count }} Products</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Product Details Modal -->
+<div class="category-modal" id="productDetailsModal">
+  <div class="modal-content" style="max-width: 800px">
+    <span class="close-modal" data-modal="productDetailsModal">&times;</span>
+    <div class="product-details-container">
+      <div class="product-details-image">
+        <img id="productDetailsImage" src="" alt="" />
+      </div>
+      <div class="product-details-info">
+        <span class="category-badge" id="productDetailsCategory"></span>
+        <h2 id="productDetailsName"></h2>
+
+        <div class="rating" id="productDetailsRating">
+          <div class="stars"></div>
+          <span class="rating-text"></span>
+        </div>
+
+        <div class="price-container" id="productDetailsPrice">
+          <span class="current-price"></span>
+          <span class="original-price"></span>
+          <span class="sale-badge">Sale!</span>
+        </div>
+
+        <div class="stock-status" id="productDetailsStock">
+          <i class="fas fa-check-circle"></i>
+          <span></span>
+        </div>
+
+        <div class="description" id="productDetailsDescription"></div>
+
+        <div class="action-buttons">
+          <button class="add-to-cart" id="productDetailsAddToCart">
+            <i class="fas fa-shopping-cart"></i>
+            Add to Cart
+          </button>
+          <button class="add-to-wishlist" id="productDetailsAddToWishlist">
+            <i class="fas fa-heart"></i>
+            Add to Wishlist
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Ensure static URL is available to JavaScript
+  window.STATIC_URL = "{% static '' %}";
+</script>
+<script src="{% static 'js/store.js' %}"></script>
+{% endblock %}

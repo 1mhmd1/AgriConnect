@@ -1,0 +1,217 @@
+/* General Navbar Styling */
+@import url("https://fonts.googleapis.com/css2?family=Oswald:wght@500&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+:root {
+  --white-color: #fff;
+  --font-size-s: 0.9rem;
+  --font-size-n: 0.9rem;
+  --font-size-m: 0.9rem;
+  --font-size-l: 0.9rem;
+  --font-size-xl: 0.9rem;
+  --font-size-xxl: 0.9rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --site-max-width: 1300px;
+  --border-radius-s: 8px;
+  --border-radius-m: 30px;
+  --border-radius-circle: 50%;
+}
+
+header {
+  position: fixed;
+  width: 100%;
+  z-index: 5;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Logo and Text Container */
+.logo {
+  width: 150px;
+  height: 50px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+img {
+  width: 100%;
+}
+
+/* Global styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-image: url("../images/background.png");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding-top: 70px;
+}
+
+/* Hero Section */
+.hero-section {
+  background: url("../images/background.png") no-repeat center/cover;
+  min-height: calc(100vh - 70px);
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hero-details {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.left-side-content {
+  max-width: 600px;
+}
+
+.left-side-content h1 {
+  font-size: 3.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.left-side-content p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.button {
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.Sign-Up {
+  background-color: #00a651;
+  color: white;
+}
+
+.Sign-Up:hover {
+  background-color: #008542;
+  transform: translateY(-2px);
+}
+
+.Log-In {
+  background-color: white;
+  color: #00a651;
+  border: 2px solid #00a651;
+}
+
+.Log-In:hover {
+  background-color: #f0fff7;
+  transform: translateY(-2px);
+}
+
+/* Search Container */
+.search-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.search-wrapper {
+  display: inline-flex;
+  width: 60%;
+  max-width: 600px;
+}
+
+.search-box {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #ddd;
+  border-radius: 25px 0 0 25px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.search-button {
+  padding: 12px 25px;
+  background: #00a651;
+  color: white;
+  border: none;
+  border-radius: 0 25px 25px 0;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.search-button:hover {
+  background: #008542;
+}
+
+.search-box:focus {
+  border-color: #00a651;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .left-side-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .left-side-content p {
+    font-size: 1rem;
+  }
+
+  .search-wrapper {
+    width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  .left-side-content h1 {
+    font-size: 2rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+    text-align: center;
+  }
+}

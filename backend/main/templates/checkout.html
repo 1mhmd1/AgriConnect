@@ -1,0 +1,598 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Checkout -
+Agri-Connect{% endblock %} {% block extra_css %}
+<!-- Navigation and Font Awesome styles -->
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+<link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+
+    <style>
+  /* Reset padding since we're handling it in the container */
+      body {
+    padding-top: 0 !important;
+  }
+
+  /* Main container styles */
+  .main-container {
+    padding-top: 80px; /* Space for fixed navbar */
+    min-height: calc(100vh - 80px);
+    background-color: #f8f9fa;
+  }
+
+  .checkout-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+
+  .checkout-steps {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto 3rem;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #666;
+  }
+
+  .step.active .step-circle {
+    background: #00a651;
+    border-color: #00a651;
+    color: white;
+  }
+
+  .step.completed .step-circle {
+    background: #00a651;
+    border-color: #00a651;
+    color: white;
+  }
+
+  .step-label {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .step.active .step-label {
+    color: #00a651;
+    font-weight: 600;
+  }
+
+  .progress-bar {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #ddd;
+    z-index: 0;
+  }
+
+  .progress-fill {
+        height: 100%;
+    background: #00a651;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .checkout-form {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-section {
+    display: none;
+  }
+
+  .form-section.active {
+    display: block;
+      }
+
+      .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 500;
+  }
+
+  .form-group input,
+  .form-group select {
+        width: 100%;
+    padding: 0.8rem;
+        border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: #00a651;
+    outline: none;
+  }
+
+  .payment-methods {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .payment-method {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .payment-method:hover {
+    border-color: #00a651;
+  }
+
+  .payment-method.selected {
+    border-color: #00a651;
+    background: #f0fff7;
+  }
+
+  .payment-method input[type="radio"] {
+    margin: 0;
+  }
+
+  .terms {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .terms input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+
+  .action-buttons {
+        display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+  }
+
+  .btn {
+    padding: 0.8rem 2rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-back {
+    background: white;
+    border: 1px solid #ddd;
+        color: #666;
+      }
+
+  .btn-back:hover {
+    background: #f5f5f5;
+  }
+
+  .btn-next {
+    background: #00a651;
+    border: none;
+    color: white;
+  }
+
+  .btn-next:hover {
+    background: #008542;
+  }
+
+  .order-summary {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 2rem;
+  }
+
+  .order-summary h3 {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .product-list {
+    margin-bottom: 1.5rem;
+  }
+
+  .product-item {
+        display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .product-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: 5px;
+  }
+
+  .product-info {
+    flex: 1;
+  }
+
+  .product-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .product-price {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .order-total {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: #666;
+  }
+
+  .total-row.final {
+    color: #333;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .checkout-container {
+      grid-template-columns: 1fr;
+    }
+
+    .checkout-steps {
+      padding: 0 1rem;
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+    }
+      }
+    </style>
+{% endblock %} {% block content %}
+{% csrf_token %}
+<div class="main-container">
+  <div class="checkout-container">
+    <div class="checkout-main">
+      <div class="checkout-steps">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="step active" data-step="1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Shipping</div>
+      </div>
+        <div class="step" data-step="2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Billing</div>
+      </div>
+        <div class="step" data-step="3">
+          <div class="step-circle">3</div>
+          <div class="step-label">Confirmation</div>
+        </div>
+      </div>
+
+      <div class="checkout-form">
+        <!-- Shipping Section -->
+        <div class="form-section active" id="shipping">
+          <h2>Shipping Information</h2>
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" value="{{ shipping_info.full_name|default:'' }}" required />
+      </div>
+          <div class="form-group">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" value="{{ shipping_info.address|default:'' }}" required />
+    </div>
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" value="{{ shipping_info.city|default:'' }}" required />
+    </div>
+        <div class="form-group">
+            <label for="country">Country</label>
+            <select id="country" name="country" required>
+              <option value="">Select Country</option>
+              <option value="LB" {% if shipping_info.country == 'LB' %}selected{% endif %}>Lebanon</option>
+              <!-- Add more countries as needed -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" value="{{ shipping_info.phone|default:'' }}" required />
+          </div>
+          <div class="action-buttons">
+            <button class="btn btn-back" disabled>Back</button>
+            <button class="btn btn-next" onclick="saveAndContinue(1)">Next</button>
+          </div>
+        </div>
+
+        <!-- Billing Section -->
+        <div class="form-section" id="billing">
+          <h2>Payment Method</h2>
+          <div class="payment-methods">
+            <label class="payment-method selected">
+              <input type="radio" name="payment" value="card" checked />
+              <i class="fas fa-credit-card"></i>
+              Credit Card
+            </label>
+            <label class="payment-method">
+              <input type="radio" name="payment" value="paypal" />
+              <i class="fab fa-paypal"></i>
+              PayPal
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label for="cardName">Name on Card</label>
+            <input type="text" id="cardName" name="cardName" value="{{ payment_info.card_name|default:'' }}" required />
+        </div>
+        <div class="form-group">
+            <label for="cardNumber">Card Number</label>
+            <input type="text" id="cardNumber" name="cardNumber" required />
+            {% if payment_info %}
+            <small class="text-muted">Previous card ending in: {{ payment_info.card_number }}</small>
+            {% endif %}
+          </div>
+          <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+            <div>
+              <label for="expiry">Expiration Date</label>
+              <input type="text" id="expiry" name="expiry" placeholder="MM/YY" value="{{ payment_info.expiry_date|default:'' }}" required />
+            </div>
+            <div>
+              <label for="cvv">CVV Code</label>
+              <input type="text" id="cvv" name="cvv" required />
+            </div>
+          </div>
+
+          <div class="terms">
+            <input type="checkbox" id="terms" required />
+            <label for="terms">By Clicking "Confirm Payment" I agree to the companies terms of service</label>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn btn-back" onclick="prevStep(2)">Back</button>
+            <button class="btn btn-next" onclick="saveAndContinue(2)">Confirm Payment: ${{ total }}</button>
+          </div>
+        </div>
+
+        <!-- Confirmation Section -->
+        <div class="form-section" id="confirmation">
+          <div style="text-align: center; padding: 2rem">
+            <i
+              class="fas fa-check-circle"
+              style="font-size: 4rem; color: #00a651; margin-bottom: 1rem"
+            ></i>
+            <h2>Order Confirmed!</h2>
+            <p>Thank you for your purchase. Your order has been received.</p>
+            <p>Order number: #{{ order_number }}</p>
+            <div style="margin-top: 2rem">
+              <a href="{% url 'store' %}" class="btn btn-next"
+                >Continue Shopping</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-summary">
+      <h3>Order Summary</h3>
+      <div class="product-list">
+        {% for item in cart_items %}
+        <div class="product-item">
+          <img
+            src="{{ item.product.image.url }}"
+            alt="{{ item.product.name }}"
+          />
+          <div class="product-info">
+            <div class="product-name">{{ item.product.name }}</div>
+            <div class="product-price">
+              ${{ item.product.price }} x {{ item.quantity }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        </div>
+      <div class="order-total">
+        <div class="total-row">
+          <span>Subtotal</span>
+          <span>${{ subtotal }}</span>
+        </div>
+        <div class="total-row">
+          <span>Shipping</span>
+          <span>$5.00</span>
+        </div>
+        <div class="total-row">
+          <span>Tax</span>
+          <span>${{ tax }}</span>
+        </div>
+        <div class="total-row final">
+          <span>Total</span>
+          <span>${{ total }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+      </div>
+{% endblock %} {% block extra_js %}
+<!-- Navigation JavaScript -->
+<script src="{% static 'js/nav.js' %}"></script>
+<script>
+  function nextStep(currentStep) {
+    const currentSection = document.querySelector(
+      `.form-section[id="${currentStep === 1 ? "shipping" : "billing"}"]`
+    );
+    const nextSection = document.querySelector(
+      `.form-section[id="${currentStep === 1 ? "billing" : "confirmation"}"]`
+    );
+    const currentStepIndicator = document.querySelector(
+      `.step[data-step="${currentStep}"]`
+    );
+    const nextStepIndicator = document.querySelector(
+      `.step[data-step="${currentStep + 1}"]`
+    );
+    const progressFill = document.getElementById("progressFill");
+
+    currentSection.classList.remove("active");
+    nextSection.classList.add("active");
+    currentStepIndicator.classList.remove("active");
+    currentStepIndicator.classList.add("completed");
+    nextStepIndicator.classList.add("active");
+
+    progressFill.style.width = `${currentStep * 50}%`;
+  }
+
+  function prevStep(currentStep) {
+    const currentSection = document.querySelector(
+      `.form-section[id="${currentStep === 2 ? "billing" : "confirmation"}"]`
+    );
+    const prevSection = document.querySelector(
+      `.form-section[id="${currentStep === 2 ? "shipping" : "billing"}"]`
+    );
+    const currentStepIndicator = document.querySelector(
+      `.step[data-step="${currentStep}"]`
+    );
+    const prevStepIndicator = document.querySelector(
+      `.step[data-step="${currentStep - 1}"]`
+    );
+    const progressFill = document.getElementById("progressFill");
+
+    currentSection.classList.remove("active");
+    prevSection.classList.add("active");
+    currentStepIndicator.classList.remove("active");
+    prevStepIndicator.classList.remove("completed");
+    prevStepIndicator.classList.add("active");
+
+    progressFill.style.width = `${(currentStep - 2) * 50}%`;
+  }
+
+  // Payment method selection
+  document.querySelectorAll(".payment-method").forEach((method) => {
+    method.addEventListener("click", function () {
+      document
+        .querySelectorAll(".payment-method")
+        .forEach((m) => m.classList.remove("selected"));
+      this.classList.add("selected");
+    });
+  });
+
+  // Get CSRF token
+  function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+  }
+
+  async function saveAndContinue(step) {
+    if (step === 1) {
+      // Save shipping information
+      const shippingData = {
+        action: 'save_shipping',
+        fullName: document.getElementById('fullName').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        country: document.getElementById('country').value,
+        phone: document.getElementById('phone').value
+      };
+
+      try {
+        const response = await fetch('/checkout/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+          },
+          body: JSON.stringify(shippingData)
+        });
+
+        if (response.ok) {
+          nextStep(1);
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Error saving shipping information');
+        }
+      } catch (error) {
+        console.error('Error saving shipping info:', error);
+        alert('Error saving shipping information. Please try again.');
+      }
+    } else if (step === 2) {
+      // Save payment information
+      const paymentData = {
+        action: 'save_payment',
+        cardName: document.getElementById('cardName').value,
+        cardNumber: document.getElementById('cardNumber').value,
+        expiry: document.getElementById('expiry').value
+      };
+
+      try {
+        const response = await fetch('/checkout/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+          },
+          body: JSON.stringify(paymentData)
+        });
+
+        if (response.ok) {
+          nextStep(2);
+        } else {
+          const error = await response.json();
+          alert(error.message || 'Error saving payment information');
+        }
+      } catch (error) {
+        console.error('Error saving payment info:', error);
+        alert('Error saving payment information. Please try again.');
+      }
+    }
+  }
+</script>
+{% endblock %}
