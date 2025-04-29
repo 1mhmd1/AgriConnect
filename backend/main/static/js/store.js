@@ -1,12 +1,367 @@
+// Function to generate rating stars - defined in global scope
+function generateRatingStars(rating) {
+  let stars = "";
+  const fullStars = Math.floor(rating || 4);
+  const hasHalfStar = rating % 1 !== 0;
+
+  for (let i = 0; i < fullStars; i++) {
+    stars += '<i class="fas fa-star"></i>';
+  }
+  if (hasHalfStar) {
+    stars += '<i class="fas fa-star-half-alt"></i>';
+  }
+  const remainingStars = 5 - Math.ceil(rating || 4);
+  for (let i = 0; i < remainingStars; i++) {
+    stars += '<i class="far fa-star"></i>';
+  }
+  return stars;
+}
+
+// Helper function to show notification - also defined globally
+function showNotification(message, type = "success") {
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
+}
+
+// Function to show product details - moved to global scope
+async function showProductDetails(productId) {
+  if (!productId) {
+    console.error("Product ID is required");
+    showNotification("Product ID is missing", "error");
+    return;
+  }
+
+  console.log("Fetching details for product ID:", productId);
+
+  // Check if this is a generated ID (not a real product in the database)
+  if (productId.toString().startsWith("generated-")) {
+    // For generated IDs, show a simplified product detail with available info
+    const productCard = document.querySelector(
+      `.product-card[data-product-id="${productId}"]`
+    );
+
+    if (!productCard) {
+      console.error(`Product card with generated ID ${productId} not found`);
+      showNotification("Product details not available", "error");
+      return;
+    }
+
+    // Create a simplified product object from the card
+    const productName =
+      productCard.querySelector("h3")?.textContent || "Product";
+    const price = productCard.querySelector(".price")?.textContent || "$0.00";
+    const image = productCard.querySelector("img")?.src || "";
+    const rating = productCard.querySelector(".rating")?.dataset.rating || "4";
+
+    const modal = document.getElementById("productDetailsModal");
+    if (!modal) {
+      console.error("Product details modal not found");
+      return;
+    }
+
+    // Populate modal with data from the card
+    const productImage = document.getElementById("productDetailsImage");
+    const productCategory = document.getElementById("productDetailsCategory");
+    const productName_el = document.getElementById("productDetailsName");
+    const productDescription = document.getElementById(
+      "productDetailsDescription"
+    );
+
+    if (productImage) productImage.src = image;
+    if (productCategory) productCategory.textContent = "Uncategorized";
+    if (productName_el) productName_el.textContent = productName;
+    if (productDescription)
+      productDescription.textContent =
+        "No description available for this product.";
+
+    // Set rating
+    const ratingContainer = document.getElementById("productDetailsRating");
+    if (ratingContainer) {
+      const starsContainer = ratingContainer.querySelector(".stars");
+      const ratingText = ratingContainer.querySelector(".rating-text");
+      if (starsContainer && ratingText) {
+        starsContainer.innerHTML = generateRatingStars(parseFloat(rating));
+        ratingText.textContent = `${rating} out of 5`;
+      }
+    }
+
+    // Set price
+    const priceContainer = document.getElementById("productDetailsPrice");
+    if (priceContainer) {
+      const currentPrice = priceContainer.querySelector(".current-price");
+      const originalPrice = priceContainer.querySelector(".original-price");
+      const saleBadge = priceContainer.querySelector(".sale-badge");
+
+      if (currentPrice && originalPrice && saleBadge) {
+        currentPrice.textContent = price;
+        originalPrice.textContent = "";
+        saleBadge.style.display = "none";
+      }
+    }
+
+    // Set stock status
+    const stockStatus = document.getElementById("productDetailsStock");
+    if (stockStatus) {
+      const stockIcon = stockStatus.querySelector("i");
+      const stockText = stockStatus.querySelector("span");
+
+      if (stockIcon && stockText) {
+        stockIcon.className = "fas fa-check-circle";
+        stockIcon.style.color = "#00a651";
+        stockText.textContent = "In Stock";
+      }
+    }
+
+    // Set up action buttons
+    const addToCartBtn = document.getElementById("productDetailsAddToCart");
+    const addToWishlistBtn = document.getElementById(
+      "productDetailsAddToWishlist"
+    );
+
+    if (addToCartBtn && addToWishlistBtn) {
+      addToCartBtn.disabled = false;
+      addToCartBtn.dataset.productId = productId;
+      addToWishlistBtn.dataset.productId = productId;
+
+      // Initialize wishlist button state
+      const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      const isInWishlist = wishlist.some((item) => item.id === productId);
+      updateWishlistButtonState(addToWishlistBtn, isInWishlist);
+
+      // Add wishlist click handler
+      addToWishlistBtn.onclick = function (e) {
+        e.preventDefault();
+        const productData = {
+          id: productId,
+          name: productName,
+          price: price,
+          image: image,
+          category: "Uncategorized",
+        };
+        toggleWishlistItem(productData, addToWishlistBtn);
+      };
+
+      // Add cart click handler for generated products
+      addToCartBtn.onclick = function (e) {
+        e.preventDefault();
+
+        // Since this is a generated product ID not in the database,
+        // we can't use the API. Instead, show a notification
+        showNotification(
+          "This is a demo product and cannot be added to cart",
+          "error"
+        );
+      };
+    }
+
+    // Show modal
+    modal.style.display = "block";
+    return;
+  }
+
+  // Normal API fetch for real product IDs
+  try {
+    const response = await fetch(`/api/products/${productId}/`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.error(`Product with ID ${productId} not found`);
+        showNotification(`Product with ID ${productId} not found`, "error");
+      } else {
+        console.error(`Failed to fetch product details: ${response.status}`);
+        showNotification("Failed to load product details", "error");
+      }
+      throw new Error(`Failed to fetch product details: ${response.status}`);
+    }
+
+    const product = await response.json();
+    const modal = document.getElementById("productDetailsModal");
+
+    if (!modal) {
+      console.error("Product details modal not found");
+      return;
+    }
+
+    // Populate modal with product data
+    const productImage = document.getElementById("productDetailsImage");
+    const productCategory = document.getElementById("productDetailsCategory");
+    const productName = document.getElementById("productDetailsName");
+    const productDescription = document.getElementById(
+      "productDetailsDescription"
+    );
+
+    if (
+      !productImage ||
+      !productCategory ||
+      !productName ||
+      !productDescription
+    ) {
+      console.error("Required modal elements not found");
+      return;
+    }
+
+    productImage.src = product.image;
+    productCategory.textContent = product.category.name;
+    productName.textContent = product.name;
+    productDescription.textContent = product.description;
+
+    // Set rating
+    const ratingContainer = document.getElementById("productDetailsRating");
+    if (ratingContainer) {
+      const starsContainer = ratingContainer.querySelector(".stars");
+      const ratingText = ratingContainer.querySelector(".rating-text");
+      if (starsContainer && ratingText) {
+        starsContainer.innerHTML = generateRatingStars(product.rating);
+        ratingText.textContent = `${product.rating} out of 5`;
+      }
+    }
+
+    // Set price
+    const priceContainer = document.getElementById("productDetailsPrice");
+    if (priceContainer) {
+      const currentPrice = priceContainer.querySelector(".current-price");
+      const originalPrice = priceContainer.querySelector(".original-price");
+      const saleBadge = priceContainer.querySelector(".sale-badge");
+
+      if (currentPrice && originalPrice && saleBadge) {
+        if (product.is_on_sale) {
+          currentPrice.textContent = `$${product.sale_price}`;
+          originalPrice.textContent = `$${product.price}`;
+          saleBadge.style.display = "inline-block";
+        } else {
+          currentPrice.textContent = `$${product.price}`;
+          originalPrice.textContent = "";
+          saleBadge.style.display = "none";
+        }
+      }
+    }
+
+    // Set stock status
+    const stockStatus = document.getElementById("productDetailsStock");
+    if (stockStatus) {
+      const stockIcon = stockStatus.querySelector("i");
+      const stockText = stockStatus.querySelector("span");
+
+      if (stockIcon && stockText) {
+        if (product.stock > 0) {
+          stockIcon.className = "fas fa-check-circle";
+          stockIcon.style.color = "#00a651";
+          stockText.textContent = `In Stock (${product.stock} available)`;
+        } else {
+          stockIcon.className = "fas fa-times-circle";
+          stockIcon.style.color = "#ff4444";
+          stockText.textContent = "Out of Stock";
+        }
+      }
+    }
+
+    // Set up action buttons
+    const addToCartBtn = document.getElementById("productDetailsAddToCart");
+    const addToWishlistBtn = document.getElementById(
+      "productDetailsAddToWishlist"
+    );
+
+    if (addToCartBtn && addToWishlistBtn) {
+      addToCartBtn.disabled = product.stock === 0;
+      addToCartBtn.dataset.productId = productId;
+      addToWishlistBtn.dataset.productId = productId;
+
+      // Initialize wishlist button state
+      const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      const isInWishlist = wishlist.some((item) => item.id === productId);
+      updateWishlistButtonState(addToWishlistBtn, isInWishlist);
+
+      // Add wishlist click handler
+      addToWishlistBtn.onclick = function (e) {
+        e.preventDefault();
+        const productData = {
+          id: productId,
+          name: product.name,
+          price: product.is_on_sale ? product.sale_price : product.price,
+          image: product.image,
+          category: product.category.name,
+        };
+        toggleWishlistItem(productData, addToWishlistBtn);
+      };
+
+      // Add cart click handler
+      addToCartBtn.onclick = async function (e) {
+        e.preventDefault();
+        if (addToCartBtn.disabled) return;
+
+        try {
+          const response = await fetch("/cart/add/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCookie("csrftoken"),
+            },
+            body: JSON.stringify({
+              product_id: productId,
+              quantity: 1,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Server response:", errorText);
+            throw new Error("Failed to add item to cart");
+          }
+
+          const data = await response.json();
+          showNotification(data.message || "Product added to cart");
+        } catch (error) {
+          console.error("Error adding to cart:", error);
+          showNotification("Failed to add product to cart", "error");
+        }
+      };
+    }
+
+    // Show modal
+    modal.style.display = "block";
+  } catch (error) {
+    console.error("Error loading product details:", error);
+    showNotification("Failed to load product details", "error");
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize action buttons for all products
   initializeProductActions();
 
+  // Set data-rating attributes on product ratings for filter functionality
+  document
+    .querySelectorAll(".product-card .rating")
+    .forEach((ratingElement) => {
+      // Try to extract rating from stars
+      const fullStars = ratingElement.querySelectorAll(".fa-star").length;
+      const halfStars =
+        ratingElement.querySelectorAll(".fa-star-half-alt").length;
+      const rating = fullStars + halfStars * 0.5;
+
+      if (rating > 0) {
+        ratingElement.setAttribute("data-rating", rating);
+      } else {
+        // Default rating if we can't calculate from stars
+        ratingElement.setAttribute("data-rating", "4");
+      }
+    });
+
   // Add click event to product cards
   document.querySelectorAll(".product-card").forEach((card, index) => {
-    // Ensure each product card has a data-product-id
+    // Generate an ID for cards without one
     if (!card.dataset.productId) {
-      card.dataset.productId = index + 1;
+      // Use a prefix to make it clear this is a generated ID
+      card.dataset.productId = `generated-${index + 1}`;
+      console.info(
+        `Assigned generated ID to product card: generated-${index + 1}`
+      );
     }
 
     card.addEventListener("click", (e) => {
@@ -24,199 +379,375 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Function to show product details
-  async function showProductDetails(productId) {
-    if (!productId) {
-      console.error("Product ID is required");
-      showNotification("Product ID is missing", "error");
+  // Search functionality
+  const searchInput = document.getElementById("productSearch");
+  const searchButton = document.getElementById("searchButton");
+  const filterButton = document.getElementById("filterButton");
+  const productsGrid = document.querySelector(".products-grid");
+
+  // Search products function
+  function searchProducts() {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const productCards = document.querySelectorAll(".product-card");
+    let foundProducts = 0;
+
+    productCards.forEach((card) => {
+      const productName = card.querySelector("h3").textContent.toLowerCase();
+      const productInfo = card.querySelector(".product-info");
+      const productPrice = productInfo
+        ? productInfo.querySelector(".price")?.textContent.toLowerCase()
+        : "";
+
+      if (
+        productName.includes(searchTerm) ||
+        (productPrice && productPrice.includes(searchTerm)) ||
+        searchTerm === ""
+      ) {
+        card.style.display = "flex";
+        foundProducts++;
+      } else {
+        card.style.display = "none";
+      }
+    });
+
+    // Create or update the results count display
+    let resultsCountElement = document.getElementById("searchResultsCount");
+    if (!resultsCountElement) {
+      resultsCountElement = document.createElement("div");
+      resultsCountElement.id = "searchResultsCount";
+      resultsCountElement.className = "search-results-count";
+      document
+        .querySelector(".search-filter-container")
+        .appendChild(resultsCountElement);
+    }
+
+    if (searchTerm !== "") {
+      resultsCountElement.textContent = `${foundProducts} product${
+        foundProducts !== 1 ? "s" : ""
+      } found`;
+      resultsCountElement.style.display = "block";
+    } else {
+      resultsCountElement.style.display = "none";
+    }
+
+    // Show message if no products found
+    if (foundProducts === 0 && searchTerm !== "") {
+      showNotification("No products found matching your search.");
+    }
+  }
+
+  // Event listeners for search
+  searchButton.addEventListener("click", searchProducts);
+  searchInput.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      searchProducts();
+    }
+    // For instant search as user types
+    if (searchInput.value.length >= 2 || searchInput.value.length === 0) {
+      searchProducts();
+    }
+  });
+
+  // Add styles for price range
+  const style = document.createElement("style");
+  style.textContent = `
+    .price-filter {
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .price-inputs {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .price-input-group {
+      flex: 1;
+    }
+
+    .price-input-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .price-input-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .price-input-group input:focus {
+      outline: none;
+      border-color: #00a651;
+      box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.1);
+    }
+
+    .filter-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      min-width: 300px;
+      z-index: 1000;
+    }
+
+    .filter-dropdown-content {
+      padding: 20px;
+    }
+
+    .filter-section {
+      margin-bottom: 20px;
+    }
+
+    .filter-section h3 {
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 1.1em;
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .filter-actions button {
+      flex: 1;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .filter-actions .btn {
+      background-color: #00a651;
+      color: white;
+    }
+
+    .filter-actions .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .filter-actions button:hover {
+      opacity: 0.9;
+    }
+    
+    /* Sale tag styles */
+    .sale-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #ff4444;
+      color: white;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      border-radius: 4px;
+      z-index: 2;
+    }
+    
+    /* Sale price styles */
+    .sale-price {
+      color: #ff4444;
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    
+    .original-price {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 0.9em;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Initialize filter dropdown variable
+  let filterDropdown = null;
+
+  // Function to fetch categories from the backend
+  async function fetchCategories() {
+    try {
+      const response = await fetch("/api/categories/");
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const categories = await response.json();
+      return categories;
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      return [];
+    }
+  }
+
+  // Function to create category checkboxes HTML
+  function createCategoryCheckboxes(categories) {
+    return categories
+      .map(
+        (category) => `
+      <div class="filter-checkbox">
+        <input type="checkbox" id="cat-${category.name
+          .toLowerCase()
+          .replace(/\s+/g, "-")}" value="${category.name}">
+        <label for="cat-${category.name.toLowerCase().replace(/\s+/g, "-")}">${
+          category.name
+        }</label>
+      </div>
+    `
+      )
+      .join("");
+  }
+
+  // Update the filter button click handler
+  filterButton.addEventListener("click", async function () {
+    if (filterDropdown) {
+      filterDropdown.style.display =
+        filterDropdown.style.display === "none" ? "block" : "none";
       return;
     }
 
-    try {
-      const response = await fetch(`/api/products/${productId}/`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch product details: ${response.status}`);
-      }
+    // Create filter dropdown
+    filterDropdown = document.createElement("div");
+    filterDropdown.id = "filterDropdown";
+    filterDropdown.className = "filter-dropdown";
 
-      const product = await response.json();
-      const modal = document.getElementById("productDetailsModal");
+    // Fetch categories
+    const categories = await fetchCategories();
 
-      if (!modal) {
-        console.error("Product details modal not found");
-        return;
-      }
+    filterDropdown.innerHTML = `
+      <div class="filter-dropdown-content">
+        <div class="filter-section">
+          <h3>Price Range</h3>
+          <div class="price-filter">
+            <div class="price-inputs">
+              <div class="price-input-group">
+                <label for="minPrice">Min Price ($)</label>
+                <input type="number" id="minPrice" min="0" value="0" step="1" placeholder="Min price">
+              </div>
+              <div class="price-input-group">
+                <label for="maxPrice">Max Price ($)</label>
+                <input type="number" id="maxPrice" min="0" value="500" step="1" placeholder="Max price">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="filter-section">
+          <h3>Categories</h3>
+          <div class="filter-checkboxes">
+            ${createCategoryCheckboxes(categories)}
+          </div>
+        </div>
+        
+        <div class="filter-section">
+          <h3>Rating</h3>
+          <div class="rating-filter">
+            <div class="filter-checkbox">
+              <input type="checkbox" id="rating-4plus" value="4">
+              <label for="rating-4plus">4+ Stars</label>
+            </div>
+            <div class="filter-checkbox">
+              <input type="checkbox" id="rating-3plus" value="3">
+              <label for="rating-3plus">3+ Stars</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="filter-actions">
+          <button id="applyFilters" class="btn">Apply Filters</button>
+          <button id="resetFilters" class="btn btn-secondary">Reset</button>
+        </div>
+      </div>
+    `;
 
-      // Populate modal with product data
-      const productImage = document.getElementById("productDetailsImage");
-      const productCategory = document.getElementById("productDetailsCategory");
-      const productName = document.getElementById("productDetailsName");
-      const productDescription = document.getElementById(
-        "productDetailsDescription"
-      );
+    // Append dropdown to filter button
+    const filterContainer = document.querySelector(".search-filter-container");
+    filterContainer.appendChild(filterDropdown);
 
+    // Add event listeners after the elements are created
+    const applyFiltersBtn = document.getElementById("applyFilters");
+    const resetFiltersBtn = document.getElementById("resetFilters");
+    const minPriceInput = document.getElementById("minPrice");
+    const maxPriceInput = document.getElementById("maxPrice");
+
+    if (applyFiltersBtn) {
+      applyFiltersBtn.addEventListener("click", function () {
+        const minPrice = parseFloat(minPriceInput?.value) || 0;
+        const maxPrice = parseFloat(maxPriceInput?.value) || 500;
+        const selectedCategories = Array.from(
+          document.querySelectorAll(".filter-checkboxes input:checked")
+        ).map((input) => input.value);
+        const selectedRating = Array.from(
+          document.querySelectorAll(".rating-filter input:checked")
+        ).map((input) => parseInt(input.value));
+        const minRating =
+          selectedRating.length > 0 ? Math.max(...selectedRating) : 0;
+
+        applyFiltersToProducts(
+          minPrice,
+          maxPrice,
+          selectedCategories,
+          minRating
+        );
+        filterDropdown.style.display = "none";
+      });
+    }
+
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener("click", () => {
+        // Reset price inputs
+        if (minPriceInput) minPriceInput.value = 0;
+        if (maxPriceInput) maxPriceInput.value = 500;
+
+        // Uncheck all checkboxes
+        document
+          .querySelectorAll(".filter-checkboxes input, .rating-filter input")
+          .forEach((checkbox) => {
+            checkbox.checked = false;
+          });
+
+        // Clear the stored filters
+        window.currentFilters = null;
+
+        // Show all products
+        document.querySelectorAll(".product-card").forEach((card) => {
+          card.style.display = "flex";
+        });
+
+        // Hide filter status
+        const filterStatus = document.getElementById("filterStatus");
+        if (filterStatus) {
+          filterStatus.style.display = "none";
+        }
+
+        showNotification("Filters have been reset.");
+
+        // Hide dropdown
+        filterDropdown.style.display = "none";
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function closeFilterDropdown(e) {
       if (
-        !productImage ||
-        !productCategory ||
-        !productName ||
-        !productDescription
+        !e.target.closest("#filterDropdown") &&
+        !e.target.closest("#filterButton")
       ) {
-        console.error("Required modal elements not found");
-        return;
+        filterDropdown.style.display = "none";
       }
-
-      productImage.src = product.image;
-      productCategory.textContent = product.category.name;
-      productName.textContent = product.name;
-      productDescription.textContent = product.description;
-
-      // Set rating
-      const ratingContainer = document.getElementById("productDetailsRating");
-      if (ratingContainer) {
-        const starsContainer = ratingContainer.querySelector(".stars");
-        const ratingText = ratingContainer.querySelector(".rating-text");
-        if (starsContainer && ratingText) {
-          starsContainer.innerHTML = generateRatingStars(product.rating);
-          ratingText.textContent = `${product.rating} out of 5`;
-        }
-      }
-
-      // Set price
-      const priceContainer = document.getElementById("productDetailsPrice");
-      if (priceContainer) {
-        const currentPrice = priceContainer.querySelector(".current-price");
-        const originalPrice = priceContainer.querySelector(".original-price");
-        const saleBadge = priceContainer.querySelector(".sale-badge");
-
-        if (currentPrice && originalPrice && saleBadge) {
-          if (product.is_on_sale) {
-            currentPrice.textContent = `$${product.sale_price}`;
-            originalPrice.textContent = `$${product.price}`;
-            saleBadge.style.display = "inline-block";
-          } else {
-            currentPrice.textContent = `$${product.price}`;
-            originalPrice.textContent = "";
-            saleBadge.style.display = "none";
-          }
-        }
-      }
-
-      // Set stock status
-      const stockStatus = document.getElementById("productDetailsStock");
-      if (stockStatus) {
-        const stockIcon = stockStatus.querySelector("i");
-        const stockText = stockStatus.querySelector("span");
-
-        if (stockIcon && stockText) {
-          if (product.stock > 0) {
-            stockIcon.className = "fas fa-check-circle";
-            stockIcon.style.color = "#00a651";
-            stockText.textContent = `In Stock (${product.stock} available)`;
-          } else {
-            stockIcon.className = "fas fa-times-circle";
-            stockIcon.style.color = "#ff4444";
-            stockText.textContent = "Out of Stock";
-          }
-        }
-      }
-
-      // Set up action buttons
-      const addToCartBtn = document.getElementById("productDetailsAddToCart");
-      const addToWishlistBtn = document.getElementById(
-        "productDetailsAddToWishlist"
-      );
-
-      if (addToCartBtn && addToWishlistBtn) {
-        addToCartBtn.disabled = product.stock === 0;
-        addToCartBtn.dataset.productId = productId;
-        addToWishlistBtn.dataset.productId = productId;
-
-        // Initialize wishlist button state
-        const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-        const isInWishlist = wishlist.some((item) => item.id === productId);
-        updateWishlistButtonState(addToWishlistBtn, isInWishlist);
-
-        // Add wishlist click handler
-        addToWishlistBtn.onclick = function (e) {
-          e.preventDefault();
-          const productData = {
-            id: productId,
-            name: product.name,
-            price: product.is_on_sale ? product.sale_price : product.price,
-            image: product.image,
-            category: product.category.name,
-          };
-          toggleWishlistItem(productData, addToWishlistBtn);
-        };
-
-        // Add cart click handler
-        addToCartBtn.onclick = async function (e) {
-          e.preventDefault();
-          if (addToCartBtn.disabled) return;
-
-          try {
-            const response = await fetch("/api/cart/add/", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCookie("csrftoken"),
-              },
-              body: JSON.stringify({
-                product_id: productId,
-                quantity: 1,
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error("Failed to add to cart");
-            }
-
-            const data = await response.json();
-            showNotification(data.message);
-          } catch (error) {
-            console.error("Error adding to cart:", error);
-            showNotification("Failed to add to cart", "error");
-          }
-        };
-      }
-
-      // Show modal
-      modal.style.display = "block";
-    } catch (error) {
-      console.error("Error loading product details:", error);
-      showNotification("Failed to load product details", "error");
-    }
-  }
-
-  // Function to generate rating stars
-  function generateRatingStars(rating) {
-    let stars = "";
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    for (let i = 0; i < fullStars; i++) {
-      stars += '<i class="fas fa-star"></i>';
-    }
-    if (hasHalfStar) {
-      stars += '<i class="fas fa-star-half-alt"></i>';
-    }
-    const remainingStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < remainingStars; i++) {
-      stars += '<i class="far fa-star"></i>';
-    }
-    return stars;
-  }
-
-  // Function to show notification
-  function showNotification(message, type = "success") {
-    const notification = document.createElement("div");
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.remove();
-    }, 3000);
-  }
+    });
+  });
 
   // Enhanced product data
   const categories = {
@@ -268,63 +799,98 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Handle category card clicks
+  // Handle category card clicks (in both main view and modal)
   document.querySelectorAll(".category-card").forEach((card) => {
-    card.addEventListener("click", async function () {
+    card.addEventListener("click", function () {
       const categoryId = this.dataset.categoryId;
-      const categoryNameElement = this.querySelector("h3");
+      const categoryNameText = this.querySelector("h3").textContent;
 
-      if (!categoryId || !categoryNameElement) {
-        console.error("Missing category data");
-        return;
-      }
+      // Close the all categories modal if it's open
+      allCategoriesModal.style.display = "none";
 
-      try {
-        // Show loading state
-        productsContainer.innerHTML =
-          '<div class="loading">Loading products...</div>';
-        modal.style.display = "block";
-        modalTitle.textContent = categoryNameElement.textContent;
+      // Show the category products modal
+      modal.style.display = "block";
+      modalTitle.textContent = categoryNameText;
 
-        // Fetch products
-        const response = await fetch(`/api/categories/${categoryId}/products/`);
-        if (!response.ok) throw new Error("Failed to fetch products");
-        const products = await response.json();
+      // Fetch and display products for this category
+      fetch(`/api/categories/${categoryId}/products/`)
+        .then((response) => response.json())
+        .then((products) => {
+          productsContainer.innerHTML = products
+            .map((product) => {
+              // Check for both naming conventions
+              const isOnSale = product.is_on_sale || product.onSale;
+              const salePrice = product.sale_price || product.salePrice;
+              const saleTag = product.saleTag || "Sale";
 
-        // Display products
-        if (products.length === 0) {
+              return `
+                <div class="product-card" data-product-id="${product.id}">
+                  ${isOnSale ? `<span class="sale-tag">${saleTag}</span>` : ""}
+                  <img src="${product.image}" alt="${
+                product.name
+              }" onerror="this.src='/static/images/placeholder.png'">
+                  <div class="product-info">
+                    <h3>${product.name}</h3>
+                    <p class="price">
+                      ${
+                        isOnSale && salePrice
+                          ? `<span class="sale-price">$${salePrice}</span>
+                         <span class="original-price">$${product.price}</span>`
+                          : `$${product.price}`
+                      }
+                    </p>
+                    <div class="rating" data-rating="${product.rating || 4}">
+                      ${generateRatingStars(product.rating || 4)}
+                    </div>
+                    <div class="product-actions">
+                      <button class="wishlist-btn" data-product-id="${
+                        product.id
+                      }">
+                        <i class="fas fa-heart"></i>
+                      </button>
+                      <button class="cart-btn" data-product-id="${product.id}">
+                        <i class="fas fa-shopping-cart"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            })
+            .join("");
+
+          // Add click handlers to product cards
+          productsContainer
+            .querySelectorAll(".product-card")
+            .forEach((card) => {
+              card.addEventListener("click", function (e) {
+                // Don't trigger if clicking on action buttons
+                if (e.target.closest(".product-actions")) {
+                  return;
+                }
+                const productId = this.dataset.productId;
+                if (productId) {
+                  showProductDetails(productId);
+                }
+              });
+            });
+
+          // Initialize product actions
+          initializeProductActions(productsContainer);
+
+          // Apply current filters if they exist
+          if (window.currentFilters) {
+            applyFiltersToProducts(
+              window.currentFilters.price,
+              window.currentFilters.categories,
+              window.currentFilters.minRating
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching category products:", error);
           productsContainer.innerHTML =
-            "<p>No products found in this category.</p>";
-          return;
-        }
-
-        productsContainer.innerHTML = products
-          .map(
-            (product) => `
-          <div class="product-card">
-            <img src="${product.image}" alt="${product.name}" onerror="this.src='/static/images/placeholder.png'">
-            <h4>${product.name}</h4>
-            <p class="price">$${product.price}</p>
-            <div class="product-actions">
-              <button class="wishlist-btn" data-product-id="${product.id}">
-                <i class="fas fa-heart"></i>
-              </button>
-              <button class="cart-btn" data-product-id="${product.id}">
-                <i class="fas fa-shopping-cart"></i>
-              </button>
-            </div>
-          </div>
-        `
-          )
-          .join("");
-
-        // Initialize actions for new products
-        initializeProductActions();
-      } catch (error) {
-        console.error("Error:", error);
-        productsContainer.innerHTML =
-          "<p>Error loading products. Please try again.</p>";
-      }
+            "<p>Error loading products. Please try again later.</p>";
+        });
     });
   });
 
@@ -343,21 +909,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle wishlist button clicks
+  // Handle wishlist and cart buttons
   document.addEventListener("click", function (e) {
     if (e.target.closest(".wishlist-btn")) {
       const btn = e.target.closest(".wishlist-btn");
-      btn.classList.toggle("active");
-      const icon = btn.querySelector("i");
-      icon.style.color = btn.classList.contains("active") ? "#ff4444" : "";
-    }
-  });
+      const productId = btn.dataset.productId;
+      const productCard = btn.closest(".product-card");
 
-  // Handle cart button clicks
-  document.addEventListener("click", function (e) {
-    if (e.target.closest(".cart-btn")) {
+      if (productCard) {
+        // Create proper product data object
+        const productData = getProductData(productCard);
+
+        if (productData) {
+          toggleWishlistItem(productData, btn);
+        } else {
+          console.error("Unable to get product data from card", productCard);
+          showNotification("Error: Could not add to wishlist", "error");
+        }
+      } else {
+        console.error("Product card not found for wishlist button", btn);
+        showNotification("Error: Could not add to wishlist", "error");
+      }
+    } else if (e.target.closest(".cart-btn")) {
       const btn = e.target.closest(".cart-btn");
-      btn.classList.toggle("active");
+      const productId = btn.dataset.productId;
+      const productCard = btn.closest(".product-card");
+      addToCart(productCard, productId);
     }
   });
 
@@ -538,31 +1115,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to create product card HTML
   function createProductCard(product) {
-    const ratingHtml = generateRatingStars(product.rating);
-    const productId = product.id || Math.floor(Math.random() * 1000) + 1; // Generate a random ID if none exists
+    const ratingHtml = generateRatingStars(product.rating || 0);
+    // Check for both naming conventions (is_on_sale and onSale)
+    const isOnSale = product.is_on_sale || product.onSale;
+    const salePrice = product.sale_price || product.salePrice;
+    const saleTag = product.saleTag || "Sale";
 
     return `
-      <div class="product-card" data-product-id="${productId}">
-        ${
-          product.onSale
-            ? `<span class="sale-tag">${product.saleTag}</span>`
-            : ""
-        }
+      <div class="product-card" data-product-id="${product.id}">
+        ${isOnSale ? `<span class="sale-tag">${saleTag}</span>` : ""}
         <div class="product-actions">
-          <button class="action-btn wishlist-btn" data-product-id="${productId}">
+          <button class="action-btn wishlist-btn" data-product-id="${
+            product.id
+          }">
             <i class="fas fa-heart"></i>
           </button>
-          <button class="action-btn cart-btn" data-product-id="${productId}">
+          <button class="action-btn cart-btn" data-product-id="${product.id}">
             <i class="fas fa-shopping-cart"></i>
           </button>
         </div>
         <img src="${window.STATIC_URL}${product.image}" alt="${product.name}" />
         <div class="product-info">
           <h3>${product.name}</h3>
-          <div class="rating">
+          <div class="rating" data-rating="${product.rating || 0}">
             ${ratingHtml}
           </div>
-          <div class="price">${product.price}</div>
+          <div class="price">
+            ${
+              isOnSale
+                ? `<span class="sale-price">$${salePrice}</span>
+               <span class="original-price">$${product.price}</span>`
+                : `$${product.price}`
+            }
+          </div>
         </div>
       </div>
     `;
@@ -627,15 +1212,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Add all products
     allFeaturedProducts.forEach((product) => {
+      // Skip products without valid IDs
+      if (!product.id) {
+        console.warn("Skipping featured product without valid ID:", product);
+        return;
+      }
+
+      // Check for both naming conventions
+      const isOnSale = product.is_on_sale || product.onSale;
+      const salePrice = product.sale_price || product.salePrice;
+      const saleTag = product.saleTag || "Sale";
+
       const productCard = document.createElement("div");
       productCard.className = "product-card";
       productCard.dataset.productId = product.id;
       productCard.innerHTML = `
-        ${
-          product.onSale
-            ? `<span class="sale-tag">${product.saleTag}</span>`
-            : ""
-        }
+        ${isOnSale ? `<span class="sale-tag">${saleTag}</span>` : ""}
         <div class="product-actions">
           <button class="action-btn wishlist-btn" data-product-id="${
             product.id
@@ -649,10 +1241,17 @@ document.addEventListener("DOMContentLoaded", () => {
         <img src="${window.STATIC_URL}${product.image}" alt="${product.name}" />
         <div class="product-info">
           <h3>${product.name}</h3>
-          <div class="rating">
+          <div class="rating" data-rating="${product.rating || 4}">
             ${generateRatingStars(product.rating)}
           </div>
-          <div class="price">${product.price}</div>
+          <div class="price">
+            ${
+              isOnSale && salePrice
+                ? `<span class="sale-price">$${salePrice}</span>
+               <span class="original-price">$${product.price}</span>`
+                : `${product.price}`
+            }
+          </div>
         </div>
       `;
 
@@ -672,6 +1271,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize wishlist and cart buttons
     initializeProductActions(productsGrid);
+
+    // Apply current filters if they exist
+    if (window.currentFilters) {
+      applyFiltersToProducts(
+        window.currentFilters.price,
+        window.currentFilters.categories,
+        window.currentFilters.minRating
+      );
+    }
   }
 
   // Function to show all categories
@@ -718,27 +1326,51 @@ document.addEventListener("DOMContentLoaded", () => {
     modalTitle.textContent = category.name;
     productsGrid.innerHTML = "";
 
-    category.products.forEach((product, index) => {
+    category.products.forEach((product) => {
+      // Skip products without valid IDs
+      if (!product.id) {
+        console.warn(
+          "Skipping product without valid ID in category",
+          category.name,
+          product
+        );
+        return;
+      }
+
+      // Check for both naming conventions
+      const isOnSale = product.is_on_sale || product.onSale;
+      const salePrice = product.sale_price || product.salePrice;
+      const saleTag = product.saleTag || "Sale";
+
       const productCard = document.createElement("div");
       productCard.className = "product-card";
-      productCard.dataset.productId = product.id || index + 1;
+      productCard.dataset.productId = product.id;
       productCard.innerHTML = `
+        ${isOnSale ? `<span class="sale-tag">${saleTag}</span>` : ""}
         <div class="product-actions">
           <button class="action-btn wishlist-btn" data-product-id="${
-            product.id || index + 1
+            product.id
           }">
             <i class="fas fa-heart"></i>
           </button>
-          <button class="action-btn cart-btn" data-product-id="${
-            product.id || index + 1
-          }">
+          <button class="action-btn cart-btn" data-product-id="${product.id}">
             <i class="fas fa-shopping-cart"></i>
           </button>
         </div>
         <img src="${window.STATIC_URL}${product.image}" alt="${product.name}" />
         <div class="product-info">
           <h3>${product.name}</h3>
-          <div class="price">$${product.price}</div>
+          <div class="price">
+            ${
+              isOnSale && salePrice
+                ? `<span class="sale-price">$${salePrice}</span>
+               <span class="original-price">$${product.price}</span>`
+                : `$${product.price}`
+            }
+          </div>
+          <div class="rating" data-rating="${product.rating || 4}">
+            ${generateRatingStars(product.rating || 4)}
+          </div>
         </div>
       `;
 
@@ -748,7 +1380,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target.closest(".product-actions")) {
           return;
         }
-        showProductDetails(product.id || index + 1);
+        showProductDetails(product.id);
       });
 
       productsGrid.appendChild(productCard);
@@ -756,6 +1388,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     modal.style.display = "block";
     initializeProductActions(productsGrid);
+
+    // Apply current filters if they exist
+    if (window.currentFilters) {
+      applyFiltersToProducts(
+        window.currentFilters.price,
+        window.currentFilters.categories,
+        window.currentFilters.minRating
+      );
+    }
   }
 
   // Close modal functionality
@@ -855,63 +1496,161 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle category card clicks (in both main view and modal)
-  document.querySelectorAll(".category-card").forEach((card) => {
-    card.addEventListener("click", function () {
-      const categoryId = this.dataset.categoryId;
-      const categoryNameText = this.querySelector("h3").textContent;
+  // Function to apply filters to products
+  function applyFiltersToProducts(minPrice, maxPrice, categories, minRating) {
+    const productCards = document.querySelectorAll(".product-card");
 
-      // Close the all categories modal if it's open
-      allCategoriesModal.style.display = "none";
+    productCards.forEach((card) => {
+      const productPrice = parseFloat(
+        card.querySelector(".price").textContent.replace("$", "")
+      );
+      const productCategory = card.closest("[data-category]")?.dataset.category;
+      const ratingElement = card.querySelector(".rating");
+      const productRating = parseFloat(ratingElement?.dataset.rating || "0");
 
-      // Show the category products modal
-      modal.style.display = "block";
-      modalTitle.textContent = categoryNameText;
+      const matchesPrice =
+        (!minPrice || productPrice >= minPrice) &&
+        (!maxPrice || productPrice <= maxPrice);
+      const matchesCategory =
+        !categories.length || categories.includes(productCategory);
+      const matchesRating = !minRating || productRating >= minRating;
 
-      // Fetch and display products for this category
-      fetch(`/api/products/category/${categoryId}/`)
-        .then((response) => response.json())
-        .then((products) => {
-          productsContainer.innerHTML = products
-            .map(
-              (product) => `
-            <div class="product-card">
-              <img src="${product.image}" alt="${product.name}" />
-              <h3>${product.name}</h3>
-              <p class="price">$${product.price}</p>
+      if (matchesPrice && matchesCategory && matchesRating) {
+        card.style.display = "";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  }
+
+  // Function to show all filtered products in a modal
+  function showAllFilteredProducts() {
+    // Check if we have filtered products
+    if (!window.filteredProducts || window.filteredProducts.length === 0) {
+      showNotification("No filtered products to display");
+      return;
+    }
+
+    // Create or use existing filtered products modal
+    let filteredModal = document.getElementById("filteredProductsModal");
+    if (!filteredModal) {
+      filteredModal = document.createElement("div");
+      filteredModal.className = "category-modal";
+      filteredModal.id = "filteredProductsModal";
+      filteredModal.innerHTML = `
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h3 class="modal-title">Filtered Products</h3>
+          <div class="modal-products-grid" id="filteredProductsGrid"></div>
+        </div>
+      `;
+      document.body.appendChild(filteredModal);
+
+      // Add close functionality
+      const closeBtn = filteredModal.querySelector(".close-modal");
+      if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+          filteredModal.style.display = "none";
+        });
+      }
+
+      // Close on outside click
+      filteredModal.addEventListener("click", (e) => {
+        if (e.target === filteredModal) {
+          filteredModal.style.display = "none";
+        }
+      });
+    }
+
+    // Get the products grid
+    const productsGrid = filteredModal.querySelector(".modal-products-grid");
+    if (!productsGrid) return;
+
+    // Clear existing content
+    productsGrid.innerHTML = "";
+
+    // Add all filtered products
+    window.filteredProducts.forEach((product) => {
+      const productCard = document.createElement("div");
+      productCard.className = "product-card";
+      productCard.dataset.productId = product.id;
+
+      // Create HTML for the product card
+      productCard.innerHTML = `
               <div class="product-actions">
-                <button class="wishlist-btn" data-product-id="${product.id}">
+          <button class="action-btn wishlist-btn" data-product-id="${
+            product.id
+          }">
                   <i class="fas fa-heart"></i>
                 </button>
-                <button class="cart-btn" data-product-id="${product.id}">
+          <button class="action-btn cart-btn" data-product-id="${product.id}">
                   <i class="fas fa-shopping-cart"></i>
                 </button>
               </div>
+        <img src="${product.image}" alt="${product.name}" />
+        <div class="product-info">
+          <h3>${product.name}</h3>
+          <div class="rating" data-rating="${product.rating || 4}">
+            ${generateRatingStars(product.rating || 4)}
             </div>
-          `
-            )
-            .join("");
-        })
-        .catch((error) => {
-          console.error("Error fetching category products:", error);
-          productsContainer.innerHTML =
-            "<p>Error loading products. Please try again later.</p>";
-        });
-    });
-  });
+          <div class="price">${product.price}</div>
+          ${
+            product.category
+              ? `<span class="category-badge">${product.category}</span>`
+              : ""
+          }
+        </div>
+      `;
 
-  // Handle wishlist and cart buttons
-  document.addEventListener("click", function (e) {
-    if (e.target.closest(".wishlist-btn")) {
-      const btn = e.target.closest(".wishlist-btn");
-      const productId = btn.dataset.productId;
-      toggleWishlistItem(productId, btn);
-    } else if (e.target.closest(".cart-btn")) {
-      const btn = e.target.closest(".cart-btn");
-      const productId = btn.dataset.productId;
-      const productCard = btn.closest(".product-card");
-      addToCart(productCard, productId);
-    }
+      // Add click handler for the product card
+      productCard.addEventListener("click", (e) => {
+        // Don't trigger if clicking on action buttons
+        if (e.target.closest(".product-actions")) {
+          return;
+        }
+        showProductDetails(product.id);
+      });
+
+      // Add the card to the grid
+      productsGrid.appendChild(productCard);
+    });
+
+    // Initialize product actions
+    initializeProductActions(productsGrid);
+
+    // Show the modal
+    filteredModal.style.display = "block";
+  }
+
+  // Add CSS for the view filtered button
+  document.addEventListener("DOMContentLoaded", () => {
+    // Add styles for the view filtered button
+    const style = document.createElement("style");
+    style.textContent = `
+      .view-filtered-btn {
+        background-color: #00a651;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        margin-left: 10px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background-color 0.3s;
+      }
+      
+      .view-filtered-btn:hover {
+        background-color: #008542;
+      }
+      
+      .filter-status {
+        display: flex;
+        align-items: center;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Rest of the existing DOMContentLoaded code...
   });
 });
 
@@ -928,8 +1667,24 @@ function getProductData(card) {
     return null;
   }
 
+  // First try to get product ID from data attribute
+  let productId = card.dataset.productId;
+
+  // If not found on the card, try to get it from the wishlist button
+  if (!productId) {
+    const wishlistBtn = card.querySelector(".wishlist-btn");
+    if (wishlistBtn && wishlistBtn.dataset.productId) {
+      productId = wishlistBtn.dataset.productId;
+    }
+  }
+
+  // Fall back to generating an ID from the name if no ID found
+  if (!productId) {
+    productId = nameElement.textContent.toLowerCase().replace(/\s+/g, "-");
+  }
+
   return {
-    id: nameElement.textContent.toLowerCase().replace(/\s+/g, "-"),
+    id: productId,
     name: nameElement.textContent,
     price: priceElement.textContent,
     image: img.src,
@@ -957,6 +1712,11 @@ function initializeProductActions(container = document) {
         if (!productCard) {
           console.error("Product card not found");
           return;
+        }
+
+        // Ensure product card has the same ID as the button
+        if (!productCard.dataset.productId) {
+          productCard.dataset.productId = productId;
         }
 
         const productData = {
@@ -990,6 +1750,34 @@ function toggleWishlistItem(productData, button) {
   if (!productData || !button) {
     console.error("Missing product data or button");
     return;
+  }
+
+  // Ensure productData is complete and valid before adding to wishlist
+  if (
+    !productData.id ||
+    !productData.name ||
+    !productData.price ||
+    !productData.image
+  ) {
+    console.error("Invalid product data:", productData);
+    showNotification("Error: Product data is incomplete", "error");
+    return;
+  }
+
+  // Ensure productData has all required properties
+  if (!productData.rating) {
+    // Try to get rating from the product card
+    const card = button.closest(".product-card");
+    if (card) {
+      const ratingElement = card.querySelector(".rating");
+      if (ratingElement && ratingElement.dataset.rating) {
+        productData.rating = ratingElement.dataset.rating;
+      } else {
+        productData.rating = "0"; // Default value
+      }
+    } else {
+      productData.rating = "0"; // Default value
+    }
   }
 
   let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
@@ -1044,6 +1832,15 @@ async function addToCart(productCard, productId) {
     return;
   }
 
+  // Handle generated product IDs
+  if (productId.toString().startsWith("generated-")) {
+    showNotification(
+      "This is a demo product and cannot be added to cart",
+      "error"
+    );
+    return;
+  }
+
   try {
     const response = await fetch("/cart/add/", {
       method: "POST",
@@ -1058,12 +1855,13 @@ async function addToCart(productCard, productId) {
     });
 
     if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || "Failed to add item to cart");
+      const errorText = await response.text();
+      console.error("Server response:", errorText);
+      throw new Error("Failed to add item to cart");
     }
 
     const data = await response.json();
-    showNotification("Product added to cart");
+    showNotification(data.message || "Product added to cart");
   } catch (error) {
     console.error("Error adding to cart:", error);
     showNotification("Failed to add product to cart", "error");
@@ -1084,17 +1882,6 @@ function getCookie(name) {
     }
   }
   return cookieValue;
-}
-
-function showNotification(message) {
-  const notification = document.createElement("div");
-  notification.className = "notification";
-  notification.textContent = message;
-  document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.remove();
-  }, 3000);
 }
 
 function initializeCategoryCard(card) {
@@ -1145,61 +1932,70 @@ function initializeCategoryCard(card) {
 
       // Display products
       productsContainer.innerHTML = products
-        .map(
-          (product) => `
-        <div class="product-card" data-product-id="${product.id}">
-          <img src="${product.image}" alt="${product.name}" onerror="this.src='/static/images/placeholder.png'">
-          <div class="product-info">
-            <h3>${product.name}</h3>
-            <p class="price">${product.price}</p>
-            <div class="product-actions">
-              <button class="wishlist-btn" data-product-id="${product.id}">
-                <i class="fas fa-heart"></i>
-              </button>
-              <button class="cart-btn" data-product-id="${product.id}">
-                <i class="fas fa-shopping-cart"></i>
-              </button>
+        .map((product) => {
+          // Check for both naming conventions
+          const isOnSale = product.is_on_sale || product.onSale;
+          const salePrice = product.sale_price || product.salePrice;
+          const saleTag = product.saleTag || "Sale";
+
+          return `
+            <div class="product-card" data-product-id="${product.id}">
+              ${isOnSale ? `<span class="sale-tag">${saleTag}</span>` : ""}
+              <img src="${product.image}" alt="${
+            product.name
+          }" onerror="this.src='/static/images/placeholder.png'">
+              <div class="product-info">
+                <h3>${product.name}</h3>
+                <p class="price">
+                  ${
+                    isOnSale && salePrice
+                      ? `<span class="sale-price">$${salePrice}</span>
+                     <span class="original-price">$${product.price}</span>`
+                      : `$${product.price}`
+                  }
+                </p>
+                <div class="rating" data-rating="${product.rating || 4}">
+                  ${generateRatingStars(product.rating || 4)}
+                </div>
+                <div class="product-actions">
+                  <button class="wishlist-btn" data-product-id="${product.id}">
+                    <i class="fas fa-heart"></i>
+                  </button>
+                  <button class="cart-btn" data-product-id="${product.id}">
+                    <i class="fas fa-shopping-cart"></i>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      `
-        )
+          `;
+        })
         .join("");
 
-      // Initialize product actions for the new products
-      const newProducts = productsContainer.querySelectorAll(".product-card");
-      newProducts.forEach((productCard) => {
-        const wishlistBtn = productCard.querySelector(".wishlist-btn");
-        const cartBtn = productCard.querySelector(".cart-btn");
-        const productId = productCard.dataset.productId;
-
-        // Initialize wishlist button
-        if (wishlistBtn && !wishlistBtn.dataset.initialized) {
-          wishlistBtn.dataset.initialized = "true";
-          const isInWishlist = wishlist.some((item) => item.id === productId);
-          updateWishlistButtonState(wishlistBtn, isInWishlist);
-
-          wishlistBtn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            const productData = {
-              id: productId,
-              name: productCard.querySelector("h3").textContent,
-              price: productCard.querySelector(".price").textContent,
-              image: productCard.querySelector("img").src,
-            };
-            toggleWishlistItem(productData, this);
-          });
-        }
-
-        // Initialize cart button
-        if (cartBtn && !cartBtn.dataset.initialized) {
-          cartBtn.dataset.initialized = "true";
-          cartBtn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            addToCart(productCard, productId);
-          });
-        }
+      // Add click handlers to product cards
+      productsContainer.querySelectorAll(".product-card").forEach((card) => {
+        card.addEventListener("click", function (e) {
+          // Don't trigger if clicking on action buttons
+          if (e.target.closest(".product-actions")) {
+            return;
+          }
+          const productId = this.dataset.productId;
+          if (productId) {
+            showProductDetails(productId);
+          }
+        });
       });
+
+      // Initialize product actions for the new products
+      initializeProductActions(productsContainer);
+
+      // Apply current filters if they exist
+      if (window.currentFilters) {
+        applyFiltersToProducts(
+          window.currentFilters.price,
+          window.currentFilters.categories,
+          window.currentFilters.minRating
+        );
+      }
     } catch (error) {
       console.error("Error:", error);
       productsContainer.innerHTML =

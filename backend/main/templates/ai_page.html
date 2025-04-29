@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI Chat</title>
+  </head>
+  <body>
+    <h2>Ask AI</h2>
+    <form id="aiForm" method="post">
+      {% csrf_token %}
+      <input
+        type="text"
+        id="prompt"
+        name="prompt"
+        placeholder="Type your question here..."
+      />
+      <button type="submit">Send</button>
+    </form>
+
+    <h3>Response:</h3>
+    <p id="aiResponse"></p>
+
+    <script>
+      document
+        .getElementById("aiForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const prompt = document.getElementById("prompt").value;
+          const formData = new FormData();
+          formData.append("prompt", prompt);
+
+          const response = await fetch("{% url 'ask_ai' %}", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+              ).value,
+            },
+            body: formData,
+          });
+
+          const data = await response.json();
+          document.getElementById("aiResponse").innerText = data.response;
+        });
+    </script>
+  </body>
+</html>

@@ -16,6 +16,12 @@ Up{% endblock %} {% block extra_css %}
     margin-bottom: 20px;
     border: 1px solid #dc3545;
   }
+  .form-group {
+    position: relative;
+  }
+  .form-group input {
+    padding-right: 40px;
+  }
 </style>
 {% endblock %} {% block content %}
 <div class="welcome">
@@ -136,4 +142,6 @@ Up{% endblock %} {% block extra_css %}
     </div>
   </div>
 </div>
+{% endblock %} {% block extra_js %}
+<script src="{% static 'js/password-toggle.js' %}"></script>
 {% endblock %}

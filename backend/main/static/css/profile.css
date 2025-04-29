@@ -1,22 +1,31 @@
 /* ===== CSS Variables ===== */
 :root {
   /* Colors */
-  --primary-color: #1e6b40;
-  --primary-dark: #174d2f;
-  --text-primary: #333;
-  --text-secondary: #666;
+  --primary-color: #388e3c;
+  --primary-light: #57b656;
+  --primary-dark: #276b29;
+  --secondary-color: #ffa000;
+  --secondary-light: #ffc947;
+  --secondary-dark: #c67100;
+  --text-color: #333;
+  --text-light: #666;
+  --text-darker: #222;
   --bg-light: #f8f9fa;
   --bg-white: #ffffff;
   --border-color: #ddd;
   --overlay-bg: rgba(0, 0, 0, 0.5);
-  --error-color: #dc3545;
+  --error-color: #f44336;
   --error-dark: #c82333;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --info-color: #2196f3;
 
   /* Spacing */
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 1rem;
-  --spacing-md: 1.5rem;
-  --spacing-lg: 2rem;
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 15px;
+  --spacing-lg: 20px;
+  --spacing-xl: 30px;
 
   /* Border Radius */
   --radius-sm: 8px;
@@ -39,9 +48,11 @@
 }
 
 body {
-  font-family: "Arial", sans-serif;
+  font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans",
+    "Helvetica Neue", sans-serif;
   line-height: 1.6;
-  color: var(--text-primary);
+  color: var(--text-color);
+  background-color: #f7f9f8;
 }
 
 /* ===== Layout ===== */
@@ -632,4 +643,300 @@ input[readonly] {
 .role-badge.buyer {
   background: #fff3e0;
   color: #f57c00;
+}
+
+/* Security section styles */
+.content-section#security {
+  background-color: #fbfbfb;
+  border-radius: 12px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+}
+
+.content-section#security h2 {
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #00a651;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.security-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.security-form .form-group {
+  margin-bottom: 20px;
+}
+
+.security-form label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #444;
+}
+
+.security-form input[type="password"] {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+.security-form input[type="password"]:focus {
+  border-color: #00a651;
+  box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.2);
+  outline: none;
+}
+
+.security-form button.save-btn {
+  background-color: #00a651;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.security-form button.save-btn:hover {
+  background-color: #008542;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.security-form button.save-btn:active {
+  transform: translateY(0);
+}
+
+/* Password strength indicator */
+.password-strength {
+  height: 8px;
+  margin-top: 10px;
+  border-radius: 4px;
+  background: #e0e0e0;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.password-strength-meter {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+.password-strength-text {
+  font-size: 13px;
+  margin-top: 8px;
+  text-align: right;
+  font-weight: 500;
+}
+
+.weak .password-strength-meter {
+  width: 25%;
+  background-color: #ff4444;
+  box-shadow: 0 0 5px rgba(255, 68, 68, 0.5);
+}
+.medium .password-strength-meter {
+  width: 50%;
+  background-color: #ffbb33;
+  box-shadow: 0 0 5px rgba(255, 187, 51, 0.5);
+}
+.strong .password-strength-meter {
+  width: 75%;
+  background-color: #00c851;
+  box-shadow: 0 0 5px rgba(0, 200, 81, 0.5);
+}
+.very-strong .password-strength-meter {
+  width: 100%;
+  background-color: #007e33;
+  box-shadow: 0 0 5px rgba(0, 126, 51, 0.5);
+}
+
+/* Password visibility toggle */
+.password-toggle-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-toggle-container input[type="password"] {
+  padding-right: 45px; /* Make room for the toggle button */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5; /* Ensure it's above the input */
+}
+
+.password-toggle-btn:hover {
+  color: #00a651;
+}
+
+.password-toggle-btn:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
+.password-toggle-btn i {
+  font-size: 20px; /* Larger icon */
+}
+
+/* Password requirements */
+.password-requirements {
+  background: #f8f9fa;
+  border-left: 4px solid #00a651;
+  padding: 16px 20px;
+  border-radius: 6px;
+  margin: 20px 0 30px;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  max-width: 500px; /* Match the max-width of the form */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.password-requirements strong {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.password-requirements strong i {
+  color: #00a651;
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.password-requirements ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.password-requirements li {
+  margin-bottom: 12px;
+  color: #666;
+  padding-left: 30px;
+  position: relative;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.password-requirements li:before {
+  content: "\f111";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 400;
+  position: absolute;
+  left: 5px;
+  color: #aaa;
+  font-size: 10px;
+}
+
+.password-requirements li.met {
+  color: #00a651;
+}
+
+.password-requirements li.met:before {
+  content: "\f058";
+  font-weight: 900;
+  color: #00a651;
+  font-size: 14px;
+}
+
+/* Mobile responsiveness for security section */
+@media (max-width: 768px) {
+  .content-section#security {
+    padding: 20px 15px;
+  }
+
+  .security-form {
+    max-width: 100%;
+  }
+
+  .password-requirements {
+    font-size: 13px;
+  }
+
+  .password-requirements ul {
+    margin-left: 15px;
+  }
+
+  .security-form input[type="password"] {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .security-form button.save-btn {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+
+  .password-toggle-btn {
+    right: 8px;
+  }
+}
+
+/* More specific styles for password fields */
+.security-form .password-toggle-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.security-form .password-toggle-container input[type="password"] {
+  padding-right: 40px;
+  width: 100%;
+  height: 45px;
+  border-radius: 6px;
+}
+
+.security-form .password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  color: #666;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.security-form .password-toggle-btn i {
+  font-size: 18px;
+}
+
+.security-form .password-toggle-btn:hover {
+  color: #00a651;
 }

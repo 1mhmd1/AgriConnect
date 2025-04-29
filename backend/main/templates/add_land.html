@@ -1,0 +1,325 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Add New Land
+Listing{% endblock %} {% block extra_css %}
+<style>
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+  }
+
+  .form-container {
+    max-width: 800px;
+    margin: 80px auto 40px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+  }
+
+  .form-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .form-header h1 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .form-field {
+    margin-bottom: 20px;
+  }
+
+  .form-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
+  .form-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+  }
+
+  .checkbox-item input {
+    margin-right: 8px;
+    width: auto;
+  }
+
+  .image-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px dashed #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  .image-upload i {
+    font-size: 24px;
+    color: #3498db;
+    margin-bottom: 10px;
+  }
+
+  .upload-button {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .submit-button {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 15px;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .submit-button:hover {
+    background-color: #27ae60;
+  }
+
+  .back-link {
+    display: inline-block;
+    padding: 10px 0;
+    color: #3498db;
+    text-decoration: none;
+    margin-bottom: 20px;
+  }
+
+  .back-link i {
+    margin-right: 5px;
+  }
+
+  #preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    margin-top: 10px;
+    display: none;
+    border-radius: 8px;
+  }
+
+  .error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="form-container">
+  <a href="{% url 'landowner' %}" class="back-link">
+    <i class="fas fa-arrow-left"></i> Back to Land Listings
+  </a>
+
+  <div class="form-header">
+    <h1>Add New Land Listing</h1>
+  </div>
+
+  {% if error %}
+  <div class="error-message">{{ error }}</div>
+  {% endif %}
+
+  <form
+    action="{% url 'add_land' %}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    {% csrf_token %}
+
+    <div class="form-field">
+      <label for="land_image">Land Images (Required)</label>
+      <div class="image-upload" id="image-upload-area">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>Click to upload images</span>
+        <input
+          type="file"
+          id="land_image"
+          name="land_image"
+          style="display: none"
+          accept="image/*"
+          required
+        />
+        <button type="button" class="upload-button">Select Image</button>
+      </div>
+      <img id="preview-image" src="" alt="Land Image" />
+    </div>
+
+    <div class="form-field">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" required />
+    </div>
+
+    <div class="form-field">
+      <label for="size">Size (Acres)</label>
+      <input type="number" id="size" name="size" step="0.1" min="0" required />
+    </div>
+
+    <div class="form-field">
+      <label for="soil_type">Soil Type</label>
+      <select id="soil_type" name="soil_type" required>
+        <option value="Loam">Loam</option>
+        <option value="Clay">Clay</option>
+        <option value="Sandy">Sandy</option>
+        <option value="Silt">Silt</option>
+        <option value="Peaty">Peaty</option>
+        <option value="Chalky">Chalky</option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label for="water_source">Water Source</label>
+      <select id="water_source" name="water_source" required>
+        <option value="Well">Well</option>
+        <option value="River">River</option>
+        <option value="Rain">Rain</option>
+        <option value="Canal">Canal</option>
+        <option value="Municipal">Municipal</option>
+        <option value="None">None</option>
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label>Lease Terms</label>
+      <div class="checkbox-group">
+        <div class="checkbox-item">
+          <input
+            type="checkbox"
+            id="short_term"
+            name="lease_terms"
+            value="Short-Term"
+          />
+          <label for="short_term">Short-Term</label>
+        </div>
+        <div class="checkbox-item">
+          <input
+            type="checkbox"
+            id="long_term"
+            name="lease_terms"
+            value="Long-Term"
+          />
+          <label for="long_term">Long-Term</label>
+        </div>
+        <div class="checkbox-item">
+          <input
+            type="checkbox"
+            id="lease_to_own"
+            name="lease_terms"
+            value="Lease-to-Own"
+          />
+          <label for="lease_to_own">Lease-to-Own</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="price_per_acre">Price per Acre</label>
+      <input
+        type="number"
+        id="price_per_acre"
+        name="price_per_acre"
+        min="0"
+        required
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="location">Location</label>
+      <input type="text" id="location" name="location" required />
+    </div>
+
+    <div class="form-field">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="4"></textarea>
+    </div>
+
+    <button type="submit" class="submit-button">Add Land Listing</button>
+  </form>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const uploadButton = document.querySelector(".upload-button");
+    const fileInput = document.getElementById("land_image");
+    const previewImage = document.getElementById("preview-image");
+    const uploadArea = document.getElementById("image-upload-area");
+
+    uploadButton.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    uploadArea.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", function () {
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          previewImage.src = e.target.result;
+          previewImage.style.display = "block";
+        };
+
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    });
+
+    // Handle checkbox processing for lease terms
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (e) {
+      const checkboxes = document.querySelectorAll(
+        'input[name="lease_terms"]:checked'
+      );
+      if (checkboxes.length === 0) {
+        // If no checkboxes are checked, create a hidden field with an empty value
+        const hiddenField = document.createElement("input");
+        hiddenField.type = "hidden";
+        hiddenField.name = "lease_terms";
+        hiddenField.value = "";
+        form.appendChild(hiddenField);
+      }
+    });
+  });
+</script>
+{% endblock %}
