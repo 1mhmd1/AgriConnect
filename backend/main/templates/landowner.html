@@ -1,5 +1,5 @@
 {% extends 'base.html' %} {% load static %} {% block title %}Land Owner
-Dashboard{% endblock %} {% block extra_css %}
+Dashboard{% endblock %} {% block extra_css %} {% csrf_token %}
 <style>
   body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -9,6 +9,7 @@ Dashboard{% endblock %} {% block extra_css %}
 
   .dashboard-container {
     padding: 40px;
+    margin-top: 80px;
   }
 
   .grid-container {
@@ -59,7 +60,8 @@ Dashboard{% endblock %} {% block extra_css %}
     border-top: 1px solid #eee;
   }
 
-  .land-buttons button {
+  .land-buttons button,
+  .land-buttons a.edit-btn {
     background-color: #3498db;
     color: white;
     border: none;
@@ -68,9 +70,12 @@ Dashboard{% endblock %} {% block extra_css %}
     cursor: pointer;
     font-size: 14px;
     transition: 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
   }
 
-  .land-buttons button:hover {
+  .land-buttons button:hover,
+  .land-buttons a.edit-btn:hover {
     background-color: #2980b9;
   }
 
@@ -87,14 +92,503 @@ Dashboard{% endblock %} {% block extra_css %}
     color: #333;
     margin-bottom: 30px;
   }
+
+  /* New styles for contact button */
+  .contact-btn {
+    display: inline-block;
+    background-color: #4caf50;
+    color: white;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+  }
+
+  .contact-btn:hover {
+    background-color: #388e3c;
+    color: white;
+    text-decoration: none;
+  }
+
+  .contact-btn i {
+    margin-right: 8px;
+  }
+
+  /* Add notification styles */
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    animation: slideIn 0.3s ease-out;
+    z-index: 1000;
+  }
+
+  .notification.success {
+    background-color: #4caf50;
+  }
+
+  .notification.error {
+    background-color: #f44336;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-content {
+    background-color: #fff;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+  }
+
+  .modal-header {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    color: #2c3e50;
+  }
+
+  .form-field {
+    margin-bottom: 20px;
+  }
+
+  .form-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+
+  .form-field select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+  }
+
+  .checkbox-item input {
+    margin-right: 8px;
+    width: auto;
+  }
+
+  .image-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px dashed #ddd;
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  .image-upload i {
+    font-size: 24px;
+    color: #3498db;
+    margin-bottom: 10px;
+  }
+
+  .upload-button {
+    background-color: #f8f9fa;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    margin-top: 10px;
+    display: none;
+    border-radius: 8px;
+  }
+
+  .submit-button {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 15px;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .submit-button:hover {
+    background-color: #27ae60;
+  }
+
+  /* Filter styles */
+  .filter-section {
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .my-lands-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .my-lands-section label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #333;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  .my-lands-section input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #2ecc71;
+    cursor: pointer;
+    margin: 0;
+  }
+
+  .my-lands-section span {
+    user-select: none;
+  }
+
+  .filter-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: end;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filter-group label {
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 15px;
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+  }
+
+  .filter-group select:focus {
+    outline: none;
+    border-color: #3498db;
+  }
+
+  .reset-filters {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    height: 48px;
+  }
+
+  .reset-filters:hover {
+    background-color: #27ae60;
+    transform: translateY(-1px);
+  }
+
+  .reset-filters i {
+    font-size: 16px;
+  }
+
+  /* Style for My Lands checkbox */
+  .filter-group input[type="checkbox"] {
+    cursor: pointer;
+  }
+
+  .filter-group input[type="checkbox"] + label {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .my-lands-toggle {
+    margin-bottom: 20px;
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+  }
+
+  .my-lands-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+  }
+
+  .my-lands-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #2ecc71;
+  }
+
+  .my-lands-toggle span {
+    font-size: 15px;
+    font-weight: 500;
+    color: #2c3e50;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 15px;
+    margin: 20px auto;
+    color: #666;
+    border: 2px dashed #e8ecef;
+  }
+
+  /* Add these styles to your existing CSS */
+  .filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background-color: #fff;
+    border: 2px solid #e8ecef;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+  }
+
+  .filter-toggle:hover {
+    border-color: #3498db;
+  }
+
+  .filter-toggle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e8ecef;
+    border-radius: 5px;
+    margin: 0;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .filter-toggle input[type="checkbox"]:checked {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+
+  .filter-toggle input[type="checkbox"]:checked::after {
+    content: "✓";
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+  }
+
+  .filter-toggle label {
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
 </style>
 {% endblock %} {% block content %}
 <div class="dashboard-container">
   <h1 class="dashboard-title">Land Listings</h1>
 
-  <div class="grid-container">
+  <!-- Filter Section -->
+  <div class="filter-section">
+    {% if is_landowner %}
+    <div class="my-lands-section">
+      <label>
+        <input type="checkbox" id="myLandsFilter" onchange="applyFilters()" />
+        <span>MY LANDS ONLY</span>
+      </label>
+    </div>
+    {% endif %}
+
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="sortBy">SORT BY</label>
+        <select id="sortBy" onchange="applyFilters()">
+          <option value="">Select Sorting</option>
+          <option value="price_asc">Price (Low to High)</option>
+          <option value="price_desc">Price (High to Low)</option>
+          <option value="size_asc">Size (Small to Large)</option>
+          <option value="size_desc">Size (Large to Small)</option>
+          <option value="date_asc">Date Added (Oldest First)</option>
+          <option value="date_desc">Date Added (Newest First)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="soilType">SOIL TYPE</label>
+        <select id="soilType" onchange="applyFilters()">
+          <option value="">All Soil Types</option>
+          <option value="Loam">Loam</option>
+          <option value="Clay">Clay</option>
+          <option value="Sandy">Sandy</option>
+          <option value="Silt">Silt</option>
+          <option value="Peaty">Peaty</option>
+          <option value="Chalky">Chalky</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="waterSource">WATER SOURCE</label>
+        <select id="waterSource" onchange="applyFilters()">
+          <option value="">All Water Sources</option>
+          <option value="Well">Well</option>
+          <option value="River">River</option>
+          <option value="Rain">Rain</option>
+          <option value="Canal">Canal</option>
+          <option value="Municipal">Municipal</option>
+          <option value="None">None</option>
+        </select>
+      </div>
+      <button class="reset-filters" onclick="resetFilters()">
+        <i class="fas fa-sync-alt"></i>
+        RESET FILTERS
+      </button>
+    </div>
+  </div>
+
+  <div class="grid-container" id="landsGrid">
     {% if lands %} {% for land in lands %}
-    <div class="land-card">
+    <div
+      class="land-card"
+      data-price="{{ land.price_per_acre }}"
+      data-size="{{ land.size }}"
+      data-date="{{ land.created_at|date:'Y-m-d H:i:s' }}"
+      data-soil-type="{{ land.soil_type }}"
+      data-water-source="{{ land.water_source }}"
+      data-owner-id="{{ land.owner.user.id }}"
+    >
       {% if land.image %}
       <img
         src="{{ land.image.url }}"
@@ -110,59 +604,727 @@ Dashboard{% endblock %} {% block extra_css %}
       {% endif %}
       <div class="land-info">
         <h2>{{ land.title }}</h2>
-        <p><strong>Location:</strong> {{ land.location }}</p>
-        <p><strong>Size:</strong> {{ land.size }} m²</p>
-        <p><strong>Type:</strong> {{ land.land_type }}</p>
-        <p><strong>Price:</strong> ${{ land.price }}</p>
+        <p>
+          <strong>Size (Acres):</strong>
+          <span class="size-value">{{ land.size }}</span>
+        </p>
+        <p>
+          <strong>Soil Type:</strong>
+          <span class="soil-type-value">{{ land.soil_type }}</span>
+        </p>
+        <p>
+          <strong>Water Source:</strong>
+          <span class="water-source-value">{{ land.water_source }}</span>
+        </p>
+        <p><strong>Lease Terms:</strong> {{ land.lease_terms }}</p>
+        <p>
+          <strong>Price per Acre:</strong> $<span class="price-value"
+            >{{ land.price_per_acre }}</span
+          >
+        </p>
       </div>
       <div class="land-buttons">
         {% if user.is_authenticated and land.owner.user.id == user.id %}
-        <button>Edit</button>
-        <button class="delete-btn">Delete</button>
+        <button
+          class="edit-btn"
+          onclick="openEditModal({{ land.id }}, '{{ land.title }}', '{{ land.size }}', '{{ land.soil_type }}', '{{ land.water_source }}', '{{ land.lease_terms }}', '{{ land.price_per_acre }}', '{{ land.location }}', '{{ land.description }}', '{% if land.image %}{{ land.image.url }}{% endif %}')"
+        >
+          Edit
+        </button>
+        <button
+          class="delete-btn"
+          onclick="deleteLand({{ land.id }})"
+          data-land-id="{{ land.id }}"
+        >
+          Delete
+        </button>
         {% else %}
-        <button>Contact Owner</button>
+        <a href="{% url 'chat' %}" class="contact-btn">
+          <i class="fas fa-comments"></i>
+          Contact Owner
+        </a>
         {% endif %}
       </div>
     </div>
     {% endfor %} {% else %}
-    <div
-      class="no-lands-message"
-      style="grid-column: 1 / -1; text-align: center; padding: 50px 0"
-    >
+    <div class="no-lands-message">
       <p>No land listings available at the moment.</p>
-      {% if user.is_authenticated %}
-      <p>
-        {% if user.userprofile.role == 'landowner' %}
-        <a
-          href="{% url 'profile' %}"
-          class="btn btn-primary"
-          style="
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-          "
-          >Add Your Land</a
-        >
-        {% else %}
-        <a
-          href="{% url 'profile' %}"
-          class="btn btn-primary"
-          style="
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-          "
-          >Become a Landowner</a
-        >
-        {% endif %}
-      </p>
-      {% endif %}
     </div>
     {% endif %}
   </div>
 </div>
-{% endblock %}
+
+{% if user.is_authenticated and user.userprofile.role == 'landowner' %}
+<div style="max-width: 1200px; margin: 30px auto">
+  <button
+    onclick="openAddModal()"
+    class="btn"
+    style="
+      display: block;
+      background-color: #2ecc71;
+      color: white;
+      text-align: center;
+      padding: 12px 0;
+      border-radius: 8px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      border: none;
+      cursor: pointer;
+    "
+  >
+    <i class="fas fa-plus" style="margin-right: 8px"></i> Add New Land Listing
+  </button>
+</div>
+{% endif %}
+
+<!-- Edit Land Modal -->
+<div id="editLandModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeEditModal()">&times;</span>
+    <div class="modal-header">
+      <h2>Edit Land Listing</h2>
+    </div>
+
+    <form id="editLandForm" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" id="edit_land_id" name="land_id" />
+      <input type="hidden" name="action" value="edit" />
+
+      <div class="form-field">
+        <label for="edit_land_image">Land Image</label>
+        <div class="image-upload" id="edit_image_upload_area">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <span>Click to upload image</span>
+          <input
+            type="file"
+            id="edit_land_image"
+            name="land_image"
+            style="display: none"
+            accept="image/*"
+          />
+          <button type="button" class="upload-button">Select Image</button>
+        </div>
+        <img
+          id="edit_preview_image"
+          class="preview-image"
+          src=""
+          alt="Land Image"
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="edit_title">Title</label>
+        <input type="text" id="edit_title" name="title" required />
+      </div>
+
+      <div class="form-field">
+        <label for="edit_size">Size (Acres)</label>
+        <input
+          type="number"
+          id="edit_size"
+          name="size"
+          step="0.1"
+          min="0"
+          required
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="edit_soil_type">Soil Type</label>
+        <select id="edit_soil_type" name="soil_type" required>
+          <option value="Loam">Loam</option>
+          <option value="Clay">Clay</option>
+          <option value="Sandy">Sandy</option>
+          <option value="Silt">Silt</option>
+          <option value="Peaty">Peaty</option>
+          <option value="Chalky">Chalky</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="edit_water_source">Water Source</label>
+        <select id="edit_water_source" name="water_source" required>
+          <option value="Well">Well</option>
+          <option value="River">River</option>
+          <option value="Rain">Rain</option>
+          <option value="Canal">Canal</option>
+          <option value="Municipal">Municipal</option>
+          <option value="None">None</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Lease Terms</label>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="edit_short_term"
+              name="lease_terms"
+              value="Short-Term"
+            />
+            <label for="edit_short_term">Short-Term</label>
+          </div>
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="edit_long_term"
+              name="lease_terms"
+              value="Long-Term"
+            />
+            <label for="edit_long_term">Long-Term</label>
+          </div>
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="edit_lease_to_own"
+              name="lease_terms"
+              value="Lease-to-Own"
+            />
+            <label for="edit_lease_to_own">Lease-to-Own</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="edit_price_per_acre">Price per Acre</label>
+        <input
+          type="number"
+          id="edit_price_per_acre"
+          name="price_per_acre"
+          min="0"
+          required
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="edit_location">Location</label>
+        <input type="text" id="edit_location" name="location" required />
+      </div>
+
+      <div class="form-field">
+        <label for="edit_description">Description</label>
+        <textarea id="edit_description" name="description" rows="4"></textarea>
+      </div>
+
+      <button type="submit" class="submit-button">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<!-- Add Land Modal -->
+<div id="addLandModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAddModal()">&times;</span>
+    <div class="modal-header">
+      <h2>Add New Land Listing</h2>
+    </div>
+
+    <form id="addLandForm" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add" />
+
+      <div class="form-field">
+        <label for="add_land_image">Land Image (Required)</label>
+        <div class="image-upload" id="add_image_upload_area">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <span>Click to upload image</span>
+          <input
+            type="file"
+            id="add_land_image"
+            name="land_image"
+            style="display: none"
+            accept="image/*"
+            required
+          />
+          <button type="button" class="upload-button">Select Image</button>
+        </div>
+        <img
+          id="add_preview_image"
+          class="preview-image"
+          src=""
+          alt="Land Image"
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="add_title">Title</label>
+        <input type="text" id="add_title" name="title" required />
+      </div>
+
+      <div class="form-field">
+        <label for="add_size">Size (Acres)</label>
+        <input
+          type="number"
+          id="add_size"
+          name="size"
+          step="0.1"
+          min="0"
+          required
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="add_soil_type">Soil Type</label>
+        <select id="add_soil_type" name="soil_type" required>
+          <option value="Loam">Loam</option>
+          <option value="Clay">Clay</option>
+          <option value="Sandy">Sandy</option>
+          <option value="Silt">Silt</option>
+          <option value="Peaty">Peaty</option>
+          <option value="Chalky">Chalky</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="add_water_source">Water Source</label>
+        <select id="add_water_source" name="water_source" required>
+          <option value="Well">Well</option>
+          <option value="River">River</option>
+          <option value="Rain">Rain</option>
+          <option value="Canal">Canal</option>
+          <option value="Municipal">Municipal</option>
+          <option value="None">None</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Lease Terms</label>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="add_short_term"
+              name="lease_terms"
+              value="Short-Term"
+            />
+            <label for="add_short_term">Short-Term</label>
+          </div>
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="add_long_term"
+              name="lease_terms"
+              value="Long-Term"
+            />
+            <label for="add_long_term">Long-Term</label>
+          </div>
+          <div class="checkbox-item">
+            <input
+              type="checkbox"
+              id="add_lease_to_own"
+              name="lease_terms"
+              value="Lease-to-Own"
+            />
+            <label for="add_lease_to_own">Lease-to-Own</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="add_price_per_acre">Price per Acre</label>
+        <input
+          type="number"
+          id="add_price_per_acre"
+          name="price_per_acre"
+          min="0"
+          required
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="add_location">Location</label>
+        <input type="text" id="add_location" name="location" required />
+      </div>
+
+      <div class="form-field">
+        <label for="add_description">Description</label>
+        <textarea id="add_description" name="description" rows="4"></textarea>
+      </div>
+
+      <button type="submit" class="submit-button">Add Land Listing</button>
+    </form>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  // Function to show notifications
+  function showNotification(message, type = "success") {
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  }
+
+  // Function to handle land deletion
+  async function deleteLand(landId) {
+    if (!confirm("Are you sure you want to delete this land listing?")) {
+      return;
+    }
+
+    try {
+      const csrftoken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("csrftoken="))
+        ?.split("=")[1];
+
+      if (!csrftoken) {
+        console.error("CSRF token not found in cookies");
+        showNotification("Error: CSRF token not found", "error");
+        return;
+      }
+
+      const response = await fetch(`/landowner/delete-land/${landId}/`, {
+        method: "DELETE",
+        headers: {
+          "X-CSRFToken": csrftoken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "same-origin",
+      });
+
+      if (response.ok) {
+        // Remove the land card from the DOM
+        const deleteButton = document.querySelector(
+          `button[data-land-id="${landId}"]`
+        );
+        if (deleteButton) {
+          const landCard = deleteButton.closest(".land-card");
+          if (landCard) {
+            landCard.remove();
+            showNotification("Land listing deleted successfully!", "success");
+          }
+        }
+      } else {
+        const responseText = await response.text();
+        console.error("Server response:", response.status, responseText);
+
+        let errorMessage;
+        try {
+          const data = JSON.parse(responseText);
+          errorMessage = data.message || "Error deleting land listing";
+        } catch (jsonError) {
+          console.error(
+            "Error parsing JSON response:",
+            jsonError,
+            "Raw response:",
+            responseText
+          );
+          errorMessage = `Error: ${response.status} - ${response.statusText}`;
+        }
+        showNotification(errorMessage, "error");
+      }
+    } catch (error) {
+      console.error("Network or other error:", error);
+      showNotification(
+        "An error occurred while deleting the land listing",
+        "error"
+      );
+    }
+  }
+
+  // Edit Land Modal Functions
+  function openEditModal(
+    id,
+    title,
+    size,
+    soilType,
+    waterSource,
+    leaseTerms,
+    pricePerAcre,
+    location,
+    description,
+    imageUrl
+  ) {
+    document.getElementById("edit_land_id").value = id;
+    document.getElementById("edit_title").value = title;
+    document.getElementById("edit_size").value = size;
+    document.getElementById("edit_soil_type").value = soilType;
+    document.getElementById("edit_water_source").value = waterSource;
+    document.getElementById("edit_price_per_acre").value = pricePerAcre;
+    document.getElementById("edit_location").value = location;
+    document.getElementById("edit_description").value = description;
+
+    // Handle lease terms checkboxes
+    document.getElementById("edit_short_term").checked =
+      leaseTerms.includes("Short-Term");
+    document.getElementById("edit_long_term").checked =
+      leaseTerms.includes("Long-Term");
+    document.getElementById("edit_lease_to_own").checked =
+      leaseTerms.includes("Lease-to-Own");
+
+    // Handle image preview
+    const previewImage = document.getElementById("edit_preview_image");
+    if (imageUrl) {
+      previewImage.src = imageUrl;
+      previewImage.style.display = "block";
+    } else {
+      previewImage.style.display = "none";
+    }
+
+    document.getElementById("editLandModal").style.display = "block";
+  }
+
+  function closeEditModal() {
+    document.getElementById("editLandModal").style.display = "none";
+  }
+
+  // Add Land Modal Functions
+  function openAddModal() {
+    // Reset form
+    document.getElementById("addLandForm").reset();
+    document.getElementById("add_preview_image").style.display = "none";
+
+    document.getElementById("addLandModal").style.display = "block";
+  }
+
+  function closeAddModal() {
+    document.getElementById("addLandModal").style.display = "none";
+  }
+
+  // Image upload preview functions
+  function setupImageUpload(
+    inputId,
+    previewId,
+    uploadButtonSelector,
+    uploadAreaSelector
+  ) {
+    const fileInput = document.getElementById(inputId);
+    const previewImage = document.getElementById(previewId);
+    const uploadButton = document.querySelector(uploadButtonSelector);
+    const uploadArea = document.querySelector(uploadAreaSelector);
+
+    uploadButton.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    uploadArea.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", function () {
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          previewImage.src = e.target.result;
+          previewImage.style.display = "block";
+        };
+
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    });
+  }
+
+  // Handle form submissions
+  async function submitLandForm(formId, action) {
+    const form = document.getElementById(formId);
+    const formData = new FormData(form);
+
+    try {
+      // Add lease terms as comma-separated value
+      const leaseTerms = Array.from(
+        form.querySelectorAll('input[name="lease_terms"]:checked')
+      )
+        .map((checkbox) => checkbox.value)
+        .join(",");
+
+      // If no checkboxes are checked, add an empty lease_terms field
+      if (!leaseTerms) {
+        formData.set("lease_terms", "");
+      }
+
+      let url, method;
+      if (action === "edit") {
+        const landId = formData.get("land_id");
+        url = `/landowner/update-land/${landId}/`;
+        method = "POST";
+      } else {
+        url = "/landowner/add-land/";
+        method = "POST";
+      }
+
+      const response = await fetch(url, {
+        method: method,
+        body: formData,
+        credentials: "include",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      });
+
+      if (response.ok) {
+        // Reload the page to show the updated land listing
+        window.location.reload();
+      } else {
+        const errorData = await response.json();
+        showNotification(
+          errorData.message || "Error saving land listing",
+          "error"
+        );
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      showNotification(
+        "An error occurred while saving the land listing",
+        "error"
+      );
+    }
+  }
+
+  // Filtering functionality
+  function applyFilters() {
+    const sortBy = document.getElementById("sortBy").value;
+    const soilType = document.getElementById("soilType").value;
+    const waterSource = document.getElementById("waterSource").value;
+    const myLandsFilter = document.getElementById("myLandsFilter");
+    const currentUserId = "{{ request.user.id }}";
+
+    const landCards = Array.from(document.querySelectorAll(".land-card"));
+    const landsGrid = document.getElementById("landsGrid");
+    let visibleCards = 0;
+
+    landCards.forEach((card) => {
+      const cardSoilType = card.querySelector(".soil-type-value").textContent;
+      const cardWaterSource = card.querySelector(
+        ".water-source-value"
+      ).textContent;
+      const cardOwnerId = card.dataset.ownerId;
+
+      const soilTypeMatch = !soilType || cardSoilType === soilType;
+      const waterSourceMatch = !waterSource || cardWaterSource === waterSource;
+      const ownerMatch =
+        !myLandsFilter ||
+        !myLandsFilter.checked ||
+        cardOwnerId === currentUserId;
+
+      if (soilTypeMatch && waterSourceMatch && ownerMatch) {
+        card.style.display = "";
+        visibleCards++;
+      } else {
+        card.style.display = "none";
+      }
+    });
+
+    // Sort visible cards
+    if (sortBy) {
+      const visibleCards = landCards.filter(
+        (card) => card.style.display !== "none"
+      );
+      visibleCards.sort((a, b) => {
+        const getValue = (element, className) => {
+          return parseFloat(
+            element.querySelector("." + className).textContent.replace("$", "")
+          );
+        };
+
+        if (sortBy.includes("price")) {
+          const priceA = getValue(a, "price-value");
+          const priceB = getValue(b, "price-value");
+          return sortBy === "price_asc" ? priceA - priceB : priceB - priceA;
+        } else if (sortBy.includes("size")) {
+          const sizeA = getValue(a, "size-value");
+          const sizeB = getValue(b, "size-value");
+          return sortBy === "size_asc" ? sizeA - sizeB : sizeB - sizeA;
+        } else if (sortBy.includes("date")) {
+          const dateA = new Date(a.dataset.date);
+          const dateB = new Date(b.dataset.date);
+          return sortBy === "date_asc" ? dateA - dateB : dateB - dateA;
+        }
+        return 0;
+      });
+
+      visibleCards.forEach((card) => landsGrid.appendChild(card));
+    }
+
+    // Show "no results" message if no cards are visible
+    const noResultsMessage = document.querySelector(".no-results");
+    if (visibleCards === 0) {
+      if (!noResultsMessage) {
+        const message = document.createElement("div");
+        message.className = "no-results";
+        message.textContent =
+          myLandsFilter && myLandsFilter.checked
+            ? "You have no land listings."
+            : "No lands match the selected filters";
+        landsGrid.appendChild(message);
+      }
+    } else if (noResultsMessage) {
+      noResultsMessage.remove();
+    }
+  }
+
+  function resetFilters() {
+    document.getElementById("sortBy").value = "";
+    document.getElementById("soilType").value = "";
+    document.getElementById("waterSource").value = "";
+    const myLandsFilter = document.getElementById("myLandsFilter");
+    if (myLandsFilter) {
+      myLandsFilter.checked = false;
+    }
+
+    // Show all cards
+    document.querySelectorAll(".land-card").forEach((card) => {
+      card.style.display = "";
+    });
+
+    // Remove "no results" message if it exists
+    const noResultsMessage = document.querySelector(".no-results");
+    if (noResultsMessage) {
+      noResultsMessage.remove();
+    }
+  }
+
+  // Initialize filters on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    // Apply any pre-selected filters
+    applyFilters();
+  });
+
+  // Setup image upload for edit modal
+  setupImageUpload(
+    "edit_land_image",
+    "edit_preview_image",
+    "#editLandModal .upload-button",
+    "#edit_image_upload_area"
+  );
+
+  // Setup image upload for add modal
+  setupImageUpload(
+    "add_land_image",
+    "add_preview_image",
+    "#addLandModal .upload-button",
+    "#add_image_upload_area"
+  );
+
+  // Setup form submissions
+  document
+    .getElementById("editLandForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      submitLandForm("editLandForm", "edit");
+    });
+
+  document
+    .getElementById("addLandForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      submitLandForm("addLandForm", "add");
+    });
+
+  // Close modals when clicking outside
+  window.addEventListener("click", function (event) {
+    if (event.target.classList.contains("modal")) {
+      event.target.style.display = "none";
+    }
+  });
+</script>
+{% endblock %} {% endblock %}

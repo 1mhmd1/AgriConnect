@@ -37,6 +37,7 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     icon = models.CharField(max_length=50)  # Font Awesome icon class
     description = models.TextField(blank=True)
+    status = models.CharField(max_length=20, default='active')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -178,11 +179,33 @@ class Land(models.Model):
         ('Resort', 'Resort'),
     )
     
+    SOIL_TYPES = (
+        ('Loam', 'Loam'),
+        ('Clay', 'Clay'),
+        ('Sandy', 'Sandy'),
+        ('Silt', 'Silt'),
+        ('Peaty', 'Peaty'),
+        ('Chalky', 'Chalky'),
+    )
+    
+    WATER_SOURCES = (
+        ('Well', 'Well'),
+        ('River', 'River'),
+        ('Rain', 'Rain'),
+        ('Canal', 'Canal'),
+        ('Municipal', 'Municipal'),
+        ('None', 'None'),
+    )
+    
     owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='lands')
     title = models.CharField(max_length=100, default="Land Property")
     location = models.CharField(max_length=100, default="Unknown")
-    size = models.DecimalField(max_digits=10, decimal_places=2, help_text="Size in square meters", default=0)
+    size = models.DecimalField(max_digits=10, decimal_places=2, help_text="Size in acres", default=0)
     land_type = models.CharField(max_length=20, choices=LAND_TYPES, default='Agricultural')
+    soil_type = models.CharField(max_length=20, choices=SOIL_TYPES, default='Loam')
+    water_source = models.CharField(max_length=20, choices=WATER_SOURCES, default='Well')
+    lease_terms = models.CharField(max_length=255, blank=True, null=True, help_text="Comma-separated lease terms")
+    price_per_acre = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     description = models.TextField(blank=True, null=True)
     image = models.ImageField(upload_to='land_images/', blank=True, null=True)

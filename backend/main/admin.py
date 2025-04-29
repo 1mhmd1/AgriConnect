@@ -4,6 +4,25 @@ from .models import UserProfile, Product, Category, Order
 
 class CategoryAdminForm(forms.ModelForm):
     ICON_CHOICES = [
+        # Pesticides and Plant Protection
+        ('fa-bug', 'Insecticides'),
+        ('fa-seedling', 'Herbicides'),
+        ('fa-leaf', 'Fungicides'),
+        ('fa-rat', 'Rodenticides'),
+        ('fa-worm', 'Nematicides'),
+        
+        # Plant Nutrition
+        ('fa-bottle-droplet', 'Fertilizers'),
+        ('fa-arrow-trend-up', 'Plant Growth Regulators'),
+        ('fa-mountain', 'Soil Conditioners'),
+        
+        # Additives and Enhancers
+        ('fa-flask', 'Adjuvants'),
+        ('fa-wind', 'Defoliants'),
+        ('fa-sun', 'Desiccants'),
+        ('fa-recycle', 'Biopesticides'),
+        
+        # Original categories
         ('fa-seedling', 'Seedling'),
         ('fa-tractor', 'Tractor'),
         ('fa-leaf', 'Leaf'),

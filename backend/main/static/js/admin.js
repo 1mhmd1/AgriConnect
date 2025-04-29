@@ -138,18 +138,161 @@ document.addEventListener("DOMContentLoaded", () => {
   const categoryForm = document.getElementById("categoryForm");
   const iconSelect = document.getElementById("categoryIcon");
   const iconPreview = document.getElementById("iconPreview");
+  const iconSearch = document.getElementById("iconSearch");
+  const iconSearchResults = document.getElementById("iconSearchResults");
 
-  // Populate icon dropdown
-  categoryIcons.forEach((icon) => {
-    const option = document.createElement("option");
-    option.value = icon.value;
-    option.textContent = icon.label;
-    iconSelect.appendChild(option);
+  // List of available icons
+  const availableIcons = [
+    "fa-sun",
+    "fa-cloud-rain",
+    "fa-wind",
+    "fa-seedling",
+    "fa-leaf",
+    "fa-tree",
+    "fa-apple-alt",
+    "fa-carrot",
+    "fa-wheat-awn",
+    "fa-tractor",
+    "fa-truck",
+    "fa-warehouse",
+    "fa-box",
+    "fa-boxes-stacked",
+    "fa-tag",
+    "fa-tags",
+    "fa-store",
+    "fa-shopping-cart",
+    "fa-users",
+    "fa-user-farmer",
+    "fa-chart-line",
+    "fa-chart-bar",
+    "fa-chart-pie",
+    "fa-chart-area",
+    "fa-calendar",
+    "fa-clock",
+    "fa-bell",
+    "fa-envelope",
+    "fa-phone",
+    "fa-map-marker-alt",
+    "fa-globe",
+    "fa-database",
+    "fa-cog",
+    "fa-tools",
+    "fa-bug-slash",
+    "fa-virus-slash",
+    "fa-rat",
+    "fa-worm",
+    "fa-bottle-droplet",
+    "fa-arrow-trend-up",
+    "fa-mountain",
+    "fa-flask",
+  ];
+
+  // Populate icon select dropdown
+  function populateIconSelect() {
+    iconSelect.innerHTML = '<option value="">Select an Icon</option>';
+
+    // Category groupings
+    const categoryGroups = {
+      Pesticides: [
+        { value: "fa-bug", label: "Insecticides" },
+        { value: "fa-seedling", label: "Herbicides" },
+        { value: "fa-leaf", label: "Fungicides" },
+        { value: "fa-rat", label: "Rodenticides" },
+        { value: "fa-worm", label: "Nematicides" },
+      ],
+      "Plant Nutrition": [
+        { value: "fa-bottle-droplet", label: "Fertilizers" },
+        { value: "fa-arrow-trend-up", label: "Plant Growth Regulators" },
+        { value: "fa-mountain", label: "Soil Conditioners" },
+      ],
+      Additives: [
+        { value: "fa-flask", label: "Adjuvants" },
+        { value: "fa-wind", label: "Defoliants" },
+        { value: "fa-sun", label: "Desiccants" },
+        { value: "fa-recycle", label: "Biopesticides" },
+      ],
+      "General Icons": availableIcons.map((icon) => ({
+        value: icon,
+        label: icon.replace("fa-", ""),
+      })),
+    };
+
+    // Add optgroups for each category
+    Object.entries(categoryGroups).forEach(([groupName, icons]) => {
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = groupName;
+
+      icons.forEach((icon) => {
+        const option = document.createElement("option");
+        option.value = icon.value;
+        option.innerHTML = `<i class="fas ${icon.value}"></i> ${icon.label}`;
+        optgroup.appendChild(option);
+      });
+
+      iconSelect.appendChild(optgroup);
+    });
+  }
+
+  // Search icons function
+  function searchIcons(query) {
+    const searchResults = availableIcons.filter((icon) =>
+      icon.toLowerCase().includes(query.toLowerCase())
+    );
+
+    iconSearchResults.innerHTML = "";
+
+    if (searchResults.length > 0) {
+      searchResults.forEach((icon) => {
+        const div = document.createElement("div");
+        div.className = "icon-search-item";
+        div.innerHTML = `<i class="fas ${icon}"></i>${icon.replace("fa-", "")}`;
+        div.addEventListener("click", () => {
+          selectIcon(icon);
+        });
+        iconSearchResults.appendChild(div);
+      });
+      iconSearchResults.classList.add("active");
+    } else {
+      iconSearchResults.classList.remove("active");
+    }
+  }
+
+  // Select icon function
+  function selectIcon(icon) {
+    iconSelect.value = icon;
+    iconPreview.className = `fas ${icon}`;
+    iconSearch.value = icon.replace("fa-", "");
+    iconSearchResults.classList.remove("active");
+  }
+
+  // Event listeners
+  iconSearch.addEventListener("input", (e) => {
+    const query = e.target.value;
+    if (query.length > 0) {
+      searchIcons(query);
+    } else {
+      iconSearchResults.classList.remove("active");
+    }
   });
 
-  // Update icon preview when selection changes
   iconSelect.addEventListener("change", function () {
-    iconPreview.className = "fas " + this.value;
+    const selectedIcon = this.value;
+    if (selectedIcon) {
+      selectIcon(selectedIcon);
+    } else {
+      iconPreview.className = "";
+      iconSearch.value = "";
+    }
+  });
+
+  // Close search results when clicking outside
+  document.addEventListener("click", (e) => {
+    if (
+      !iconSearch.contains(e.target) &&
+      !iconSearchResults.contains(e.target)
+    ) {
+      iconSearchResults.classList.remove("active");
+    }
   });
 
   // Open modal
@@ -157,6 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
     categoryModal.style.display = "block";
     categoryForm.reset();
     iconPreview.className = "fas";
+    populateIconSelect();
   });
 
   // Close modal
@@ -234,4 +378,9 @@ document.addEventListener("DOMContentLoaded", () => {
       notification.remove();
     }, 3000);
   }
+
+  // Initialize when document is ready
+  document.addEventListener("DOMContentLoaded", function () {
+    populateIconSelect();
+  });
 });

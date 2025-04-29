@@ -35,6 +35,19 @@ Agri-Connect{% endblock %} {% block extra_css %}
     margin: 0;
   }
 
+  .cart-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+
+  .cart-items-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
   .cart-empty {
     text-align: center;
     padding: 3rem;
@@ -65,6 +78,7 @@ Agri-Connect{% endblock %} {% block extra_css %}
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     padding: 20px;
+    border: 1px solid #eee;
   }
 
   .cart-item-content {
@@ -134,7 +148,7 @@ Agri-Connect{% endblock %} {% block extra_css %}
     padding: 25px;
     position: sticky;
     top: 90px;
-    transition: all 0.3s ease;
+    height: fit-content;
   }
 
   .cart-summary h3 {
@@ -284,6 +298,10 @@ Agri-Connect{% endblock %} {% block extra_css %}
   }
 
   @media (max-width: 768px) {
+    .cart-layout {
+      grid-template-columns: 1fr;
+    }
+
     .cart-container {
       padding: 1rem;
     }
@@ -299,15 +317,6 @@ Agri-Connect{% endblock %} {% block extra_css %}
 
     .quantity-controls {
       justify-content: center;
-    }
-
-    .footer-content {
-      flex-direction: column;
-      text-align: center;
-    }
-
-    .footer-section {
-      margin: 20px 0;
     }
 
     .cart-summary {
@@ -343,10 +352,55 @@ Agri-Connect{% endblock %} {% block extra_css %}
       height: 80px;
     }
   }
+
+  .alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .alert-error {
+    background-color: #dc3545;
+  }
+
+  .alert-success {
+    background-color: #28a745;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
 </style>
-{% endblock %} {% block content %}
+{% endblock %} {% block content %} {% csrf_token %}
 <div class="cart-container">
-  <h1 class="mb-4">Shopping Cart</h1>
+  <div class="cart-header">
+    <h1>Shopping Cart</h1>
+  </div>
 
   {% if not user.is_authenticated %}
   <div class="alert alert-warning">
@@ -354,54 +408,52 @@ Agri-Connect{% endblock %} {% block extra_css %}
     your cart.
   </div>
   {% else %}
-  <div class="row">
-    <div class="col-md-8">
+  <div class="cart-layout">
+    <!-- Left Column - Cart Items -->
+    <div class="cart-items-section">
       <div id="cart-items">
         <!-- Cart items will be loaded here -->
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="cart-summary">
-        <h3>Order Summary</h3>
-        <div class="summary-row">
-          <span>Subtotal</span>
-          <span id="cart-subtotal">$0.00</span>
-        </div>
-        <div class="summary-row">
-          <span>Shipping</span>
-          <div>
-            <span id="cart-shipping">$0.00</span>
-            <span
-              class="shipping-badge"
-              id="shipping-badge"
-              style="display: none"
-              >Free</span
-            >
-          </div>
-        </div>
-        <div class="summary-row">
-          <span>Estimated Tax (8%)</span>
-          <span id="cart-tax">$0.00</span>
-        </div>
-        <div class="summary-row">
-          <strong>Total</strong>
-          <strong id="cart-total">$0.00</strong>
-        </div>
-        <button id="checkout-btn" class="checkout-btn">
-          <i class="fas fa-lock"></i>
-          Secure Checkout
-        </button>
-        <p
-          style="
-            text-align: center;
-            margin-top: 15px;
-            color: #666;
-            font-size: 0.9rem;
-          "
-        >
-          <i class="fas fa-shield-alt"></i> Secure Transaction
-        </p>
+
+    <!-- Right Column - Order Summary -->
+    <div class="cart-summary">
+      <h3>Order Summary</h3>
+      <div class="summary-row">
+        <span>Subtotal</span>
+        <span id="cart-subtotal">$0.00</span>
       </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <div>
+          <span id="cart-shipping">$0.00</span>
+          <span class="shipping-badge" id="shipping-badge" style="display: none"
+            >Free</span
+          >
+        </div>
+      </div>
+      <div class="summary-row">
+        <span>Estimated Tax (8%)</span>
+        <span id="cart-tax">$0.00</span>
+      </div>
+      <div class="summary-row">
+        <strong>Total</strong>
+        <strong id="cart-total">$0.00</strong>
+      </div>
+      <button id="checkout-btn" class="checkout-btn">
+        <i class="fas fa-lock"></i>
+        Secure Checkout
+      </button>
+      <p
+        style="
+          text-align: center;
+          margin-top: 15px;
+          color: #666;
+          font-size: 0.9rem;
+        "
+      >
+        <i class="fas fa-shield-alt"></i> Secure Transaction
+      </p>
     </div>
   </div>
   {% endif %}
@@ -418,10 +470,24 @@ Agri-Connect{% endblock %} {% block extra_css %}
     return "$" + parseFloat(price).toFixed(2);
   }
 
+  // Show alert message
+  function showAlert(message, type = "error") {
+    const alert = document.createElement("div");
+    alert.className = `alert alert-${type}`;
+    alert.textContent = message;
+    document.body.appendChild(alert);
+
+    // Remove alert after 3 seconds
+    setTimeout(() => {
+      alert.style.animation = "slideOut 0.3s ease-out forwards";
+      setTimeout(() => alert.remove(), 300);
+    }, 3000);
+  }
+
   // Load cart data
   async function loadCart() {
     try {
-      const response = await fetch("/api/cart/");
+      const response = await fetch("/cart/");
       if (!response.ok) {
         throw new Error("Failed to load cart");
       }
@@ -430,7 +496,7 @@ Agri-Connect{% endblock %} {% block extra_css %}
       displayCart(data);
     } catch (error) {
       console.error("Error loading cart:", error);
-      showError("Failed to load cart. Please try again.");
+      showAlert("Failed to load cart. Please try again.");
     }
   }
 
@@ -458,6 +524,11 @@ Agri-Connect{% endblock %} {% block extra_css %}
                     <div class="item-details">
                         <div class="item-name">${item.name}</div>
                         <div class="item-price">${formatPrice(item.price)}</div>
+                        ${
+                          item.stock <= 5
+                            ? `<div class="stock-warning" style="color: #dc3545; font-size: 0.9rem; margin-top: 5px;">Only ${item.stock} left in stock!</div>`
+                            : ""
+                        }
                     </div>
                     <div class="quantity-controls">
                         <button class="quantity-btn minus" onclick="updateQuantity(${
@@ -512,7 +583,19 @@ Agri-Connect{% endblock %} {% block extra_css %}
     try {
       if (newQuantity < 1) return;
 
-      const response = await fetch("/api/cart/update/", {
+      // Get the current item's stock limit
+      const itemElement = document.querySelector(
+        `.cart-item[data-id="${itemId}"]`
+      );
+      const quantityInput = itemElement.querySelector(".quantity-input");
+      const maxStock = parseInt(quantityInput.getAttribute("max"));
+
+      if (newQuantity > maxStock) {
+        showAlert(`Sorry, only ${maxStock} items available in stock.`);
+        return;
+      }
+
+      const response = await fetch("/cart/update/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -525,13 +608,17 @@ Agri-Connect{% endblock %} {% block extra_css %}
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update quantity");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update quantity");
       }
 
       await loadCart();
+      showAlert("Cart updated successfully!", "success");
     } catch (error) {
       console.error("Error updating quantity:", error);
-      showError("Failed to update quantity. Please try again.");
+      showAlert(
+        error.message || "Failed to update quantity. Please try again."
+      );
     }
   }
 
@@ -540,7 +627,7 @@ Agri-Connect{% endblock %} {% block extra_css %}
     if (!confirm("Are you sure you want to remove this item?")) return;
 
     try {
-      const response = await fetch("/api/cart/remove/", {
+      const response = await fetch("/cart/remove/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -556,22 +643,11 @@ Agri-Connect{% endblock %} {% block extra_css %}
       }
 
       await loadCart();
+      showAlert("Item removed from cart", "success");
     } catch (error) {
       console.error("Error removing item:", error);
-      showError("Failed to remove item. Please try again.");
+      showAlert("Failed to remove item. Please try again.");
     }
-  }
-
-  // Show error message
-  function showError(message) {
-    const notification = document.createElement("div");
-    notification.className = "notification error";
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.remove();
-    }, 3000);
   }
 
   // Initialize cart

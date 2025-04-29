@@ -38,6 +38,100 @@ Agricultural AI Assistant{% endblock %} {% block extra_css %}
     border-color: #444;
   }
 
+  /* Chat message styles */
+  .chat-message {
+    display: flex;
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    max-width: 80%;
+  }
+
+  .user-message {
+    align-self: flex-end;
+    margin-left: auto;
+    background-color: #c5f4c1;
+    color: #333;
+  }
+
+  .bot-message {
+    align-self: flex-start;
+    background-color: #f1f1f1;
+    color: #333;
+  }
+
+  .message-content {
+    word-wrap: break-word;
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+    border-radius: 50%;
+  }
+
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 1rem;
+    height: calc(100vh - 240px);
+  }
+
+  .loading-indicator {
+    display: none;
+    margin: 0 auto;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+  }
+
+  /* Chat history styles */
+  .chat-history-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    margin-bottom: 5px;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chat-history-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .chat-history-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .chat-history-container {
+    margin-top: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 320px);
+  }
+
+  .chat-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+  }
+
+  .no-history-message {
+    color: #aaa;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+  }
+
   /* Mobile Responsive Styles */
   @media (max-width: 768px) {
     .mobile-menu-btn {
@@ -64,24 +158,17 @@ Agricultural AI Assistant{% endblock %} {% block extra_css %}
       New Chat
     </button>
 
+    <div class="chat-history-container" id="chat-history-container">
+      <!-- Chat history will be populated here -->
+      <div class="no-history-message">No chat history yet</div>
+    </div>
+
     <div class="sidebar-menu">
-      <a href="#" class="sidebar-item">
+      <a href="#" class="sidebar-item" id="clear-history">
         <i class="fas fa-message"></i>
         Clear History
       </a>
-      <a href="#" class="sidebar-item">
-        <i class="fas fa-sitemap"></i>
-        Create User Flow
-      </a>
-      <a href="#" class="sidebar-item">
-        <i class="fas fa-pencil"></i>
-        Design Strategy
-      </a>
-      <a href="#" class="sidebar-item">
-        <i class="fas fa-road"></i>
-        Roadmap
-      </a>
-      <a href="#" class="sidebar-item">
+      <a href="#" class="sidebar-item" id="dark-mode-toggle">
         <i class="fas fa-moon"></i>
         Dark Mode
       </a>
@@ -99,21 +186,47 @@ Agricultural AI Assistant{% endblock %} {% block extra_css %}
         <h1>AgriGPT</h1>
       </div>
 
-      <div class="features-grid">
+      <div class="chat-messages" id="chat-messages">
+        <!-- Messages will be inserted here -->
+      </div>
+
+      <div class="loading-indicator" id="loading-indicator">
+        <p>AgriGPT is thinking...</p>
+      </div>
+
+      <div class="features-grid" id="features-grid">
         <div class="feature-card">
           <i class="fas fa-lightbulb"></i>
           <h3>Examples</h3>
-          <p>"What is the best pesticides for this type of plant?"</p>
+          <p>
+            <a href="#" class="example-link"
+              >"What is the best pesticide for tomato plants?"</a
+            >
+          </p>
+          <p>
+            <a href="#" class="example-link"
+              >"How do I improve soil fertility naturally?"</a
+            >
+          </p>
+          <p>
+            <a href="#" class="example-link"
+              >"What crops grow well in hot, dry climates?"</a
+            >
+          </p>
         </div>
         <div class="feature-card">
           <i class="fas fa-bolt"></i>
           <h3>Capabilities</h3>
+          <p>Provides farming advice and agricultural information</p>
           <p>Remembers what user said earlier in the conversation</p>
+          <p>Suggests sustainable farming practices</p>
         </div>
         <div class="feature-card">
           <i class="fas fa-triangle-exclamation"></i>
           <h3>Limitations</h3>
           <p>May occasionally generate incorrect information</p>
+          <p>Limited knowledge of events after 2023</p>
+          <p>Cannot perform actions on behalf of the user</p>
         </div>
       </div>
     </div>
@@ -124,10 +237,11 @@ Agricultural AI Assistant{% endblock %} {% block extra_css %}
     <div class="chat-input-box">
       <textarea
         class="chat-input"
+        id="chat-input"
         placeholder="Type your message here..."
         aria-label="Chat message input"
       ></textarea>
-      <button class="send-button" aria-label="Send message">
+      <button class="send-button" id="send-button" aria-label="Send message">
         <i class="fas fa-paper-plane"></i>
       </button>
     </div>
@@ -136,6 +250,22 @@ Agricultural AI Assistant{% endblock %} {% block extra_css %}
 {% endblock %} {% block extra_js %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Chat elements
+    const chatInput = document.getElementById("chat-input");
+    const sendButton = document.getElementById("send-button");
+    const chatMessages = document.getElementById("chat-messages");
+    const featuresGrid = document.getElementById("features-grid");
+    const loadingIndicator = document.getElementById("loading-indicator");
+    const newChatBtn = document.querySelector(".new-chat-btn");
+    const clearHistoryBtn = document.getElementById("clear-history");
+    const exampleLinks = document.querySelectorAll(".example-link");
+    const chatHistoryContainer = document.getElementById(
+      "chat-history-container"
+    );
+
+    // Current chat ID
+    let currentChatId = null;
+
     // Mobile menu functionality
     const mobileMenuBtn = document.querySelector(".mobile-menu-btn");
     const sidebar = document.querySelector(".sidebar");
@@ -145,40 +275,326 @@ Agricultural AI Assistant{% endblock %} {% block extra_css %}
     });
 
     // Dark mode toggle
-    const darkModeToggle = document.querySelector(
-      ".sidebar-item i.fa-moon"
-    ).parentElement;
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
     darkModeToggle.addEventListener("click", function (e) {
       e.preventDefault();
       document.body.classList.toggle("dark-mode");
+
+      // Save dark mode preference
+      localStorage.setItem(
+        "agrigpt_dark_mode",
+        document.body.classList.contains("dark-mode")
+      );
+    });
+
+    // Load dark mode preference
+    if (localStorage.getItem("agrigpt_dark_mode") === "true") {
+      document.body.classList.add("dark-mode");
+    }
+
+    // Load chat history from localStorage
+    function loadChatHistory() {
+      const history = JSON.parse(
+        localStorage.getItem("agrigpt_chat_history") || "[]"
+      );
+      return history;
+    }
+
+    // Save chat history to localStorage
+    function saveChatHistory(history) {
+      localStorage.setItem("agrigpt_chat_history", JSON.stringify(history));
+    }
+
+    // Load current chat from localStorage
+    function loadCurrentChat(chatId) {
+      currentChatId = chatId;
+      const history = loadChatHistory();
+      const chat = history.find((c) => c.id === chatId);
+
+      if (chat) {
+        chatMessages.innerHTML = "";
+        featuresGrid.style.display = "none";
+
+        chat.messages.forEach((msg) => {
+          addMessage(msg.content, msg.isUser, false);
+        });
+
+        // Highlight active chat in sidebar
+        document.querySelectorAll(".chat-history-item").forEach((item) => {
+          item.classList.remove("active");
+          if (item.dataset.id === chatId) {
+            item.classList.add("active");
+          }
+        });
+      }
+    }
+
+    // Save current chat messages
+    function saveCurrentChat() {
+      if (!currentChatId) return;
+
+      const messages = [];
+      document.querySelectorAll(".chat-message").forEach((msg) => {
+        const content = msg.querySelector(".message-content").textContent;
+        const isUser = msg.classList.contains("user-message");
+        messages.push({ content, isUser });
+      });
+
+      const history = loadChatHistory();
+      const chatIndex = history.findIndex((c) => c.id === currentChatId);
+
+      if (chatIndex !== -1) {
+        history[chatIndex].messages = messages;
+        history[chatIndex].lastUpdated = new Date().toISOString();
+
+        // Update title with first user message if it exists
+        const firstUserMsg = messages.find((m) => m.isUser);
+        if (firstUserMsg) {
+          history[chatIndex].title =
+            firstUserMsg.content.substring(0, 30) +
+            (firstUserMsg.content.length > 30 ? "..." : "");
+        }
+      }
+
+      saveChatHistory(history);
+      updateChatHistorySidebar();
+    }
+
+    // Update chat history sidebar
+    function updateChatHistorySidebar() {
+      const history = loadChatHistory();
+
+      if (history.length === 0) {
+        chatHistoryContainer.innerHTML =
+          '<div class="no-history-message">No chat history yet</div>';
+        return;
+      }
+
+      // Sort by last updated (newest first)
+      history.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+
+      chatHistoryContainer.innerHTML = "";
+
+      history.forEach((chat) => {
+        const historyItem = document.createElement("div");
+        historyItem.className = "chat-history-item";
+        historyItem.dataset.id = chat.id;
+
+        if (chat.id === currentChatId) {
+          historyItem.classList.add("active");
+        }
+
+        historyItem.innerHTML = `
+          <i class="fas fa-comment"></i>
+          <div class="chat-title">${chat.title}</div>
+        `;
+
+        historyItem.addEventListener("click", () => {
+          loadCurrentChat(chat.id);
+        });
+
+        chatHistoryContainer.appendChild(historyItem);
+      });
+    }
+
+    // Create a new chat
+    function createNewChat() {
+      currentChatId = Date.now().toString();
+
+      const history = loadChatHistory();
+      history.push({
+        id: currentChatId,
+        title: "New Chat",
+        messages: [],
+        created: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+      });
+
+      saveChatHistory(history);
+      updateChatHistorySidebar();
+
+      chatMessages.innerHTML = "";
+      featuresGrid.style.display = "grid";
+    }
+
+    // Function to add a message to the chat
+    function addMessage(content, isUser = false, saveToHistory = true) {
+      // Create new chat if none exists
+      if (!currentChatId) {
+        createNewChat();
+      }
+
+      // Hide features grid if it's visible
+      if (featuresGrid.style.display !== "none") {
+        featuresGrid.style.display = "none";
+      }
+
+      // Create message element
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `chat-message ${
+        isUser ? "user-message" : "bot-message"
+      }`;
+
+      // Add avatar
+      const avatar = document.createElement("img");
+      avatar.className = "message-avatar";
+      avatar.src = isUser
+        ? "{% static 'images/user_avatar.png' %}"
+        : "{% static 'images/bot_avatar.png' %}";
+      avatar.alt = isUser ? "User" : "AgriGPT";
+      avatar.onerror = function () {
+        this.src = isUser
+          ? "https://ui-avatars.com/api/?name=User&background=4CAF50&color=fff"
+          : "https://ui-avatars.com/api/?name=AgriGPT&background=2196F3&color=fff";
+      };
+
+      // Add message content
+      const messageContent = document.createElement("div");
+      messageContent.className = "message-content";
+      messageContent.textContent = content;
+
+      // Assemble message
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(messageContent);
+
+      // Add to chat
+      chatMessages.appendChild(messageDiv);
+
+      // Scroll to bottom
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      // Save current chat to history
+      if (saveToHistory) {
+        saveCurrentChat();
+      }
+    }
+
+    // Function to send message to API
+    async function sendMessage(message) {
+      try {
+        // Show loading indicator
+        loadingIndicator.style.display = "block";
+
+        // Get CSRF token from cookie
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                  cookie.substring(name.length + 1)
+                );
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+        const csrftoken = getCookie("csrftoken");
+
+        // Send to API - updated URL to match Django URL configuration
+        const response = await fetch("/api/bot/chat/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken,
+          },
+          body: JSON.stringify({ message }),
+        });
+
+        // Handle response
+        if (response.ok) {
+          const data = await response.json();
+          addMessage(data.response, false);
+        } else {
+          const errorData = await response.json();
+          addMessage(
+            `Error: ${errorData.error || "Something went wrong"}`,
+            false
+          );
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        addMessage(
+          "Sorry, there was an error communicating with the server.",
+          false
+        );
+      } finally {
+        // Hide loading indicator
+        loadingIndicator.style.display = "none";
+      }
+    }
+
+    // Handle send button click
+    sendButton.addEventListener("click", function () {
+      const message = chatInput.value.trim();
+      if (message) {
+        addMessage(message, true);
+        chatInput.value = "";
+        sendMessage(message);
+      }
+    });
+
+    // Handle Enter key press in textarea
+    chatInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendButton.click();
+      }
+    });
+
+    // Example links
+    exampleLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const example = this.textContent;
+        chatInput.value = example;
+        sendButton.click();
+      });
     });
 
     // New chat functionality
-    const newChatBtn = document.querySelector(".new-chat-btn");
     newChatBtn.addEventListener("click", function () {
-      const chatContainer = document.querySelector(".chat-container");
-      const chatHeader = document.querySelector(".chat-header").outerHTML;
-      chatContainer.innerHTML =
-        chatHeader +
-        `
-        <div class="features-grid">
-          <div class="feature-card">
-            <i class="fas fa-lightbulb"></i>
-            <h3>Examples</h3>
-            <p>"What is the best pesticides for this type of plant?"</p>
-          </div>
-          <div class="feature-card">
-            <i class="fas fa-bolt"></i>
-            <h3>Capabilities</h3>
-            <p>Remembers what user said earlier in the conversation</p>
-          </div>
-          <div class="feature-card">
-            <i class="fas fa-triangle-exclamation"></i>
-            <h3>Limitations</h3>
-            <p>May occasionally generate incorrect information</p>
-          </div>
-        </div>`;
+      createNewChat();
     });
+
+    // Clear history functionality
+    clearHistoryBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+
+      if (
+        confirm(
+          "Are you sure you want to clear all chat history? This cannot be undone."
+        )
+      ) {
+        localStorage.removeItem("agrigpt_chat_history");
+        chatMessages.innerHTML = "";
+        featuresGrid.style.display = "grid";
+        currentChatId = null;
+        updateChatHistorySidebar();
+      }
+    });
+
+    // Initialize the app
+    function initApp() {
+      // Load chat history
+      updateChatHistorySidebar();
+
+      // Create a new chat if none exists
+      const history = loadChatHistory();
+      if (history.length > 0) {
+        // Load the most recent chat
+        loadCurrentChat(history[0].id);
+      } else {
+        // Show the features grid for new users
+        featuresGrid.style.display = "grid";
+      }
+    }
+
+    // Initialize the app when DOM is loaded
+    initApp();
   });
 </script>
 {% endblock %}

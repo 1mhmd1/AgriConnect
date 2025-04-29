@@ -80,3 +80,118 @@
 .icon-select option[value="fa-shopping-cart"]::before {
   content: "\f07a";
 }
+.icon-select option[value="fa-sun"]::before {
+  content: "\f185";
+}
+.icon-select option[value="fa-cloud-rain"]::before {
+  content: "\f740";
+}
+.icon-select option[value="fa-wind"]::before {
+  content: "\f72e";
+}
+.icon-select option[value="fa-temperature-high"]::before {
+  content: "\f769";
+}
+.icon-select option[value="fa-mountain"]::before {
+  content: "\f6fc";
+}
+.icon-select option[value="fa-tree"]::before {
+  content: "\f1bb";
+}
+.icon-select option[value="fa-apple-whole"]::before {
+  content: "\f5d1";
+}
+.icon-select option[value="fa-droplet"]::before {
+  content: "\f043";
+}
+.icon-select option[value="fa-shield-halved"]::before {
+  content: "\f3ed";
+}
+.icon-select option[value="fa-house-flood-water"]::before {
+  content: "\e50e";
+}
+.icon-select option[value="fa-screwdriver-wrench"]::before {
+  content: "\f7d9";
+}
+.icon-select option[value="fa-bottle-droplet"]::before {
+  content: "\e4c4";
+}
+.icon-select option[value="fa-bug"]::before {
+  content: "\f188";
+}
+.icon-select option[value="fa-rat"]::before {
+  content: "\f6c8";
+}
+.icon-select option[value="fa-worm"]::before {
+  content: "\e599";
+}
+.icon-select option[value="fa-arrow-trend-up"]::before {
+  content: "\e098";
+}
+.icon-select option[value="fa-flask"]::before {
+  content: "\f0c3";
+}
+.icon-select option[value="fa-recycle"]::before {
+  content: "\f1b8";
+}
+.icon-select option[value="fa-compass-drafting"]::before {
+  content: "\f568";
+}
+.icon-select option[value="fa-chart-line"]::before {
+  content: "\f201";
+}
+.icon-select option[value="fa-book"]::before {
+  content: "\f02d";
+}
+.icon-select option[value="fa-users"]::before {
+  content: "\f0c0";
+}
+.icon-select option[value="fa-handshake"]::before {
+  content: "\f2b5";
+}
+.icon-select option[value="fa-globe"]::before {
+  content: "\f0ac";
+}
+.icon-select option[value="fa-certificate"]::before {
+  content: "\f0a3";
+}
+
+/* Icon preview styles */
+.icon-preview {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-left: 10px;
+}
+
+.icon-preview i {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+/* Icon selector container */
+.icon-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon-selector select {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+}
+
+.icon-selector select:focus {
+  outline: none;
+  border-color: #00a651;
+  box-shadow: 0 0 0 2px rgba(0, 166, 81, 0.1);
+}

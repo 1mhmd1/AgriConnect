@@ -29,11 +29,13 @@
         <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Store</a>
         <a href="{% url 'bot' %}" {% if request.resolver_match.url_name == 'bot' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Bot</a>
         <a href="{% url 'landowner' %}" {% if request.resolver_match.url_name == 'landowner' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Lands</a>
+        <a href="{% url 'farmers' %}" {% if request.resolver_match.url_name == 'farmers' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Farmers</a>
       </div>
       <div class="user-menu">
         <i class="fa-solid fa-user" id="userIcon"></i>
         <div class="dropdown-menu">
           <a href="{% url 'profile' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-user-circle"></i> Profile</a>
+          <a href="{% url 'chat' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-comments"></i> My Chats</a>
           <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
           <a href="{% url 'wishlist' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-heart"></i> My Wishlist</a>
           <a href="{% url 'cart' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-shopping-cart"></i> My Cart</a>

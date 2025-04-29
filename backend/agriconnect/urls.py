@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import redirect
 from main import views
 
 urlpatterns = [
@@ -32,9 +33,25 @@ urlpatterns = [
     path('chat/', views.chat_view, name='chat'),
     path('checkout/', views.checkout_view, name='checkout'),
     path('wishlist/', views.wishlist_view, name='wishlist'),
+    path('farmers/', views.farmers, name='farmers'),
+    path('landowner/', views.landowner, name='landowner'),
+    path('landowner/delete-land/<int:land_id>/', views.delete_land, name='delete_land'),
+    path('landowner/update-land/<int:land_id>/', views.update_land, name='update_land'),
+    path('landowner/add-land/', views.add_land_ajax, name='add_land_ajax'),
+    path('edit-land/<int:land_id>/', views.edit_land, name='edit_land'),
+    path('add-land/', views.add_land, name='add_land'),
+    path('cart/', views.cart_data, name='cart_data'),
+    path('cart/add/', views.add_to_cart, name='add_to_cart'),
+    path('cart/update/', views.update_cart, name='update_cart'),
+    path('cart/remove/', views.remove_from_cart, name='remove_from_cart'),
     path('api/', include('main.urls')),
     path('admin/orders/<int:order_id>/', views.admin_orders, name='admin_orders'),
     path('admin/categories/', views.create_category, name='create_category'),
+    # Redirect ai/ to bot/ since they're the same feature
+    path('ai/', lambda request: redirect('bot'), name='ai_redirect'),
+    
+    # Direct route to bot API
+    path('api/bot/chat/', views.bot_chat_api, name='bot_chat_api'),
 ]
 
 # Serve static files in development

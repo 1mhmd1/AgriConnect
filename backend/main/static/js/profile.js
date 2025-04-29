@@ -1,80 +1,48 @@
+// Initialize all components when the DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
-  // Initialize land uploads first to prevent conflicts
-  initializeLandImageUpload();
-
-  // Then initialize other components
+  // Initialize components
   initializeMenuNavigation();
   initializeProfileImage();
   initializeProfileTabs();
   initializeTagsInput();
   initializeFormSubmissions();
   initializeBackButton();
-
-  // Tab switching functionality
-  const tabButtons = document.querySelectorAll(".tab-btn");
-  if (tabButtons.length > 0) {
-    tabButtons.forEach((button) => {
-      button.addEventListener("click", function () {
-        // Find the tab content container
-        const tabContent = this.closest(".profile-tabs")?.nextElementSibling;
-        if (!tabContent) return;
-
-        // Get all tab buttons and panes within this tab content
-        const allTabButtons =
-          this.closest(".profile-tabs")?.querySelectorAll(".tab-btn");
-        const allTabPanes = tabContent.querySelectorAll(".tab-pane");
-
-        if (!allTabButtons || !allTabPanes) return;
-
-        // Remove active class from all buttons and panes
-        allTabButtons.forEach((btn) => btn.classList.remove("active"));
-        allTabPanes.forEach((pane) => pane.classList.remove("active"));
-
-        // Add active class to clicked button
-        this.classList.add("active");
-
-        // Add active class to corresponding pane
-        const tabId = this.getAttribute("data-tab");
-        const targetPane = document.getElementById(`${tabId}-tab`);
-        if (targetPane) {
-          targetPane.classList.add("active");
-        } else {
-          console.error(`Tab pane with id ${tabId}-tab not found`);
-        }
-
-        // Additionally handle special case for landowner profile section
-        if (tabId === "landowner") {
-          const landownerProfile = document.getElementById("landowner-profile");
-          if (landownerProfile) {
-            landownerProfile.style.display = "block";
-          }
-        } else {
-          const landownerProfile = document.getElementById("landowner-profile");
-          if (landownerProfile) {
-            landownerProfile.style.display = "none";
-          }
-        }
-      });
-    });
-  }
+  initializePasswordToggles();
+  initializePasswordStrengthMeter();
+  setupPasswordValidation();
 });
 
 // Notification function
 function showNotification(message, type = "success") {
+  const container = document.getElementById("notificationContainer");
   const notification = document.createElement("div");
   notification.className = `notification ${type}`;
-  notification.textContent = message;
 
-  // Add to DOM
-  document.body.appendChild(notification);
+  const icon = type === "success" ? "fa-check-circle" : "fa-exclamation-circle";
 
-  // Remove after 3 seconds
+  notification.innerHTML = `
+    <i class="fas ${icon}"></i>
+    <div class="notification-content">
+      <div class="notification-title">${
+        type === "success" ? "Success" : "Error"
+      }</div>
+      <div class="notification-message">${message}</div>
+    </div>
+    <button class="notification-close" onclick="this.parentElement.remove()">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+
+  container.appendChild(notification);
+
+  // Auto remove after 5 seconds
   setTimeout(() => {
-    notification.remove();
-  }, 3000);
+    notification.style.animation = "slideOut 0.3s ease-out";
+    setTimeout(() => notification.remove(), 300);
+  }, 5000);
 }
 
-// Menu Navigation (unchanged)
+// Menu Navigation
 function initializeMenuNavigation() {
   const menuItems = document.querySelectorAll(".menu-item");
   const contentSections = document.querySelectorAll(".content-section");
@@ -82,7 +50,7 @@ function initializeMenuNavigation() {
   menuItems.forEach((item) => {
     item.addEventListener("click", (e) => {
       e.preventDefault();
-      const targetId = item.getAttribute("href").substring(1);
+      const targetId = item.getAttribute("data-section");
 
       menuItems.forEach((i) => i.classList.remove("active"));
       item.classList.add("active");
@@ -97,7 +65,7 @@ function initializeMenuNavigation() {
   });
 }
 
-// Profile Image Upload (unchanged)
+// Profile Image Upload
 function initializeProfileImage() {
   const profileImageContainer = document.querySelector(
     ".profile-image-container"
@@ -110,43 +78,68 @@ function initializeProfileImage() {
       profileImageInput.click();
     });
 
-    profileImageInput.addEventListener("change", (e) => {
+    profileImageInput.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          profileImage.src = e.target.result;
-          showNotification("Profile picture updated successfully!");
-        };
-        reader.readAsDataURL(file);
+        // Create form data
+        const formData = new FormData();
+        formData.append("form_type", "base_profile");
+        formData.append("profile_picture", file);
+
+        try {
+          const csrfToken = getCookie("csrftoken");
+          const response = await fetch(window.location.href, {
+            method: "POST",
+            body: formData,
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+              "X-CSRFToken": csrfToken,
+              Accept: "application/json",
+            },
+            credentials: "include",
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === "success" && data.data.profile_picture) {
+              // Update the image source with the new URL from the server
+              profileImage.src = data.data.profile_picture;
+              showNotification("Profile picture updated successfully!");
+            } else {
+              throw new Error("Failed to update profile picture");
+            }
+          } else {
+            throw new Error("Failed to update profile picture");
+          }
+        } catch (error) {
+          console.error("Error uploading profile picture:", error);
+          showNotification("Failed to update profile picture.", "error");
+        }
       }
     });
   }
 }
 
-// Profile Tab Navigation (unchanged)
+// Profile Tab Navigation
 function initializeProfileTabs() {
-  const profileTabs = document.querySelectorAll(".profile-tabs .tab-btn");
-  const tabPanes = document.querySelectorAll(".tab-content .tab-pane");
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabPanes = document.querySelectorAll(".tab-pane");
 
-  profileTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const targetId = `${tab.getAttribute("data-tab")}-tab`;
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      // Remove active class from all buttons and panes
+      tabButtons.forEach((btn) => btn.classList.remove("active"));
+      tabPanes.forEach((pane) => pane.classList.remove("active"));
 
-      profileTabs.forEach((t) => t.classList.remove("active"));
-      tab.classList.add("active");
-
-      tabPanes.forEach((pane) => {
-        pane.classList.remove("active");
-        if (pane.id === targetId) {
-          pane.classList.add("active");
-        }
-      });
+      // Add active class to clicked button and corresponding pane
+      this.classList.add("active");
+      const tabId = this.getAttribute("data-tab");
+      document.getElementById(`${tabId}-tab`).classList.add("active");
     });
   });
 }
 
-// Tags Input (unchanged)
+// Tags Input
 function initializeTagsInput() {
   const tagsInputs = document.querySelectorAll(".tags-input");
 
@@ -176,284 +169,6 @@ function addTag(text, container) {
   container.insertBefore(tag, input);
 }
 
-// Land Image Upload (FIXED VERSION)
-function initializeLandImageUpload() {
-  document.querySelectorAll(".image-upload-container").forEach((container) => {
-    setupImageUpload(container);
-  });
-
-  const landListings = document.querySelector(".land-listings");
-  const addListingBtn = createAddListingButton();
-  landListings.appendChild(addListingBtn);
-
-  addListingBtn.addEventListener("click", () => {
-    const listingCount = landListings.querySelectorAll(".land-card").length + 1;
-    const newCard = createLandCard(listingCount);
-    landListings.insertBefore(newCard, addListingBtn);
-
-    setupImageUpload(newCard.querySelector(".image-upload-container"));
-    initializeFormSubmission(newCard.querySelector("form"));
-  });
-}
-
-function setupImageUpload(container) {
-  if (container.dataset.initialized) return;
-  container.dataset.initialized = "true";
-
-  const input = container.querySelector('input[type="file"]');
-  const previewGrid = container.querySelector(".image-preview-grid");
-
-  // Clone input to remove existing listeners
-  const newInput = input.cloneNode(true);
-  input.parentNode.replaceChild(newInput, input);
-
-  newInput.addEventListener("change", (e) => {
-    const files = Array.from(e.target.files);
-    files.forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const preview = createImagePreview(e.target.result);
-          previewGrid.appendChild(preview);
-          validateImageUpload(container);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  });
-}
-
-function createImagePreview(imageSrc) {
-  const preview = document.createElement("div");
-  preview.className = "image-preview";
-  preview.innerHTML = `
-    <img src="${imageSrc}" alt="Land preview">
-    <button type="button" class="remove-image">
-      <i class="fas fa-times"></i>
-    </button>
-  `;
-
-  preview.querySelector(".remove-image").addEventListener("click", () => {
-    preview.remove();
-    validateImageUpload(preview.closest(".image-upload-container"));
-  });
-
-  return preview;
-}
-
-function validateImageUpload(container) {
-  const previewGrid = container.querySelector(".image-preview-grid");
-  const input = container.querySelector('input[type="file"]');
-  const hasImages = previewGrid.children.length > 0;
-
-  input.setCustomValidity(hasImages ? "" : "Please upload at least one image");
-}
-
-function createAddListingButton() {
-  const button = document.createElement("button");
-  button.className = "save-btn";
-  button.style.marginTop = "2rem";
-  button.innerHTML = '<i class="fas fa-plus"></i> Add New Land Listing';
-  return button;
-}
-
-function createLandCard(listingCount) {
-  const card = document.createElement("div");
-  card.className = "land-card";
-  card.innerHTML = `
-    <h3>Land Listing #${listingCount}</h3>
-    <form class="profile-form" id="landownerProfileForm">
-      <div class="form-group">
-        <label for="landImages${listingCount}">Land Images (Required)</label>
-        <div class="image-upload-container">
-          <div class="image-preview-grid" id="landImagesPreview${listingCount}">
-            <!-- Images will be previewed here -->
-          </div>
-          <div class="image-upload-box">
-            <input
-              type="file"
-              id="landImages${listingCount}"
-              accept="image/*"
-              multiple
-              required
-            />
-            <label for="landImages${listingCount}" class="upload-label">
-              <i class="fas fa-cloud-upload-alt"></i>
-              <span>Click to upload images</span>
-            </label>
-          </div>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="landSize${listingCount}">Size (Acres)</label>
-        <input
-          type="number"
-          id="landSize${listingCount}"
-          min="0"
-          step="0.1"
-          required
-        />
-      </div>
-      <div class="form-group">
-        <label for="soilType${listingCount}">Soil Type</label>
-        <select id="soilType${listingCount}" required>
-          <option value="loam">Loam</option>
-          <option value="clay">Clay</option>
-          <option value="sandy">Sandy</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="waterSource${listingCount}">Water Source</label>
-        <select id="waterSource${listingCount}" required>
-          <option value="well">Well</option>
-          <option value="river">River</option>
-          <option value="canal">Canal</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Lease Terms</label>
-        <div class="checkbox-group">
-          <label><input type="checkbox" value="short-term" name="lease_terms${listingCount}[]"> Short-Term</label>
-          <label><input type="checkbox" value="long-term" name="lease_terms${listingCount}[]"> Long-Term</label>
-          <label><input type="checkbox" value="lease-to-own" name="lease_terms${listingCount}[]"> Lease-to-Own</label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="pricePerAcre${listingCount}">Price per Acre</label>
-        <input
-          type="number"
-          id="pricePerAcre${listingCount}"
-          min="0"
-          step="0.01"
-          required
-        />
-      </div>
-      <button type="submit" class="save-btn">Save Changes</button>
-      <button type="button" class="delete-btn">Delete Listing</button>
-    </form>
-  `;
-
-  // Add delete functionality
-  const deleteBtn = card.querySelector(".delete-btn");
-  deleteBtn.addEventListener("click", () => {
-    if (confirm("Are you sure you want to delete this listing?")) {
-      card.remove();
-      showNotification("Land listing deleted successfully!");
-    }
-  });
-
-  return card;
-}
-
-// Rest of the code remains the same as in your original version
-// (Form Submissions, Back Button, Notification System, API Functions)
-
-function initializeFormSubmission(form) {
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    // Special handling for land listing forms
-    if (form.closest(".land-card")) {
-      const imageUpload = form.querySelector(".image-upload-container");
-      if (
-        imageUpload.querySelector(".image-preview-grid").children.length === 0
-      ) {
-        showNotification(
-          "Please upload at least one image for the land listing",
-          "error"
-        );
-        return;
-      }
-
-      // Create FormData object for file upload
-      const formData = new FormData();
-      formData.append("form_type", "land_listing");
-
-      // Get all form inputs
-      const inputs = form.querySelectorAll("input, select");
-      inputs.forEach((input) => {
-        if (input.type === "file") {
-          // Handle file inputs
-          const files = input.files;
-          for (let i = 0; i < files.length; i++) {
-            formData.append("landImages", files[i]);
-          }
-        } else if (input.type === "checkbox") {
-          // Handle checkboxes (lease terms)
-          if (input.checked) {
-            formData.append("lease_terms[]", input.value);
-          }
-        } else {
-          // Handle other inputs
-          const fieldName = input.id.replace(/[0-9]/g, "");
-          formData.append(fieldName, input.value);
-        }
-      });
-
-      // Submit the form data
-      fetch("/profile/", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      })
-        .then((response) => {
-          if (response.ok) {
-            showNotification("Land listing saved successfully!");
-            window.location.reload();
-          } else {
-            showNotification(
-              "Error saving land listing. Please try again.",
-              "error"
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          showNotification(
-            "Error saving land listing. Please try again.",
-            "error"
-          );
-        });
-    } else {
-      // Handle base profile form
-      const formData = new FormData(form);
-      formData.append("form_type", "base_profile");
-
-      fetch("/profile/", {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status === "success") {
-            showNotification(data.message);
-            // Update form fields with saved values
-            if (data.phone) {
-              document.getElementById("phone").value = data.phone;
-            }
-            if (data.location) {
-              document.getElementById("location").value = data.location;
-            }
-          } else {
-            showNotification(
-              data.message || "Error saving changes. Please try again.",
-              "error"
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          showNotification("Error saving changes. Please try again.", "error");
-        });
-    }
-  });
-}
-
 // Helper function to get CSRF token
 function getCookie(name) {
   let cookieValue = null;
@@ -470,148 +185,169 @@ function getCookie(name) {
   return cookieValue;
 }
 
+// Form Submissions
 function initializeFormSubmissions() {
   const forms = document.querySelectorAll("form");
 
   forms.forEach((form) => {
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
+      const formData = new FormData();
+      const csrfToken = getCookie("csrftoken"); // Get CSRF token from cookie
 
-      // Get form data
-      const formData = new FormData(this);
+      if (form.id === "baseProfileForm") {
+        // Handle base profile form
+        formData.append("form_type", "base_profile");
+        formData.append("fullName", form.querySelector("#fullName").value);
+        formData.append("phone", form.querySelector("#phone").value);
+        formData.append("location", form.querySelector("#location").value);
+      } else if (form.id === "farmerProfileForm") {
+        // Handle farmer profile form
+        formData.append("form_type", "farmer_profile");
 
-      // Add CSRF token if not already present
-      if (!formData.has("csrfmiddlewaretoken")) {
-        const csrfToken = document.querySelector(
-          "[name=csrfmiddlewaretoken]"
-        ).value;
-        formData.append("csrfmiddlewaretoken", csrfToken);
+        // Get farming method and experience
+        formData.append(
+          "farming_method",
+          form.querySelector("#farmingMethod").value
+        );
+        formData.append(
+          "experience_years",
+          form.querySelector("#experience").value
+        );
+
+        // Get crops
+        const cropTags = form
+          .querySelector("#crops")
+          .parentElement.querySelectorAll(".tag");
+        const crops = Array.from(cropTags).map((tag) => tag.textContent);
+        formData.append("crops[]", JSON.stringify(crops));
+
+        // Get livestock
+        const livestockTags = form
+          .querySelector("#livestock")
+          .parentElement.querySelectorAll(".tag");
+        const livestock = Array.from(livestockTags).map(
+          (tag) => tag.textContent
+        );
+        formData.append("livestock[]", JSON.stringify(livestock));
+
+        // Get equipment
+        const equipmentTags = form
+          .querySelector("#equipment")
+          .parentElement.querySelectorAll(".tag");
+        const equipment = Array.from(equipmentTags).map(
+          (tag) => tag.textContent
+        );
+        formData.append("equipment[]", JSON.stringify(equipment));
+      } else if (form.id === "securityForm") {
+        // Handle security/password change form
+        formData.append("form_type", "password_change");
+        formData.append(
+          "current_password",
+          form.querySelector("#currentPassword").value
+        );
+        formData.append(
+          "new_password",
+          form.querySelector("#newPassword").value
+        );
+        formData.append(
+          "confirm_password",
+          form.querySelector("#confirmPassword").value
+        );
+
+        // Validate passwords match
+        if (
+          form.querySelector("#newPassword").value !==
+          form.querySelector("#confirmPassword").value
+        ) {
+          showNotification("New passwords don't match!", "error");
+          return;
+        }
+      } else if (form.id === "landownerProfileForm") {
+        // Handle landowner profile form
+        formData.append("form_type", "landowner_profile");
+
+        // Get land images
+        const landImagesInput = form.querySelector("#landImages");
+        if (landImagesInput.files.length > 0) {
+          for (let i = 0; i < landImagesInput.files.length; i++) {
+            formData.append("land_images", landImagesInput.files[i]);
+          }
+        }
+
+        // Get land size
+        formData.append("land_size", form.querySelector("#landSize").value);
+
+        // Get soil type
+        formData.append("soil_type", form.querySelector("#soilType").value);
+
+        // Get water source
+        formData.append(
+          "water_source",
+          form.querySelector("#waterSource").value
+        );
+
+        // Get lease terms
+        const leaseTerms = Array.from(
+          form.querySelectorAll('input[name="lease_terms"]:checked')
+        )
+          .map((checkbox) => checkbox.value)
+          .join(",");
+        formData.append("lease_terms", leaseTerms);
+
+        // Get price per acre
+        formData.append(
+          "price_per_acre",
+          form.querySelector("#pricePerAcre").value
+        );
+
+        // Get location
+        formData.append("location", form.querySelector("#location").value);
+
+        // Get description
+        formData.append(
+          "description",
+          form.querySelector("#description").value
+        );
       }
 
-      // Send form data to server
-      fetch(window.location.href, {
-        method: "POST",
-        body: formData,
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      })
-        .then((response) => {
-          // Log response status and headers for debugging
-          console.log("Response status:", response.status);
-          console.log(
-            "Response headers:",
-            Object.fromEntries(response.headers.entries())
-          );
-
-          // Check if the response is a redirect
-          if (response.redirected) {
-            window.location.href = response.url;
-            return;
-          }
-
-          // Get the content type of the response
-          const contentType = response.headers.get("content-type");
-
-          // Handle JSON response
-          if (contentType && contentType.includes("application/json")) {
-            return response.json();
-          }
-
-          // Handle HTML response (likely an error page)
-          return response.text().then((html) => {
-            // Log the HTML response for debugging
-            console.log(
-              "Received HTML response:",
-              html.substring(0, 500) + "..."
-            );
-
-            // Check for specific error messages in the HTML
-            if (html.includes("CSRF verification failed")) {
-              throw new Error(
-                "Session expired. Please refresh the page and try again."
-              );
-            } else if (html.includes("403 Forbidden")) {
-              throw new Error(
-                "You don't have permission to perform this action."
-              );
-            } else if (html.includes("400 Bad Request")) {
-              throw new Error(
-                "Invalid form data. Please check your input and try again."
-              );
-            } else if (html.includes("500 Internal Server Error")) {
-              throw new Error("Server error. Please try again later.");
-            } else {
-              throw new Error(
-                "Server returned an unexpected response. Please try again."
-              );
-            }
-          });
-        })
-        .then((data) => {
-          if (data && data.status === "success") {
-            showNotification(data.message || "Changes saved successfully");
-
-            // If this is a landowner form submission, reload the page to show the new land listing
-            if (this.id === "landownerProfileForm") {
-              window.location.reload();
-            } else {
-              // Update form fields with saved values if applicable
-              if (data.phone) {
-                document.getElementById("phone").value = data.phone;
-              }
-              if (data.location) {
-                document.getElementById("location").value = data.location;
-              }
-            }
-          } else if (data && data.error) {
-            showNotification(data.error, "error");
-          } else {
-            showNotification("Changes saved successfully");
-          }
-        })
-        .catch((error) => {
-          console.error("Form submission error:", error);
-
-          // Check if the error has a response property
-          if (error.response) {
-            // Handle response errors
-            const status = error.response.status;
-            let errorMessage = "An error occurred while saving changes.";
-
-            switch (status) {
-              case 400:
-                errorMessage =
-                  "Invalid form data. Please check your input and try again.";
-                break;
-              case 403:
-                errorMessage =
-                  "You don't have permission to perform this action.";
-                break;
-              case 404:
-                errorMessage = "The requested resource was not found.";
-                break;
-              case 500:
-                errorMessage = "Server error. Please try again later.";
-                break;
-              default:
-                errorMessage = `Error (${status}): Please try again.`;
-            }
-
-            showNotification(errorMessage, "error");
-          } else {
-            // Handle other types of errors
-            showNotification(
-              error.message || "Error saving changes. Please try again.",
-              "error"
-            );
-          }
+      try {
+        const response = await fetch(window.location.href, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": csrfToken,
+            Accept: "application/json",
+          },
+          credentials: "include",
         });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("❌ Server error response:", errorText);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+          showNotification(data.message || "Changes saved successfully");
+        } else {
+          throw new Error(data.message || "Server returned error status");
+        }
+      } catch (error) {
+        console.error("❌ Form submission error:", error);
+        showNotification(
+          error.message || "Error saving changes. Please try again.",
+          "error"
+        );
+      }
     });
   });
 }
 
+// Back Button
 function initializeBackButton() {
   const backButton = document.getElementById("backButton");
   if (backButton) {
@@ -621,165 +357,268 @@ function initializeBackButton() {
   }
 }
 
-// Helper function to handle form submission
-async function submitForm(form, formType) {
-  try {
-    const formData = new FormData(form);
-    formData.append("form_type", formType);
+// Password Toggle Functionality
+function initializePasswordToggles() {
+  const toggleButtons = document.querySelectorAll(".password-toggle-btn");
+  toggleButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const input = this.parentElement.querySelector("input");
+      const icon = this.querySelector("i");
 
-    // Add CSRF token
-    const csrfToken = getCookie("csrftoken");
-    if (!csrfToken) {
-      throw new Error("CSRF token not found");
-    }
-
-    // Get the form's action URL or use the current URL
-    const actionUrl = form.getAttribute("action") || window.location.href;
-
-    const response = await fetch(actionUrl, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        "X-CSRFToken": csrfToken,
-      },
+      if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+      } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+      }
     });
+  });
+}
 
-    // Log response details for debugging
-    console.log("Response status:", response.status);
-    console.log(
-      "Response headers:",
-      Object.fromEntries(response.headers.entries())
-    );
+// Password Strength Meter
+function initializePasswordStrengthMeter() {
+  const passwordInput = document.getElementById("newPassword");
+  if (!passwordInput) return;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Server error occurred");
+  const strengthMeter = document.querySelector(".password-strength");
+  const strengthText = document.querySelector(".password-strength-text span");
+
+  passwordInput.addEventListener("input", function () {
+    const password = this.value;
+    const strength = checkPasswordStrength(password);
+
+    // Remove all classes
+    strengthMeter.classList.remove("weak", "medium", "strong", "very-strong");
+
+    if (password.length === 0) {
+      strengthText.textContent = "None";
+    } else {
+      switch (strength) {
+        case 0:
+          strengthMeter.classList.add("weak");
+          strengthText.textContent = "Weak";
+          break;
+        case 1:
+          strengthMeter.classList.add("medium");
+          strengthText.textContent = "Medium";
+          break;
+        case 2:
+          strengthMeter.classList.add("strong");
+          strengthText.textContent = "Strong";
+          break;
+        case 3:
+          strengthMeter.classList.add("very-strong");
+          strengthText.textContent = "Very Strong";
+          break;
+      }
     }
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Form submission error:", error);
-    throw error;
+    // Update requirement checks
+    updatePasswordRequirements(password);
+  });
+}
+
+function checkPasswordStrength(password) {
+  if (password.length === 0) return -1;
+
+  let strength = 0;
+
+  // Check length
+  if (password.length >= 8) strength++;
+
+  // Check for mixed case
+  if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+
+  // Check for numbers
+  if (password.match(/\d/)) strength++;
+
+  // Check for special characters
+  if (password.match(/[^a-zA-Z\d]/)) strength++;
+
+  return Math.floor(strength / 1.5);
+}
+
+function updatePasswordRequirements(password) {
+  const requirementItems = document.querySelectorAll(
+    ".password-requirements li"
+  );
+
+  // Reset classes
+  requirementItems.forEach((item) => item.classList.remove("met"));
+
+  if (password.length >= 8) {
+    requirementItems[0].classList.add("met");
+  }
+
+  if (password.match(/[A-Z]/)) {
+    requirementItems[1].classList.add("met");
+  }
+
+  if (password.match(/\d/)) {
+    requirementItems[2].classList.add("met");
+  }
+
+  if (password.match(/[^a-zA-Z\d]/)) {
+    requirementItems[3].classList.add("met");
   }
 }
 
-// Handle base profile form submission
-const baseProfileForm = document.getElementById("baseProfileForm");
-if (baseProfileForm) {
-  baseProfileForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    try {
-      const data = await submitForm(this, "base_profile");
-      if (data.status === "success") {
-        showNotification(data.message);
-        if (data.phone) {
-          document.querySelector(
-            ".profile-info p:nth-child(2)"
-          ).textContent = `Phone: ${data.phone}`;
+// Password validation and strength meter
+function setupPasswordValidation() {
+  const passwordField = document.getElementById("newPassword");
+  const confirmPasswordField = document.getElementById("confirmPassword");
+  const passwordStrength = document.querySelector(".password-strength");
+  const passwordStrengthText = document.querySelector(
+    ".password-strength-text"
+  );
+  const passwordRequirements = document.querySelectorAll(
+    ".password-requirements li"
+  );
+
+  if (!passwordField) return;
+
+  // Password validation rules
+  const passwordRules = {
+    length: { regex: /.{8,}/, element: document.getElementById("req-length") },
+    uppercase: {
+      regex: /[A-Z]/,
+      element: document.getElementById("req-uppercase"),
+    },
+    lowercase: {
+      regex: /[a-z]/,
+      element: document.getElementById("req-lowercase"),
+    },
+    number: { regex: /[0-9]/, element: document.getElementById("req-number") },
+    special: {
+      regex: /[^A-Za-z0-9]/,
+      element: document.getElementById("req-special"),
+    },
+  };
+
+  // Check password strength
+  function checkPasswordStrength(password) {
+    if (!password) {
+      updateStrengthMeter(0, "");
+      return;
+    }
+
+    let strength = 0;
+    let status = "";
+
+    // Update requirement indicators
+    Object.keys(passwordRules).forEach((rule) => {
+      const { regex, element } = passwordRules[rule];
+      const isMet = regex.test(password);
+
+      if (element) {
+        if (isMet) {
+          element.classList.add("met");
+          strength += 1;
+        } else {
+          element.classList.remove("met");
         }
-        if (data.location) {
-          document.querySelector(
-            ".profile-info p:nth-child(3)"
-          ).textContent = `Location: ${data.location}`;
-        }
-      } else {
-        showNotification(data.message, "error");
       }
-    } catch (error) {
-      showNotification(
-        error.message || "An error occurred while updating your profile",
-        "error"
-      );
-    }
-  });
-}
+    });
 
-// Handle farmer profile form submission
-const farmerProfileForm = document.getElementById("farmerProfileForm");
-if (farmerProfileForm) {
-  farmerProfileForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    try {
-      const data = await submitForm(this, "farmer");
-      if (data.status === "success") {
-        showNotification(data.message);
-      } else {
-        showNotification(data.message, "error");
-      }
-    } catch (error) {
-      showNotification(
-        error.message || "An error occurred while updating your farmer profile",
-        "error"
-      );
+    // Determine strength level
+    if (strength === 0) {
+      status = "";
+    } else if (strength <= 2) {
+      status = "weak";
+    } else if (strength <= 3) {
+      status = "medium";
+    } else if (strength <= 4) {
+      status = "strong";
+    } else {
+      status = "very-strong";
     }
-  });
-}
 
-// Handle landowner profile form submission
-const landownerProfileForm = document.getElementById("landownerProfileForm");
-if (landownerProfileForm) {
-  landownerProfileForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    try {
-      const data = await submitForm(this, "landowner_profile");
-      if (data.status === "success") {
-        showNotification(data.message);
-        window.location.reload();
-      } else {
-        showNotification(data.message, "error");
-      }
-    } catch (error) {
-      showNotification(
-        error.message || "An error occurred while creating your land listing",
-        "error"
-      );
-    }
-  });
-}
+    updateStrengthMeter(strength, status);
+  }
 
-// Handle security form submission
-const securityForm = document.getElementById("securityForm");
-if (securityForm) {
-  securityForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    try {
-      const data = await submitForm(this, "security");
-      if (data.status === "success") {
-        showNotification(data.message);
-        this.reset();
-      } else {
-        showNotification(data.message, "error");
+  // Update the strength meter UI
+  function updateStrengthMeter(strength, status) {
+    if (passwordStrength) {
+      passwordStrength.className = "password-strength";
+      if (status) {
+        passwordStrength.classList.add(status);
       }
-    } catch (error) {
-      showNotification(
-        error.message || "An error occurred while updating your password",
-        "error"
-      );
     }
-  });
-}
 
-// Handle profile picture upload
-const profilePictureForm = document.getElementById("profilePictureForm");
-if (profilePictureForm) {
-  profilePictureForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    try {
-      const data = await submitForm(this, "profile_picture");
-      if (data.status === "success") {
-        showNotification(data.message);
-        window.location.reload();
-      } else {
-        showNotification(data.message, "error");
+    if (passwordStrengthText) {
+      let strengthText = "";
+      switch (status) {
+        case "weak":
+          strengthText = '<span style="color: var(--error-color);">Weak</span>';
+          break;
+        case "medium":
+          strengthText =
+            '<span style="color: var(--warning-color);">Medium</span>';
+          break;
+        case "strong":
+          strengthText =
+            '<span style="color: var(--info-color);">Strong</span>';
+          break;
+        case "very-strong":
+          strengthText =
+            '<span style="color: var(--success-color);">Very Strong</span>';
+          break;
+        default:
+          strengthText = "";
       }
-    } catch (error) {
-      showNotification(
-        error.message ||
-          "An error occurred while updating your profile picture",
-        "error"
-      );
+
+      passwordStrengthText.innerHTML = strengthText
+        ? `Password Strength: ${strengthText}`
+        : "";
     }
-  });
+  }
+
+  // Validate passwords match
+  function validatePasswordsMatch() {
+    if (!confirmPasswordField || !passwordField) return;
+
+    const password = passwordField.value;
+    const confirmPassword = confirmPasswordField.value;
+
+    if (confirmPassword && password !== confirmPassword) {
+      confirmPasswordField.setCustomValidity("Passwords do not match");
+    } else {
+      confirmPasswordField.setCustomValidity("");
+    }
+  }
+
+  // Check if password meets minimum requirements
+  function passwordMeetsRequirements(password) {
+    return Object.keys(passwordRules).every((rule) => {
+      return passwordRules[rule].regex.test(password);
+    });
+  }
+
+  // Event listeners
+  if (passwordField) {
+    passwordField.addEventListener("input", function () {
+      const password = this.value;
+      checkPasswordStrength(password);
+      validatePasswordsMatch();
+
+      // Check if password meets all requirements
+      if (password && !passwordMeetsRequirements(password)) {
+        this.setCustomValidity("Please meet all password requirements");
+      } else {
+        this.setCustomValidity("");
+      }
+    });
+  }
+
+  if (confirmPasswordField) {
+    confirmPasswordField.addEventListener("input", validatePasswordsMatch);
+  }
+
+  // Initialize strength meter
+  if (passwordField) {
+    checkPasswordStrength(passwordField.value);
+  }
 }

@@ -1,285 +1,912 @@
 <!DOCTYPE html>
-{% load static %}
-<html>
+<html lang="en">
   <head>
-    <title>Full Screen Chat</title>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
-    <!-- Bootstrap -->
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-    />
-    <!-- Font awesome -->
-    <link
-      rel="stylesheet"
-      href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
-    />
-    <!-- CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/chat.css' %}" />
-  </head>
-  <body>
-    <div class="container-fluid h-100">
-      <div class="row h-100 m-0">
-        <div class="col-md-4 col-xl-3 p-0 h-100 contacts-column">
-          <div class="card h-100 contacts-card">
-            <div class="card-header">
-              <h1 class="chat-title">
-                <i
-                  class="fas fa-leaf"
-                  style="color: #4caf50; margin-right: 10px"
-                ></i>
-                <span class="chat-title-main">Agri-</span>
-                <span class="chat-title-secondary">Chat</span>
-              </h1>
-              <!-- Search bar -->
-              <div class="input-group">
-                <input
-                  type="text"
-                  placeholder="Search contacts..."
-                  class="form-control search"
-                />
-                <div class="input-group-prepend">
-                  <span class="input-group-text search_btn">
-                    <i class="fas fa-search"></i>
-                  </span>
-                </div>
-              </div>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriConnect Chat</title>
+    {% load static %}
+    {% csrf_token %}
 
-              <!-- Existing menu button -->
-              <span id="action_menu_btn"
-                ><i class="fas fa-ellipsis-v"></i
-              ></span>
-            </div>
-            <div class="card-body contacts_body">
-              <ul class="contacts">
-                <li class="active">
-                  <div class="d-flex bd-highlight">
-                    <div class="img_cont">
-                      <img
-                        src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
-                        class="rounded-circle user_img"
-                      />
-                      <span class="online_icon"></span>
-                    </div>
-                    <div class="user_info">
-                      <span>Landowner 1</span>
-                      <p>Online</p>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="d-flex bd-highlight">
-                    <div class="img_cont">
-                      <img
-                        src="https://2.bp.blogspot.com/-8ytYF7cfPkQ/WkPe1-rtrcI/AAAAAAAAGqU/FGfTDVgkcIwmOTtjLka51vineFBExJuSACLcBGAs/s320/31.jpg"
-                        class="rounded-circle user_img"
-                      />
-                      <span class="online_icon offline"></span>
-                    </div>
-                    <div class="user_info">
-                      <span>Landowner 2</span>
-                      <p>Left 7 mins ago</p>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="d-flex bd-highlight">
-                    <div class="img_cont">
-                      <img
-                        src="https://i.pinimg.com/originals/ac/b9/90/acb990190ca1ddbb9b20db303375bb58.jpg"
-                        class="rounded-circle user_img"
-                      />
-                      <span class="online_icon"></span>
-                    </div>
-                    <div class="user_info">
-                      <span>Farmer 2</span>
-                      <p>Online</p>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="d-flex bd-highlight">
-                    <div class="img_cont">
-                      <img
-                        src="https://avatars.hsoubcdn.com/ed57f9e6329993084a436b89498b6088?s=256"
-                        class="rounded-circle user_img"
-                      />
-                      <span class="online_icon offline"></span>
-                    </div>
-                    <div class="user_info">
-                      <span>Farmer 1</span>
-                      <p>Left 30 mins ago</p>
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <div class="d-flex bd-highlight">
-                    <div class="img_cont">
-                      <img
-                        src="https://static.turbosquid.com/Preview/001214/650/2V/boy-cartoon-3D-model_D.jpg"
-                        class="rounded-circle user_img"
-                      />
-                      <span class="online_icon offline"></span>
-                    </div>
-                    <div class="user_info">
-                      <span>Landowner 3</span>
-                      <p>Left 50 mins ago</p>
-                    </div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div class="card-footer"></div>
+    <!-- Core styles -->
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/common.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --primary-color: #4caf50;
+        --primary-light: #e8f5e9;
+        --primary-dark: #388e3c;
+        --background-light: #f8faf8;
+        --background-dark: #1a1a1a; /* Darker background for better contrast */
+        --text-light: #333;
+        --text-dark: #f0f0f0;
+        --card-bg: #ffffff;
+        --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --border-radius: 12px;
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      /* Navigation Bar Styles */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--card-bg);
+        padding: 1rem 2rem;
+        box-shadow: var(--card-shadow);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        transition: var(--transition);
+      }
+
+      .navbar.dark-mode {
+        background: #252525;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand {
+        color: var(--primary-color);
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .navbar-brand i {
+        color: var(--primary-color);
+      }
+
+      .navbar-links {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+      }
+
+      .nav-link {
+        color: var(--text-light);
+        text-decoration: none;
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .dark-mode .nav-link {
+        color: var(--text-dark);
+      }
+
+      .nav-link:hover {
+        color: var(--primary-color);
+      }
+
+      .nav-link.active {
+        color: var(--primary-color);
+      }
+
+      body {
+        background: linear-gradient(135deg, #f0f9f0, #e0f7ec);
+        color: var(--text-light);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: var(--transition);
+        padding-top: 90px; /* Updated to account for new navbar height */
+      }
+
+      body.dark-mode {
+        background: var(--background-dark);
+        color: var(--text-dark);
+      }
+
+      main {
+        display: flex;
+        gap: 20px;
+        width: 95%;
+        height: calc(90vh - 70px); /* Adjusted height to account for navbar */
+        max-width: 1400px;
+        margin-top: 20px; /* Added margin from navbar */
+      }
+
+      /* Chat Booth Styles */
+      .chatbooth {
+        flex: 1;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        overflow-y: auto;
+        transition: var(--transition);
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .chatbooth.dark-mode {
+        background: #252525; /* Slightly lighter than background for contrast */
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .chatbooth h2 {
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        font-size: 1.5rem;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .chatbooth h2 i {
+        color: var(--primary-color);
+        font-size: 1.8rem;
+      }
+
+      .user-card {
+        background-color: var(--card-bg);
+        color: var(--text-light);
+        border-left: 4px solid var(--primary-color);
+        padding: 16px;
+        margin-bottom: 15px;
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: var(--card-shadow);
+      }
+
+      .user-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      }
+
+      .dark-mode .user-card {
+        background-color: #2e2e2e; /* Better contrast */
+      }
+
+      .avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+      }
+
+      .user-info h3 {
+        font-size: 1rem;
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .dark-mode .user-info h3 {
+        color: white; /* Changed to white for better visibility in dark mode */
+      }
+
+      .user-info p {
+        font-size: 0.85rem;
+        color: #777;
+      }
+
+      .dark-mode .user-info p {
+        color: #aaa;
+      }
+
+      /* Active Chat Styles */
+      .active-chat {
+        flex: 2;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        transition: var(--transition);
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .active-chat.dark-mode {
+        background: #252525; /* Matching chatbooth */
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Updated Header Styles */
+      .chat-header {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        width: 100%;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+      }
+
+      .status {
+        color: var(--primary-color);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: -5px; /* Adjust spacing */
+      }
+
+      .status::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+      }
+
+      .dark-mode .chat-header {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
+
+      #chat-username {
+        font-weight: 600;
+        font-size: 1.3rem;
+        color: var(--text-light);
+      }
+
+      .dark-mode #chat-username {
+        color: white; /* Changed to white for better visibility in dark mode */
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding-right: 10px;
+        margin-bottom: 20px;
+      }
+
+      /* Custom scrollbar */
+      .chat-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-messages::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--primary-color);
+        border-radius: 10px;
+      }
+
+      .message {
+        padding: 12px 18px;
+        border-radius: 18px;
+        max-width: 75%;
+        font-size: 0.95rem;
+        position: relative;
+        line-height: 1.5;
+        display: flex;
+        align-items: center;
+        transition: var(--transition);
+      }
+
+      .message.received {
+        background-color: #f1f1f1;
+        align-self: flex-start;
+        color: var(--text-light);
+        border-bottom-left-radius: 5px;
+      }
+
+      .dark-mode .message.received {
+        background-color: #3a3a3a;
+        color: #f0f0f0;
+      }
+
+      .message.sent {
+        background-color: var(--primary-light);
+        align-self: flex-end;
+        color: var(--text-light);
+        border-bottom-right-radius: 5px;
+      }
+
+      .dark-mode .message.sent {
+        background-color: #2d4a30; /* Darker green for better contrast */
+        color: #f0f0f0;
+      }
+
+      .message .timestamp {
+        font-size: 0.75rem;
+        color: #888;
+        margin-left: 10px;
+        white-space: nowrap;
+      }
+
+      .dark-mode .message .timestamp {
+        color: #aaa;
+      }
+
+      /* Message Input Area */
+      .message-input-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+        position: relative;
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 30px;
+        padding: 5px 5px 5px 15px;
+        transition: var(--transition);
+      }
+
+      .dark-mode .message-input-container {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .message-input {
+        flex: 1;
+        padding: 12px 15px;
+        border: none;
+        border-radius: 30px;
+        font-size: 0.95rem;
+        background-color: transparent;
+        outline: none;
+        color: var(--text-light);
+      }
+
+      .dark-mode .message-input {
+        color: white; /* Changed to white for better visibility in dark mode */
+      }
+
+      .message-input::placeholder {
+        color: #999;
+      }
+
+      .dark-mode .message-input::placeholder {
+        color: #777;
+      }
+
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.4rem;
+        color: var(--primary-color);
+        transition: var(--transition);
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon-btn:hover {
+        color: var(--primary-dark);
+        background: rgba(76, 175, 80, 0.1);
+      }
+
+      #send-message-btn {
+        background-color: var(--primary-color);
+        color: white;
+        width: 42px;
+        height: 42px;
+      }
+
+      #send-message-btn:hover {
+        background-color: var(--primary-dark);
+        transform: scale(1.05);
+      }
+
+      /* Switch Toggle */
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--primary-color);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(24px);
+      }
+
+      /* Emoji Picker Styles */
+      .emoji-picker-container {
+        position: absolute;
+        bottom: 70px;
+        right: 10px;
+        z-index: 100;
+        display: none;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+      }
+
+      .emoji-picker-container.show {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .dark-mode .emoji-picker-container {
+        background: #3a3a3a;
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Emoji Grid Styles */
+      .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        padding: 15px;
+        max-height: 250px;
+        overflow-y: auto;
+      }
+
+      .emoji-option {
+        font-size: 1.8rem;
+        cursor: pointer;
+        padding: 5px;
+        text-align: center;
+        transition: transform 0.2s;
+        border-radius: 8px;
+      }
+
+      .emoji-option:hover {
+        transform: scale(1.2);
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .dark-mode .emoji-option:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 768px) {
+        main {
+          flex-direction: column;
+          height: 95vh;
+        }
+
+        .chatbooth,
+        .active-chat {
+          flex: none;
+          height: 50%;
+        }
+
+        .emoji-picker-container {
+          bottom: 80px;
+          right: 5px;
+        }
+
+        .emoji-grid {
+          grid-template-columns: repeat(5, 1fr);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation -->
+    <nav class="nav">
+      <div class="logo">
+        <a href="{% url 'index' %}">
+          <img src="{% static 'images/agri23.png' %}" alt="Agri-Connect Logo" />
+        </a>
+      </div>
+      <div class="elements">
+        <a href="{% url 'index' %}" {% if request.resolver_match.url_name == 'index' %}class="active"{% endif %}>Home</a>
+        <a href="{% url 'store' %}" {% if request.resolver_match.url_name == 'store' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Store</a>
+        <a href="{% url 'bot' %}" {% if request.resolver_match.url_name == 'bot' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Agri-Bot</a>
+        <a href="{% url 'landowner' %}" {% if request.resolver_match.url_name == 'landowner' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Lands</a>
+        <a href="{% url 'farmers' %}" {% if request.resolver_match.url_name == 'farmers' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Farmers</a>
+      </div>
+      <div class="user-menu">
+        <i class="fa-solid fa-user" id="userIcon"></i>
+        <div class="dropdown-menu">
+          <a href="{% url 'profile' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-user-circle"></i> Profile</a>
+          <a href="{% url 'chat' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-comments"></i> My Chats</a>
+          <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
+          <a href="{% url 'wishlist' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-heart"></i> My Wishlist</a>
+          <a href="{% url 'cart' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-shopping-cart"></i> My Cart</a>
+          <a href="{% url 'logout' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-sign-out-alt"></i> Sign out</a>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <div class="chatbooth">
+        <h2><i class="fa-solid fa-leaf"></i> Agri-Chat</h2>
+
+        <div class="user-card" data-user-id="1">
+          <div class="avatar">GM</div>
+          <div class="user-info">
+            <h3>Gaurav Mehta</h3>
+            <p>Available for wheat & corn farming</p>
           </div>
         </div>
-        <div class="col-md-8 col-xl-6 p-0 h-100 chat-column">
-          <div class="card h-100">
-            <div class="card-header msg_head">
-              <div class="d-flex bd-highlight">
-                <div class="img_cont">
-                  <img
-                    src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
-                    class="rounded-circle user_img"
-                  />
-                  <span class="online_icon"></span>
-                </div>
-                <div class="user_info">
-                  <span>Landowner 1</span>
-                  <p>1767 Messages</p>
-                </div>
-                <div class="video_cam">
-                  <span><i class="fas fa-video"></i></span>
-                  <span><i class="fas fa-phone"></i></span>
-                </div>
-              </div>
-              <span id="action_menu_btn"
-                ><i class="fas fa-ellipsis-v"></i
-              ></span>
-              <div class="action_menu">
-                <ul>
-                  <li><i class="fas fa-user-circle"></i> View profile</li>
-                  <li><i class="fas fa-users"></i> Add to close friends</li>
-                  <li><i class="fas fa-plus"></i> Add to group</li>
-                  <li><i class="fas fa-ban"></i> Block</li>
-                </ul>
-              </div>
-            </div>
-            <div class="card-body msg_card_body">
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img
-                    src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
-                    class="rounded-circle user_img_msg"
-                  />
-                </div>
-                <div class="msg_cotainer">
-                  Hi, how are you samim?
-                  <span class="msg_time">8:40 AM, Today</span>
-                </div>
-              </div>
-              <div class="d-flex justify-content-end mb-4">
-                <div class="msg_cotainer_send">
-                  Hi Khalid i am good tnx how about you?
-                  <span class="msg_time_send">8:55 AM, Today</span>
-                </div>
-                <div class="img_cont_msg">
-                  <img
-                    src="https://avatars.hsoubcdn.com/ed57f9e6329993084a436b89498b6088?s=256"
-                    class="rounded-circle user_img_msg"
-                  />
-                </div>
-              </div>
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img
-                    src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
-                    class="rounded-circle user_img_msg"
-                  />
-                </div>
-                <div class="msg_cotainer">
-                  I am good too, I was wondering if you're able to come and
-                  check out the land tommorow ?
-                  <span class="msg_time">9:00 AM, Today</span>
-                </div>
-              </div>
-              <div class="d-flex justify-content-end mb-4">
-                <div class="msg_cotainer_send">
-                  Yes sure
-                  <span class="msg_time_send">9:05 AM, Today</span>
-                </div>
-                <div class="img_cont_msg">
-                  <img
-                    src="https://avatars.hsoubcdn.com/ed57f9e6329993084a436b89498b6088?s=256"
-                    class="rounded-circle user_img_msg"
-                  />
-                </div>
-              </div>
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img
-                    src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
-                    class="rounded-circle user_img_msg"
-                  />
-                </div>
-                <div class="msg_cotainer">
-                  Good. I am excited to work with you on an agricultural
-                  project.
-                  <span class="msg_time">9:07 AM, Today</span>
-                </div>
-              </div>
-              <div class="d-flex justify-content-end mb-4">
-                <div class="msg_cotainer_send">
-                  Thats great we will go into more details tommorow.
-                  <span class="msg_time_send">9:10 AM, Today</span>
-                </div>
-                <div class="img_cont_msg">
-                  <img
-                    src="https://avatars.hsoubcdn.com/ed57f9e6329993084a436b89498b6088?s=256"
-                    class="rounded-circle user_img_msg"
-                  />
-                </div>
-              </div>
-              <div class="d-flex justify-content-start mb-4">
-                <div class="img_cont_msg">
-                  <img
-                    src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg"
-                    class="rounded-circle user_img_msg"
-                  />
-                </div>
-                <div class="msg_cotainer">
-                  See you.
-                  <span class="msg_time">9:12 AM, Today</span>
-                </div>
-              </div>
-            </div>
-            <div class="card-footer">
-              <div class="input-group">
-                <div class="input-group-append">
-                  <span class="input-group-text attach_btn"
-                    ><i class="fas fa-paperclip"></i
-                  ></span>
-                </div>
-                <textarea
-                  name=""
-                  class="form-control type_msg"
-                  placeholder="Type your message..."
-                ></textarea>
-                <div class="input-group-append">
-                  <span class="input-group-text send_btn"
-                    ><i class="fas fa-location-arrow"></i
-                  ></span>
-                </div>
-              </div>
+
+        <div class="user-card" data-user-id="2">
+          <div class="avatar">PJ</div>
+          <div class="user-info">
+            <h3>Paarth Jain</h3>
+            <p>Specialist in soil analysis</p>
+          </div>
+        </div>
+
+        <div class="user-card" data-user-id="3">
+          <div class="avatar">SS</div>
+          <div class="user-info">
+            <h3>Sayam Sarkar</h3>
+            <p>Looking for farm partnerships</p>
+          </div>
+        </div>
+
+        <div class="user-card" data-user-id="4">
+          <div class="avatar">SC</div>
+          <div class="user-info">
+            <h3>Sagnik Chakraborty</h3>
+            <p>Offers harvesting services</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="active-chat">
+        <div class="chat-header">
+          <div class="header-top">
+            <span id="chat-username">Paarth Jain</span>
+            <label class="switch">
+              <input type="checkbox" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="status">Online - Active now</div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages"></div>
+
+        <div class="message-input-container">
+          <button class="icon-btn" id="emoji-btn">
+            <i class="fa-regular fa-face-smile"></i>
+          </button>
+          <button class="icon-btn">
+            <i class="fa-solid fa-paperclip"></i>
+          </button>
+          <input
+            type="text"
+            class="message-input"
+            id="message-input"
+            placeholder="Type your message here..."
+          />
+          <button class="icon-btn" id="send-message-btn">
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+
+          <!-- Simple Emoji Picker -->
+          <div class="emoji-picker-container" id="emoji-picker-container">
+            <div class="emoji-grid">
+              <span class="emoji-option">😀</span>
+              <span class="emoji-option">😊</span>
+              <span class="emoji-option">😂</span>
+              <span class="emoji-option">❤</span>
+              <span class="emoji-option">👍</span>
+              <span class="emoji-option">👋</span>
+              <span class="emoji-option">🎉</span>
+              <span class="emoji-option">🙏</span>
+              <span class="emoji-option">🤔</span>
+              <span class="emoji-option">😎</span>
+              <span class="emoji-option">🌱</span>
+              <span class="emoji-option">🌾</span>
+              <span class="emoji-option">🚜</span>
+              <span class="emoji-option">💰</span>
+              <span class="emoji-option">✅</span>
+              <span class="emoji-option">❌</span>
+              <span class="emoji-option">🌞</span>
+              <span class="emoji-option">🌧</span>
+              <span class="emoji-option">🌽</span>
+              <span class="emoji-option">🍎</span>
+              <span class="emoji-option">🐄</span>
+              <span class="emoji-option">🐓</span>
+              <span class="emoji-option">💧</span>
+              <span class="emoji-option">🌿</span>
+              <span class="emoji-option">🍃</span>
+              <span class="emoji-option">🌻</span>
+              <span class="emoji-option">🥕</span>
+              <span class="emoji-option">🥦</span>
+              <span class="emoji-option">🧑‍🌾</span>
+              <span class="emoji-option">👩‍🌾</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <!-- JQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script type="text/javascript" src="scripts.js"></script>
+    </main>
+
+    <script>
+      const toggleSwitch = document.querySelector(".switch input");
+      toggleSwitch.addEventListener("change", () => {
+        document.body.classList.toggle("dark-mode");
+        document.querySelector(".chatbooth").classList.toggle("dark-mode");
+        document.querySelector(".active-chat").classList.toggle("dark-mode");
+      });
+
+      // Chat data storage
+      const chatData = {
+        1: [
+          {
+            sender: "received",
+            text: "Hey! Interested in wheat farming?",
+            time: "12:30 PM",
+          },
+          {
+            sender: "sent",
+            text: "Yes, I'm available this season!",
+            time: "12:31 PM",
+          },
+        ],
+        2: [
+          {
+            sender: "received",
+            text: "Hello, I'm looking for an experienced farmer to help manage my land.",
+            time: "12:30 PM",
+          },
+          {
+            sender: "sent",
+            text: "Hi! I specialize in wheat and corn farming.",
+            time: "12:31 PM",
+          },
+          {
+            sender: "received",
+            text: "The land has medium foam soil and irrigation access.",
+            time: "12:32 PM",
+          },
+          {
+            sender: "sent",
+            text: "Great! I can visit this weekend to discuss further.",
+            time: "12:33 PM",
+          },
+        ],
+        3: [
+          {
+            sender: "received",
+            text: "Looking for a partnership?",
+            time: "2:00 PM",
+          },
+          {
+            sender: "sent",
+            text: "Yes, I'm open to collaboration!",
+            time: "2:02 PM",
+          },
+        ],
+        4: [
+          {
+            sender: "received",
+            text: "I need harvesting help.",
+            time: "3:45 PM",
+          },
+          {
+            sender: "sent",
+            text: "Available from next Monday.",
+            time: "3:47 PM",
+          },
+        ],
+      };
+
+      // Current active user
+      let currentUserId = 2;
+      const chatMessages = document.getElementById("chat-messages");
+      const chatUsername = document.getElementById("chat-username");
+      const userCards = document.querySelectorAll(".user-card");
+      const messageInput = document.getElementById("message-input");
+      const sendMessageBtn = document.getElementById("send-message-btn");
+      const emojiBtn = document.getElementById("emoji-btn");
+      const emojiPickerContainer = document.getElementById(
+        "emoji-picker-container"
+      );
+      const emojiOptions = document.querySelectorAll(".emoji-option");
+
+      // Function to get current time in HH:MM AM/PM format
+      function getCurrentTime() {
+        const now = new Date();
+        let hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, "0");
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+        return `${hours}:${minutes} ${ampm}`;
+      }
+
+      // Function to render messages
+      function renderMessages(messages) {
+        chatMessages.innerHTML = "";
+        messages.forEach((msg) => {
+          const msgEl = document.createElement("div");
+          msgEl.classList.add("message", msg.sender);
+          msgEl.innerHTML = `${msg.text} <span class="timestamp">${msg.time}</span>`;
+          chatMessages.appendChild(msgEl);
+        });
+        // Scroll to bottom of chat
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      // Function to send a message
+      function sendMessage() {
+        const messageText = messageInput.value.trim();
+        if (messageText === "") return;
+
+        const newMessage = {
+          sender: "sent",
+          text: messageText,
+          time: getCurrentTime(),
+        };
+
+        // Add message to chat data
+        chatData[currentUserId].push(newMessage);
+
+        // Render updated messages
+        renderMessages(chatData[currentUserId]);
+
+        // Clear input
+        messageInput.value = "";
+
+        // Simulate reply after 1 second
+        setTimeout(() => {
+          const replies = [
+            "Thanks for your message! 😊",
+            "I'll get back to you soon. 👍",
+            "That's interesting, tell me more. 🤔",
+            "I appreciate your message. 🙏",
+            "Let me think about that. 💭",
+            "Great point! 👌",
+            "I agree with you. ✅",
+            "That's helpful information. 💡",
+          ];
+          const randomReply =
+            replies[Math.floor(Math.random() * replies.length)];
+
+          const replyMessage = {
+            sender: "received",
+            text: randomReply,
+            time: getCurrentTime(),
+          };
+
+          chatData[currentUserId].push(replyMessage);
+          renderMessages(chatData[currentUserId]);
+        }, 1000);
+      }
+
+      // Event listeners for user cards
+      userCards.forEach((card) => {
+        card.addEventListener("click", () => {
+          currentUserId = parseInt(card.dataset.userId);
+          const userName = card.querySelector("h3").textContent;
+          chatUsername.textContent = userName;
+          renderMessages(chatData[currentUserId] || []);
+        });
+      });
+
+      // Event listener for send button
+      sendMessageBtn.addEventListener("click", sendMessage);
+
+      // Event listener for Enter key
+      messageInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          sendMessage();
+        }
+      });
+
+      // Emoji Picker functionality
+      emojiBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        emojiPickerContainer.classList.toggle("show");
+      });
+
+      // Close emoji picker when clicking outside
+      document.addEventListener("click", (e) => {
+        if (
+          !emojiBtn.contains(e.target) &&
+          !emojiPickerContainer.contains(e.target)
+        ) {
+          emojiPickerContainer.classList.remove("show");
+        }
+      });
+
+      // Add emoji to input when clicked
+      emojiOptions.forEach((emoji) => {
+        emoji.addEventListener("click", () => {
+          messageInput.value += emoji.textContent;
+          messageInput.focus();
+        });
+      });
+
+      // Initialize with default user
+      renderMessages(chatData[currentUserId]);
+    </script>
   </body>
 </html>

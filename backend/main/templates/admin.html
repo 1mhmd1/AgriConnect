@@ -199,33 +199,52 @@
   </div>
 </div>
 
-<!-- Add/Edit Category Modal -->
-<div class="modal" id="categoryModal">
+<!-- Category Modal -->
+<div class="modal fade" id="categoryModal" tabindex="-1" role="dialog" aria-labelledby="categoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
   <div class="modal-content">
-    <span class="close">&times;</span>
-    <h3>Add New Category</h3>
+      <div class="modal-header">
+        <h5 class="modal-title" id="categoryModalLabel">Add Category</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
     <form id="categoryForm">
+          <input type="hidden" id="categoryId">
       <div class="form-group">
         <label for="categoryName">Category Name</label>
-        <input type="text" id="categoryName" name="name" required />
+            <input type="text" class="form-control" id="categoryName" required>
+          </div>
+          <div class="form-group">
+            <label for="categoryDescription">Description</label>
+            <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
       </div>
       <div class="form-group">
         <label for="categoryIcon">Icon</label>
         <div class="icon-selector">
-          <select id="categoryIcon" name="icon" required>
-            <option value="">Select an Icon</option>
+              <select class="icon-select" id="categoryIcon" required>
+                <!-- Icons will be populated by JavaScript -->
           </select>
           <div class="icon-preview">
-            <i id="iconPreview" class="fas"></i>
+                <i id="iconPreview"></i>
           </div>
         </div>
       </div>
       <div class="form-group">
-        <label for="categoryDescription">Description</label>
-        <textarea id="categoryDescription" name="description"></textarea>
+            <label for="categoryStatus">Status</label>
+            <select class="form-control" id="categoryStatus">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </form>
       </div>
-      <button type="submit" class="save-btn">Save Category</button>
-    </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveCategory">Save</button>
+      </div>
+    </div>
   </div>
 </div>
 
