@@ -1746,7 +1746,7 @@ function initializeProductActions(container = document) {
   });
 }
 
-function toggleWishlistItem(productData, button) {
+async function toggleWishlistItem(productData, button) {
   if (!productData || !button) {
     console.error("Missing product data or button");
     return;
@@ -1780,31 +1780,82 @@ function toggleWishlistItem(productData, button) {
     }
   }
 
-  let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-  const isInWishlist = wishlist.some((item) => item.id === productData.id);
+  try {
+    // Get CSRF token
+    const csrfToken = getCookie("csrftoken");
+    if (!csrfToken) {
+      console.error("CSRF token not found in cookies");
+      throw new Error(
+        "CSRF token not found. Please refresh the page and try again."
+      );
+    }
 
-  if (isInWishlist) {
-    // Remove from wishlist
-    wishlist = wishlist.filter((item) => item.id !== productData.id);
-    updateWishlistButtonState(button, false);
-    showNotification("Product removed from wishlist");
-  } else {
-    // Add to wishlist
-    wishlist.push(productData);
-    updateWishlistButtonState(button, true);
-    showNotification("Product added to wishlist");
-  }
+    console.log(
+      `Attempting to toggle wishlist for product ID: ${productData.id}`
+    );
 
-  localStorage.setItem("wishlist", JSON.stringify(wishlist));
-
-  // Update all instances of this product's wishlist button
-  document
-    .querySelectorAll(`.wishlist-btn[data-product-id="${productData.id}"]`)
-    .forEach((btn) => {
-      if (btn !== button) {
-        updateWishlistButtonState(btn, !isInWishlist);
-      }
+    // Send request to server
+    const response = await fetch(`/api/wishlist/toggle/${productData.id}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+      credentials: "same-origin",
     });
+
+    console.log(`Server response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error:", errorText);
+      throw new Error("Failed to update wishlist on server");
+    }
+
+    // Parse the server response
+    const data = await response.json();
+    console.log("Server response:", data);
+
+    // Update the local storage based on server response
+    let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    const isCurrentlyInWishlist = data.status === "added";
+
+    if (isCurrentlyInWishlist) {
+      // Add to wishlist if not already there
+      if (!wishlist.some((item) => item.id === productData.id)) {
+        wishlist.push(productData);
+      }
+      showNotification("Product added to wishlist");
+    } else {
+      // Remove from wishlist
+      wishlist = wishlist.filter((item) => item.id !== productData.id);
+      showNotification("Product removed from wishlist");
+    }
+
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+
+    // Use the global synchronizeWishlistButtons function to update all buttons for this product
+    window.synchronizeWishlistButtons(productData.id, isCurrentlyInWishlist);
+  } catch (error) {
+    console.error("Error updating wishlist:", error);
+    showNotification("Failed to update wishlist", "error");
+
+    // Update UI based on current localStorage state as fallback
+    let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    const isInWishlist = wishlist.some((item) => item.id === productData.id);
+
+    if (isInWishlist) {
+      // Remove from local wishlist only
+      wishlist = wishlist.filter((item) => item.id !== productData.id);
+      updateWishlistButtonState(button, false);
+    } else {
+      // Add to local wishlist only
+      wishlist.push(productData);
+      updateWishlistButtonState(button, true);
+    }
+
+    localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  }
 }
 
 function updateWishlistButtonState(button, isInWishlist) {

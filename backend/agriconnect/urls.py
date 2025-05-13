@@ -40,6 +40,8 @@ urlpatterns = [
     path('landowner/add-land/', views.add_land_ajax, name='add_land_ajax'),
     path('edit-land/<int:land_id>/', views.edit_land, name='edit_land'),
     path('add-land/', views.add_land, name='add_land'),
+    path('chat/', views.chat_view, name='chat'),
+    path('chat/start/<int:user_id>/', views.initiate_chat, name='initiate_chat'),
     path('cart/', views.cart_data, name='cart_data'),
     path('cart/add/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/', views.update_cart, name='update_cart'),
@@ -52,6 +54,17 @@ urlpatterns = [
     
     # Direct route to bot API
     path('api/bot/chat/', views.bot_chat_api, name='bot_chat_api'),
+    
+    # Wishlist API endpoints
+    path('api/wishlist/toggle/<int:product_id>/', views.toggle_wishlist, name='toggle_wishlist'),
+    path('api/wishlist/status/<int:product_id>/', views.get_wishlist_status, name='get_wishlist_status'),
+    path('api/wishlist/items/', views.get_wishlist_items, name='get_wishlist_items'),
+    
+    # Agricultural Alerts API
+    path('api/agriculture-alerts/', views.agriculture_alerts_api, name='agriculture_alerts_api'),
+    
+    # Chat history API endpoint
+    path('api/chat/history/<int:contact_id>/', views.chat_history, name='chat_history'),
 ]
 
 # Serve static files in development

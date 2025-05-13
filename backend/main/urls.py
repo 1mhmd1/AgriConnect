@@ -45,8 +45,12 @@ urlpatterns = [
     path('api/cart/add/', views.add_to_cart, name='add_to_cart'),
     path('api/wishlist/toggle/<int:product_id>/', views.toggle_wishlist, name='toggle_wishlist'),
     path('api/wishlist/status/<int:product_id>/', views.get_wishlist_status, name='get_wishlist_status'),
+    path('api/wishlist/items/', views.get_wishlist_items, name='get_wishlist_items'),
     path('api/categories/', views.get_categories, name='get_categories'),
     
     # Bot API - Fixed to work with the URL config in agriconnect/urls.py
     path('bot/chat/', views.bot_chat_api, name='bot_chat_api'),
+    
+    # Agricultural Alerts API
+    path('api/agriculture-alerts/', views.agriculture_alerts_api, name='agriculture_alerts_api'),
 ]

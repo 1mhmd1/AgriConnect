@@ -1,0 +1,80 @@
+/* 
+ * Profile-specific agricultural alerts styling
+ */
+
+/* Agriculture Alerts Button for Risk Alerts Section */
+#notifications .agri-alerts-btn {
+  display: block;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 15px 0;
+  width: 100%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+#notifications .agri-alerts-btn:hover {
+  background-color: #388e3c;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+}
+
+#notifications .agri-alerts-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+#notifications .agri-alerts-btn i {
+  margin-right: 8px;
+}
+
+/* Make notification filter buttons look better with the new button */
+.notification-filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.notification-filter {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 8px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notification-filter:hover {
+  background-color: #e8e8e8;
+}
+
+.notification-filter.active {
+  background-color: #e0f2f1;
+  border-color: #80cbc4;
+  color: #00695c;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  #notifications .agri-alerts-btn {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+
+  .notification-filters {
+    gap: 5px;
+  }
+
+  .notification-filter {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-nsd-!gc1$3%ib$c0aw3$0n!a&q(5dv$btzgn!i1)w8*z4_0#ys
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'main',
+    'channels',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -73,6 +75,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'agriconnect.wsgi.application'
+ASGI_APPLICATION = 'agriconnect.asgi.application'
 
 
 # Database
@@ -83,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'agriconnect_db',
         'USER': 'postgres',
-        'PASSWORD': '1966',  # Change this to your PostgreSQL password
+        'PASSWORD': '1966',  
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -157,4 +160,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+}
+
+# Channel layers configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'CONFIG': {
+            "capacity": 1500,  # default 100
+        },
+    },
 }

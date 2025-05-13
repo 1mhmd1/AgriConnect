@@ -1,20 +1,42 @@
 import requests
 import json
 
-API_KEY = "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"
+API_KEY = "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"
+
+def is_agricultural_question(question):
+    """
+   
+    """
+    # List of agriculture-related keywords to check against
+    agri_keywords = [
+        'farm', 'farming', 'crop', 'crops', 'plant', 'plants', 'soil', 'fertilizer', 
+        'pesticide', 'harvest', 'agriculture', 'agricultural', 'farmer', 'irrigation',
+        'seed', 'seeds', 'grow', 'growth', 'pest', 'livestock', 'cattle', 'poultry',
+        'organic', 'greenhouse', 'hydroponics', 'compost', 'planting', 'cultivation',
+        'dairy', 'yield', 'rotation', 'sustainable', 'tractor', 'equipment', 'weed',
+        'pruning', 'nursery', 'germination', 'drought', 'field', 'garden', 'gardening',
+        'manure', 'horticulture', 'agronomy', 'weather', 'climate', 'seasonal', 'land',
+        'produce', 'food', 'vegetable', 'fruit', 'grain', 'corn', 'wheat', 'rice', 'agribusiness'
+    ]
+    
+    # Convert to lowercase for case-insensitive matching
+    question_lower = question.lower()
+    
+    # Check if any agriculture keyword is in the question
+    for keyword in agri_keywords:
+        if keyword in question_lower:
+            return True
+            
+    return False
 
 def ask_openrouter(prompt, model="openai/gpt-3.5-turbo", max_tokens=100):
     """
-    Send a prompt to OpenRouter API and get a response.
-    
-    Args:
-        prompt (str): The user prompt
-        model (str): The model to use. Defaults to GPT-3.5 Turbo
-        max_tokens (int): Maximum number of tokens for the response
-        
-    Returns:
-        str: The AI response or error message
+
     """
+    # Check if the prompt is agricultural-related
+    if not is_agricultural_question(prompt):
+        return "I'm an agricultural assistant and can only answer questions related to farming, crops, livestock, soil, agriculture, gardening, and related topics. Please ask me something about agriculture."
+    
     url = "https://openrouter.ai/api/v1/chat/completions"
     
     headers = {
@@ -24,9 +46,14 @@ def ask_openrouter(prompt, model="openai/gpt-3.5-turbo", max_tokens=100):
         "X-Title": "AgriConnect"                   # Optional but helps for rankings
     }
     
+    # Add system message to instruct model to focus on agricultural topics
     payload = {
         "model": model,
         "messages": [
+            {
+                "role": "system",
+                "content": "You are AgriGPT, an AI assistant specializing in agricultural topics. You only answer questions related to farming, crops, livestock, soil management, agricultural equipment, weather impacts on farming, pest control, irrigation, sustainable agriculture, and other agriculture-related topics. For non-agricultural questions, politely explain that you can only assist with agricultural topics."
+            },
             {
                 "role": "user",
                 "content": prompt

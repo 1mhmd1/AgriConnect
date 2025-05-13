@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
     <link rel="stylesheet" href="{% static 'css/profile.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/alert.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/agri_alerts.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/profile_alerts.css' %}" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -136,6 +139,18 @@
         flex: 1;
         min-width: 120px;
       }
+      .user-greeting {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 10px;
+    margin-left: -10px;
+  }
+      /* Hide the "All Lebanon (Multiple Regions)" option from any select dropdown */
+      option[value="all_lebanon"],
+      option:contains("All Lebanon") {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
@@ -157,14 +172,20 @@
         <a href="{% url 'farmers' %}" {% if request.resolver_match.url_name == 'farmers' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Farmers</a>
       </div>
       <div class="user-menu">
+        {% if user.is_authenticated %}
+        <span class="user-greeting">Hello, {{ user.first_name }}</span>
+        {% endif %}
         <i class="fa-solid fa-user" id="userIcon"></i>
         <div class="dropdown-menu">
+          {% if user.is_authenticated %}
           <a href="{% url 'profile' %}" class="active"><i class="fas fa-user-circle"></i> Profile</a>
-          <a href="{% url 'chat' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-comments"></i> My Chats</a>
+          <a href="{% url 'chat' %}"><i class="fas fa-comments"></i> My Chats</a>
+          <a href="{% url 'wishlist' %}"><i class="fas fa-heart"></i> My Wishlist</a>
+          <a href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i> My Cart</a>
+          <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+          {% else %}
           <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
-          <a href="{% url 'wishlist' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-heart"></i> My Wishlist</a>
-          <a href="{% url 'cart' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-shopping-cart"></i> My Cart</a>
-          <a href="{% url 'logout' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-sign-out-alt"></i> Sign out</a>
+          {% endif %}
         </div>
       </div>
     </nav>
@@ -190,14 +211,16 @@
             <i class="fas fa-shield-alt"></i>
             <span>Security</span>
           </a>
+          {% if user.profile.role == 'landowner' %}
           <a
             href="#notifications"
             class="menu-item"
             data-section="notifications"
           >
-            <i class="fas fa-bell"></i>
-            <span>Notifications</span>
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Risk Alerts</span>
           </a>
+          {% endif %}
           <a href="#help" class="menu-item" data-section="help">
             <i class="fas fa-question-circle"></i>
             <span>Help</span>
@@ -215,7 +238,7 @@
               <img
                 src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}"
                 id="profileImage"
-                alt="Profile Picture"
+                
               />
               <input type="file" id="profileImageInput" accept="image/*" />
             </div>
@@ -488,12 +511,298 @@
         </div>
 
         <!-- Notifications Section -->
+        {% if user.profile.role == 'landowner' %}
         <div class="content-section" id="notifications">
-          <h2>Notification Settings</h2>
+          <h2><i class="fas fa-exclamation-triangle"></i> Risk Alerts</h2>
+          
+          <button class="agri-alerts-btn">
+            <i class="fas fa-exclamation-circle"></i> View Agricultural Alerts
+          </button>
+          
           <div class="notifications-container">
-            <p>Notification settings will be available soon.</p>
+            <div class="notification-list" id="notificationList">
+              <!-- Notifications will be loaded here by JavaScript -->
+              <div class="empty-notification-message">Loading alerts...</div>
+            </div>
           </div>
+          
+          <style>
+            .notification-filters {
+              display: flex;
+              gap: 10px;
+              margin-bottom: 20px;
+            }
+            
+            .notification-filter {
+              background: #f5f5f5;
+              border: none;
+              border-radius: 20px;
+              padding: 8px 15px;
+              cursor: pointer;
+              transition: all 0.3s;
+              font-size: 14px;
+            }
+            
+            .notification-filter.active {
+              background: #4caf50;
+              color: white;
+            }
+            
+            .notifications-container {
+              background: white;
+              border-radius: 8px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+              padding: 15px;
+              max-height: 500px;
+              overflow-y: auto;
+            }
+            
+            .notification-item {
+              padding: 15px;
+              border-bottom: 1px solid #eee;
+              position: relative;
+            }
+            
+            .notification-item:last-child {
+              border-bottom: none;
+            }
+            
+            .notification-header {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 5px;
+            }
+            
+            .notification-title {
+              font-weight: 600;
+              color: #333;
+            }
+            
+            .notification-date {
+              font-size: 12px;
+              color: #777;
+            }
+            
+            .notification-message {
+              color: #555;
+              font-size: 14px;
+              line-height: 1.5;
+            }
+            
+            .notification-item.unread {
+              background-color: #f1f8e9;
+            }
+            
+            .notification-item.unread::before {
+              content: '';
+              position: absolute;
+              top: 15px;
+              left: 0;
+              width: 4px;
+              height: 4px;
+              border-radius: 50%;
+              background: #4caf50;
+            }
+            
+            .empty-notification-message {
+              text-align: center;
+              padding: 30px;
+              color: #777;
+              font-style: italic;
+            }
+            
+            .notification-item.agricultural {
+              border-left: 3px solid #ffc107;
+            }
+            
+            .notification-item.system {
+              border-left: 3px solid #2196f3;
+            }
+          </style>
+          
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const notificationList = document.getElementById('notificationList');
+              const filterButtons = document.querySelectorAll('.notification-filter');
+              
+              // Function to load notifications from localStorage
+              function loadNotifications(filter = 'all') {
+                const notifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+                
+                // For landowner users, always ensure the agricultural alert is available in the notifications
+                if ('{{ user.profile.role }}' === 'landowner') {
+                  // Create the default agricultural alert if it doesn't exist
+                  const agriculturalAlert = {
+                    title: "Important Agricultural Update",
+                    message: "New agricultural regulations will be in effect from next month. Please update your land listings to comply with the new requirements. Visit the landowner section for more details.",
+                    date: new Date().toISOString(),
+                    read: false,
+                    type: "agricultural"
+                  };
+                  
+                  // Check if this alert already exists
+                  const alertExists = notifications.some(notif => 
+                    notif.type === 'agricultural' && 
+                    notif.title === agriculturalAlert.title
+                  );
+                  
+                  // If it doesn't exist, add it
+                  if (!alertExists) {
+                    notifications.unshift(agriculturalAlert);
+                    localStorage.setItem('userNotifications', JSON.stringify(notifications));
+                  }
+                }
+                
+                if (notifications.length === 0) {
+                  notificationList.innerHTML = '<div class="empty-notification-message">No alerts available.</div>';
+                  return;
+                }
+                
+                // Filter notifications if needed
+                const filteredNotifications = filter === 'all' 
+                  ? notifications 
+                  : notifications.filter(notif => notif.type === filter);
+                
+                if (filteredNotifications.length === 0) {
+                  notificationList.innerHTML = `<div class="empty-notification-message">No ${filter} alerts available.</div>`;
+                  return;
+                }
+                
+                // Render notifications
+                notificationList.innerHTML = filteredNotifications.map(notification => {
+                  const date = new Date(notification.date);
+                  const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                  
+                  return `
+                    <div class="notification-item ${notification.read ? '' : 'unread'} ${notification.type}">
+                      <div class="notification-header">
+                        <div class="notification-title">${notification.title}</div>
+                        <div class="notification-date">${formattedDate}</div>
+                      </div>
+                      <div class="notification-message">${notification.message}</div>
+                    </div>
+                  `;
+                }).join('');
+                
+                // Add click handler to mark notifications as read
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                  item.addEventListener('click', function() {
+                    this.classList.remove('unread');
+                    
+                    // Get the notification title and update its read status
+                    const title = this.querySelector('.notification-title').innerText;
+                    const notifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+                    const updatedNotifications = notifications.map(notif => {
+                      if (notif.title === title) {
+                        return { ...notif, read: true };
+                      }
+                      return notif;
+                    });
+                    
+                    localStorage.setItem('userNotifications', JSON.stringify(updatedNotifications));
+                  });
+                });
+              }
+              
+              // Add click handlers to filter buttons
+              filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                  // Update active state
+                  filterButtons.forEach(btn => btn.classList.remove('active'));
+                  this.classList.add('active');
+                  
+                  // Load filtered notifications
+                  const filter = this.dataset.filter;
+                  loadNotifications(filter);
+                });
+              });
+              
+              // Initial load of all notifications
+              loadNotifications();
+              
+              // Add click handler to the agricultural alerts button
+              const agriAlertsBtn = document.querySelector('.agri-alerts-btn');
+              if (agriAlertsBtn) {
+                agriAlertsBtn.addEventListener('click', function() {
+                  showAgriculturalAlerts();
+                });
+              }
+              
+              // Function to view agricultural alerts specifically (for use when redirected from the alert banner)
+              window.viewAgriculturalAlerts = function() {
+                // Switch to the notifications tab
+                document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('notifications').classList.add('active');
+                document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+                document.getElementById('notifications').classList.add('active');
+                
+                // Filter to show agricultural notifications
+                document.querySelectorAll('.notification-filter').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('.notification-filter[data-filter="agricultural"]').classList.add('active');
+                
+                // Load agricultural notifications
+                loadNotifications('agricultural');
+              };
+              
+              // Check if URL contains #notifications hash and handle specific filters
+              if (window.location.hash.includes('#notifications')) {
+                // Switch to notifications tab
+                document.querySelectorAll('.menu-item').forEach(item => {
+                  if (item.getAttribute('data-section') === 'notifications') {
+                    item.click();
+                  }
+                });
+                
+                // Check if URL has parameters for specific notification types
+                if (window.location.href.includes('type=agricultural')) {
+                  // Automatically filter to agricultural alerts
+                  document.querySelectorAll('.notification-filter').forEach(btn => {
+                    if (btn.dataset.filter === 'agricultural') {
+                      btn.click();
+                    }
+                  });
+                }
+              }
+              
+              // For landowner users, automatically open the Risk Alerts section if not directed elsewhere
+              if ('{{ user.profile.role }}' === 'landowner' && !window.location.hash) {
+                // Switch to notifications tab
+                document.querySelectorAll('.menu-item').forEach(item => {
+                  if (item.getAttribute('data-section') === 'notifications') {
+                    item.click();
+                  }
+                });
+                
+                // Filter to agricultural alerts
+                document.querySelectorAll('.notification-filter').forEach(btn => {
+                  if (btn.dataset.filter === 'agricultural') {
+                    btn.click();
+                  }
+                });
+              }
+              
+              // Function to create a test notification for development purposes
+              window.createTestNotification = function(type) {
+                const notifications = JSON.parse(localStorage.getItem('userNotifications') || '[]');
+                
+                const testNotification = {
+                  title: type === 'agricultural' ? 'Agricultural Update Test' : 'System Update Test',
+                  message: type === 'agricultural' 
+                    ? 'This is a test agricultural notification to verify the notification system.' 
+                    : 'This is a test system notification to verify the notification system.',
+                  date: new Date().toISOString(),
+                  read: false,
+                  type: type
+                };
+                
+                notifications.unshift(testNotification);
+                localStorage.setItem('userNotifications', JSON.stringify(notifications));
+                loadNotifications('all');
+              };
+            });
+          </script>
         </div>
+        {% endif %}
 
         <!-- Help Section -->
         <div class="content-section" id="help">
@@ -522,6 +831,7 @@
 
     <script src="{% static 'js/nav.js' %}"></script>
     <script src="{% static 'js/profile.js' %}"></script>
+    <script src="{% static 'js/agri_alerts.js' %}"></script>
     <script>
       // Notification System
       function showNotification(message, type = 'success') {
@@ -775,6 +1085,46 @@
             console.error('Error:', error);
           }
         });
+
+        // Auto-show agricultural alerts for landowners if they have the landowner role
+        if ('{{ user.profile.role }}' === 'landowner') {
+          // Check if we've already shown alerts today
+          const lastShown = localStorage.getItem("agriAlertsLastShown");
+          const today = new Date().toDateString();
+          
+          if (lastShown !== today) {
+            // Show alerts automatically when the page loads
+            setTimeout(function() {
+              if (typeof window.showAgriculturalAlerts === "function") {
+                window.showAgriculturalAlerts(null, true);
+              }
+            }, 1000); // Delay for 1 second to ensure page has loaded fully
+          }
+        }
+      });
+
+      // Additional script to ensure "All Lebanon" option is removed
+      document.addEventListener("DOMContentLoaded", function() {
+        // Specific handler for the agricultural alerts modal
+        const removeAllLebanonOptions = function() {
+          // Look for any select elements with options containing "All Lebanon"
+          const selects = document.querySelectorAll('select');
+          selects.forEach(function(select) {
+            for (let i = 0; i < select.options.length; i++) {
+              if (select.options[i].text.includes("All Lebanon")) {
+                select.remove(i);
+                i--; // Adjust for the removed item
+              }
+            }
+          });
+        };
+        
+        // Run immediately
+        removeAllLebanonOptions();
+        
+        // Also run whenever there's a mutation in the DOM
+        const observer = new MutationObserver(removeAllLebanonOptions);
+        observer.observe(document.body, { childList: true, subtree: true });
       });
     </script>
   </body>

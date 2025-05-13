@@ -1,0 +1,90 @@
+/* Agricultural Alert Styles */
+.agricultural-alert {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 800px;
+  background-color: #fff8e1;
+  border-left: 5px solid #ffc107;
+  padding: 15px 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 6px;
+  animation: slideDown 0.4s ease-out;
+}
+
+.agricultural-alert-icon {
+  color: #ffa000;
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.agricultural-alert-content {
+  flex: 1;
+}
+
+.agricultural-alert-title {
+  color: #f57c00;
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.agricultural-alert-message {
+  color: #5d4037;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.agricultural-alert-actions {
+  margin-top: 8px;
+}
+
+.agricultural-alert-actions small {
+  color: #795548;
+  font-size: 12px;
+}
+
+.alert-profile-link {
+  color: #f57c00;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.alert-profile-link:hover {
+  text-decoration: underline;
+}
+
+.agricultural-alert-close {
+  color: #bf360c;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.agricultural-alert-close:hover {
+  opacity: 1;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+.agricultural-alert-hidden {
+  display: none;
+}

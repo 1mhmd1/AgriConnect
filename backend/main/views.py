@@ -22,6 +22,9 @@ from decimal import Decimal
 from django.shortcuts import render
 from django.http import JsonResponse
 from .utils.openrouter import ask_openrouter
+from .utils.agri_alerts import get_agricultural_alerts
+from chat.models import ChatContact, ChatMessage
+from django.db import models
 
 
 # Create your views here.
@@ -511,6 +514,7 @@ def bot_chat_api(request):
     """
     API endpoint for the bot chat functionality.
     Receives user messages and returns AI responses using OpenRouter.
+    For agricultural questions only.
     """
     try:
         data = json.loads(request.body)
@@ -519,11 +523,11 @@ def bot_chat_api(request):
         if not user_message:
             return JsonResponse({'error': 'Message is required'}, status=400)
             
-        # Use OpenRouter to get a response
+        # Use OpenRouter to get a response - increased max_tokens for more comprehensive answers
         response_text = ask_openrouter(
             prompt=user_message,
             model="openai/gpt-3.5-turbo",
-            max_tokens=200
+            max_tokens=500
         )
         
         return JsonResponse({
@@ -605,8 +609,41 @@ def checkout_view(request):
     
     return render(request, 'checkout.html', context)
 
+@login_required
 def wishlist_view(request):
     return render(request, 'wishlist.html')
+
+@login_required
+@require_GET
+def get_wishlist_items(request):
+    try:
+        wishlist = Wishlist.objects.filter(user=request.user).first()
+        items = []
+        
+        if wishlist:
+            wishlist_items = WishlistItem.objects.filter(wishlist=wishlist).select_related('product')
+            items = [
+                {
+                    'id': item.product.id,
+                    'name': item.product.name,
+                    'price': str(item.product.price),
+                    'image': item.product.image.url if item.product.image else None,
+                    'rating': item.product.rating,
+                    'description': item.product.description,
+                }
+                for item in wishlist_items
+            ]
+            
+        return JsonResponse({
+            'status': 'success',
+            'items': items
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error', 
+            'message': str(e)
+        }, status=500)
 
 @login_required
 def cart_view(request):
@@ -836,7 +873,71 @@ def admin_orders(request, order_id=None):
 
 @login_required
 def chat_view(request):
-    return render(request, 'chat.html')
+    # Get all chat contacts for the current user
+    contacts = ChatContact.objects.filter(user=request.user)
+    
+    # If no contacts exist yet, create sample contacts for demo purposes
+    if not contacts.exists():
+        # Just return the empty chat UI
+        return render(request, 'chat.html', {'contacts': [], 'latest_contact': None, 'messages': []})
+    
+    # Get the latest contact (most recent conversation)
+    latest_contact = contacts.first()
+    
+    # Get all messages between the user and the latest contact
+    messages = ChatMessage.objects.filter(
+        (models.Q(sender=request.user) & models.Q(receiver=latest_contact.contact)) |
+        (models.Q(sender=latest_contact.contact) & models.Q(receiver=request.user))
+    ).order_by('timestamp')
+    
+    return render(request, 'chat.html', {
+        'contacts': contacts,
+        'latest_contact': latest_contact,
+        'messages': messages
+    })
+
+@login_required
+def chat_history(request, contact_id):
+    """API endpoint to fetch chat history between the current user and a contact"""
+    try:
+        # Get the contact user
+        contact = User.objects.get(id=contact_id)
+        
+        # Get all messages between the current user and the contact
+        messages = ChatMessage.objects.filter(
+            (models.Q(sender=request.user) & models.Q(receiver=contact)) |
+            (models.Q(sender=contact) & models.Q(receiver=request.user))
+        ).order_by('timestamp')
+        
+        # Filter out system connection messages
+        filtered_messages = []
+        for msg in messages:
+            # Skip connection messages and system messages
+            if "Connection established" in msg.message:
+                continue
+                
+            filtered_messages.append({
+                'message': msg.message,
+                'sender_id': msg.sender.id,
+                'receiver_id': msg.receiver.id,
+                'timestamp': msg.timestamp.isoformat(),
+                'is_read': msg.is_read
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'messages': filtered_messages
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Contact not found'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
 
 @login_required
 def toggle_wishlist(request, product_id):
@@ -1110,7 +1211,8 @@ def farmers(request):
             'equipment': profile.equipment or [],
             'email': profile.user.email,
             'phone': profile.phone or "Not provided",
-            'profile_picture': profile.profile_picture if profile.profile_picture else None
+            'profile_picture': profile.profile_picture if profile.profile_picture else None,
+            'user_id': profile.user.id,  # Add user ID for chat functionality
         }
         processed_profiles.append(processed_profile)
     
@@ -1257,3 +1359,69 @@ def get_categories(request):
         'product_count': category.products.count()
     } for category in categories]
     return JsonResponse(data, safe=False)
+
+@login_required
+@require_GET
+def agriculture_alerts_api(request):
+    """
+    API endpoint to get agricultural alerts specific to the user's location
+    Including weather data, plant care advice, pest/disease risks, and severe weather alerts
+    Only available for landowners
+    """
+    # Check if the user is a landowner
+    if not hasattr(request.user, 'profile') or request.user.profile.role != 'landowner':
+        return JsonResponse({'error': 'Access restricted. Only landowners can access agricultural alerts.'}, status=403)
+        
+    try:
+        # Get the city from query parameters if it exists
+        city = request.GET.get('city', None)
+        
+        # Get agricultural alerts, passing the city parameter if available
+        alerts_data = get_agricultural_alerts(city)
+        
+        # Return the data (now it's a dictionary with alerts, location, and weather)
+        return JsonResponse(alerts_data, safe=False)
+    except Exception as e:
+        # Log the error
+        import traceback
+        traceback.print_exc()
+        
+        # Return error response
+        return JsonResponse({
+            'error': 'Failed to fetch agricultural alerts',
+            'message': str(e)
+        }, status=500)
+
+@login_required
+def initiate_chat(request, user_id):
+    """Initiate a chat with another user"""
+    try:
+        # Get the target user
+        contact_user = User.objects.get(id=user_id)
+        
+        # Create or get chat contact
+        from chat.models import ChatContact
+        contact, created = ChatContact.objects.get_or_create(
+            user=request.user,
+            contact=contact_user,
+            defaults={
+                'last_message': 'Chat initiated',
+                'last_message_time': timezone.now()
+            }
+        )
+        
+        # Also create the reverse contact for the other user
+        reverse_contact, rev_created = ChatContact.objects.get_or_create(
+            user=contact_user,
+            contact=request.user,
+            defaults={
+                'last_message': 'Chat initiated',
+                'last_message_time': timezone.now()
+            }
+        )
+        
+        # Redirect to chat page
+        return redirect('chat')
+        
+    except User.DoesNotExist:
+        return redirect('farmers')

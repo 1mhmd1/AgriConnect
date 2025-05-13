@@ -3,6 +3,76 @@ document.addEventListener("DOMContentLoaded", function () {
   // Set a default STATIC_URL if it doesn't exist
   window.STATIC_URL = window.STATIC_URL || "/static/";
 
+  // Agricultural Alert Close Function
+  window.closeAlert = function () {
+    try {
+      const alert = document.getElementById("agriculturalAlert");
+      if (alert) {
+        // Get the alert title and message before removing it
+        const alertTitle = alert.querySelector(
+          ".agricultural-alert-title"
+        ).innerText;
+        const alertMessage = alert.querySelector(
+          ".agricultural-alert-message"
+        ).innerText;
+
+        // Store the alert content in localStorage for later viewing in the notifications section
+        const alertData = {
+          title: alertTitle,
+          message: alertMessage,
+          date: new Date().toISOString(),
+          read: false,
+          type: "agricultural",
+        };
+
+        // Get existing notifications or initialize empty array
+        const notifications = JSON.parse(
+          localStorage.getItem("userNotifications") || "[]"
+        );
+
+        // Add new alert to notifications if it doesn't already exist
+        const alertExists = notifications.some(
+          (notif) =>
+            notif.title === alertTitle && notif.message === alertMessage
+        );
+        if (!alertExists) {
+          notifications.unshift(alertData); // Add to beginning of array
+          localStorage.setItem(
+            "userNotifications",
+            JSON.stringify(notifications)
+          );
+        }
+
+        // Force removal of the alert element from DOM
+        alert.parentNode.removeChild(alert);
+
+        // Mark that we've seen this alert
+        localStorage.setItem("agricAlertClosed", "true");
+
+        console.log("Alert closed and removed from DOM");
+      } else {
+        console.log("Alert element not found");
+      }
+    } catch (error) {
+      console.error("Error closing alert:", error);
+    }
+  };
+
+  // Check if alert should be hidden on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      const shouldHideAlert =
+        localStorage.getItem("agricAlertClosed") === "true";
+      const agricAlert = document.getElementById("agriculturalAlert");
+      if (shouldHideAlert && agricAlert) {
+        agricAlert.parentNode.removeChild(agricAlert);
+        console.log("Alert hidden on page load");
+      }
+    } catch (error) {
+      console.error("Error checking alert visibility:", error);
+    }
+  });
+
   // Function to generate rating stars
   function generateRatingStars(rating) {
     let stars = "";
@@ -116,6 +186,45 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // Global function to synchronize all wishlist buttons for a product
+  // This will be accessible to all JS files
+  window.synchronizeWishlistButtons = function (productId, isInWishlist) {
+    console.log(
+      `Synchronizing wishlist status for product ${productId}: ${
+        isInWishlist ? "Added" : "Removed"
+      }`
+    );
+
+    // Find all wishlist buttons with this product ID across the page
+    document
+      .querySelectorAll(`.wishlist-btn[data-product-id="${productId}"]`)
+      .forEach((button) => {
+        if (isInWishlist) {
+          button.classList.add("active");
+          const icon = button.querySelector("i");
+          if (icon) {
+            icon.style.color = "#ff4444";
+            icon.className = "fas fa-heart";
+          }
+        } else {
+          button.classList.remove("active");
+          const icon = button.querySelector("i");
+          if (icon) {
+            icon.style.color = "";
+            icon.className = "far fa-heart";
+          }
+        }
+
+        // Update button text if it exists
+        const textSpan = button.querySelector("span");
+        if (textSpan) {
+          textSpan.textContent = isInWishlist
+            ? "Remove from Wishlist"
+            : "Add to Wishlist";
+        }
+      });
+  };
+
   // Wishlist functionality
   function updateWishlistButton(button, isInWishlist) {
     if (isInWishlist) {
@@ -205,26 +314,94 @@ document.addEventListener("DOMContentLoaded", function () {
     const isInWishlist = wishlist.some((item) => item.id === productData.id);
     updateWishlistButton(button, isInWishlist);
 
-    button.addEventListener("click", function (e) {
+    button.addEventListener("click", async function (e) {
       // Stop propagation to prevent card click event
       e.stopPropagation();
 
-      const isCurrentlyInWishlist = wishlist.some(
-        (item) => item.id === productData.id
-      );
+      try {
+        // Get CSRF token
+        const csrfToken = getCookie("csrftoken");
+        if (!csrfToken) {
+          console.error("CSRF token not found in cookies");
+          throw new Error(
+            "CSRF token not found. Please refresh the page and try again."
+          );
+        }
 
-      if (isCurrentlyInWishlist) {
-        // Remove from wishlist
-        wishlist = wishlist.filter((item) => item.id !== productData.id);
-        updateWishlistButton(button, false);
-      } else {
-        // Add to wishlist
-        wishlist.push(productData);
-        updateWishlistButton(button, true);
+        console.log(
+          `Attempting to toggle wishlist for product ID: ${productData.id}`
+        );
+        console.log(`Product data:`, productData);
+
+        // Send request to server
+        const response = await fetch(
+          `/api/wishlist/toggle/${productData.id}/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrfToken,
+            },
+            credentials: "same-origin",
+          }
+        );
+
+        console.log(`Server response status: ${response.status}`);
+
+        // Get response text for debugging
+        const responseText = await response.text();
+        console.log(`Server response text:`, responseText);
+
+        // Parse the JSON response (if valid)
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          console.error("Error parsing JSON response:", e);
+          throw new Error("Invalid JSON response from server");
+        }
+
+        if (!response.ok) {
+          console.error(`Server error details:`, data);
+          throw new Error(data.message || "Failed to update wishlist");
+        }
+
+        const isCurrentlyInWishlist = data.status === "added";
+        console.log(
+          `Wishlist status updated: ${
+            isCurrentlyInWishlist ? "Added" : "Removed"
+          }`
+        );
+
+        // Update localStorage to match server state
+        let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+
+        if (isCurrentlyInWishlist) {
+          // Add to wishlist if not already there
+          if (!wishlist.some((item) => item.id === productData.id)) {
+            wishlist.push(productData);
+          }
+        } else {
+          // Remove from wishlist
+          wishlist = wishlist.filter((item) => item.id !== productData.id);
+        }
+
+        // Save to localStorage
+        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+
+        // Synchronize all wishlist buttons for this product
+        window.synchronizeWishlistButtons(
+          productData.id,
+          isCurrentlyInWishlist
+        );
+
+        // Show notification
+        showNotification(data.message);
+      } catch (error) {
+        console.error("Error updating wishlist:", error);
+        console.error("Stack trace:", error.stack);
+        showNotification("Failed to update wishlist", "error");
       }
-
-      // Save to localStorage
-      localStorage.setItem("wishlist", JSON.stringify(wishlist));
     });
   });
 
@@ -284,7 +461,65 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
     }
 
-    function loadWishlistItems() {
+    async function loadWishlistItems() {
+      try {
+        // First try to load from server
+        console.log("Attempting to fetch wishlist items from server");
+        const response = await fetch("/api/wishlist/items/", {
+          method: "GET",
+          credentials: "same-origin",
+        });
+
+        console.log(`Server response status: ${response.status}`);
+
+        // Get response text for debugging
+        const responseText = await response.text();
+        console.log(
+          `Response first 100 chars: ${responseText.substring(0, 100)}...`
+        );
+
+        // Check if response is valid JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+          console.log("Successfully parsed JSON response");
+        } catch (error) {
+          console.error("Server returned non-JSON response:", error);
+          throw new Error("Server returned invalid JSON response");
+        }
+
+        if (!response.ok) {
+          console.error("Server returned error response:", data);
+          throw new Error(`Server error: ${data.message || response.status}`);
+        }
+
+        if (data.status === "success" && Array.isArray(data.items)) {
+          console.log(`Loaded ${data.items.length} wishlist items from server`);
+
+          // We got items from the server, update the UI
+          wishlistGrid.innerHTML = data.items
+            .map((item) => createWishlistItem(item))
+            .join("");
+
+          // Also update localStorage to match server state
+          localStorage.setItem("wishlist", JSON.stringify(data.items));
+
+          updateCount();
+
+          // Add event listeners to buttons
+          addWishlistItemEventListeners();
+
+          return;
+        } else {
+          console.warn("Response did not contain expected data format:", data);
+          throw new Error("Server response format invalid");
+        }
+      } catch (error) {
+        console.error("Error loading wishlist items from server:", error);
+        // Fall back to localStorage if server request fails
+      }
+
+      // Fallback: Load from localStorage if server request failed
       const wishlistItems = JSON.parse(
         localStorage.getItem("wishlist") || "[]"
       );
@@ -312,8 +547,14 @@ document.addEventListener("DOMContentLoaded", function () {
       wishlistGrid.innerHTML = validItems
         .map((item) => createWishlistItem(item))
         .join("");
+
       updateCount();
 
+      // Add event listeners
+      addWishlistItemEventListeners();
+    }
+
+    function addWishlistItemEventListeners() {
       // Add event listeners to new remove buttons
       document.querySelectorAll(".remove-btn").forEach((button) => {
         button.addEventListener("click", function () {
@@ -332,23 +573,17 @@ document.addEventListener("DOMContentLoaded", function () {
           const itemId = item.dataset.id;
 
           try {
-            // Convert itemId to a number if it's a string
-            const productId = parseInt(itemId, 10);
-
-            if (isNaN(productId)) {
-              throw new Error("Invalid product ID");
-            }
-
             // Get CSRF token
             const csrfToken = getCookie("csrftoken");
             if (!csrfToken) {
+              console.error("CSRF token not found in cookies");
               throw new Error(
                 "CSRF token not found. Please refresh the page and try again."
               );
             }
 
-            console.log("Sending request to add product to cart:", productId);
-
+            // Add to cart
+            console.log(`Attempting to add item ${itemId} to cart`);
             const response = await fetch("/cart/add/", {
               method: "POST",
               headers: {
@@ -356,60 +591,96 @@ document.addEventListener("DOMContentLoaded", function () {
                 "X-CSRFToken": csrfToken,
               },
               body: JSON.stringify({
-                product_id: productId,
+                product_id: itemId,
                 quantity: 1,
               }),
+              credentials: "same-origin",
             });
 
-            console.log("Response status:", response.status);
-
-            // Check if response is JSON
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-              // If not JSON, get the text content for debugging
-              const textContent = await response.text();
-              console.error(
-                "Non-JSON response:",
-                textContent.substring(0, 200) + "..."
-              );
-              throw new Error(
-                "Server returned non-JSON response. Please try again later."
-              );
-            }
-
             if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(
-                errorData.message || "Failed to add item to cart"
-              );
+              const errorText = await response.text();
+              console.error(`Server error:`, errorText);
+              throw new Error("Failed to add item to cart");
             }
 
-            const data = await response.json();
-            showNotification("Item added to cart successfully!");
-
-            // Remove from wishlist after adding to cart
-            removeFromWishlist(itemId);
-            item.remove();
-            updateCount();
+            const result = await response.json();
+            console.log("Add to cart result:", result);
+            showNotification("Item added to cart!");
           } catch (error) {
             console.error("Error adding to cart:", error);
-            showNotification(
-              "Failed to add item to cart: " + error.message,
-              "error"
-            );
+            showNotification("Failed to add item to cart", "error");
           }
         });
       });
     }
 
-    function removeFromWishlist(itemId) {
-      const wishlistItems = JSON.parse(
-        localStorage.getItem("wishlist") || "[]"
-      );
-      const updatedWishlist = wishlistItems.filter(
-        (item) => item.id !== itemId
-      );
-      localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+    async function removeFromWishlist(itemId) {
+      try {
+        // Get CSRF token
+        const csrfToken = getCookie("csrftoken");
+        if (!csrfToken) {
+          console.error("CSRF token not found in cookies");
+          throw new Error(
+            "CSRF token not found. Please refresh the page and try again."
+          );
+        }
+
+        console.log(`Attempting to remove item from wishlist, ID: ${itemId}`);
+
+        // Send request to server
+        const response = await fetch(`/api/wishlist/toggle/${itemId}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
+          credentials: "same-origin",
+        });
+
+        console.log(`Server response status: ${response.status}`);
+
+        // Get response text for debugging
+        const responseText = await response.text();
+        console.log(`Server response text:`, responseText);
+
+        // Parse the JSON response (if valid)
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          console.error("Error parsing JSON response:", e);
+          throw new Error("Invalid JSON response from server");
+        }
+
+        if (!response.ok) {
+          console.error(`Server error details:`, data);
+          throw new Error(data.message || "Failed to remove from wishlist");
+        }
+
+        // Also update localStorage
+        const wishlistItems = JSON.parse(
+          localStorage.getItem("wishlist") || "[]"
+        );
+        const updatedWishlist = wishlistItems.filter(
+          (item) => item.id !== itemId
+        );
+        localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+
+        showNotification("Item removed from wishlist");
+      } catch (error) {
+        console.error("Error removing from wishlist:", error);
+        console.error("Stack trace:", error.stack);
+        showNotification("Failed to remove from wishlist", "error");
+
+        // Still update localStorage even if server request fails
+        const wishlistItems = JSON.parse(
+          localStorage.getItem("wishlist") || "[]"
+        );
+        const updatedWishlist = wishlistItems.filter(
+          (item) => item.id !== itemId
+        );
+        localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+      }
     }
 
     // Load wishlist items if on wishlist page

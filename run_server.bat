@@ -21,7 +21,10 @@ cd backend
 :: Activate virtual environment
 call ..\venv\Scripts\activate.bat
 
-:: Run the server
+:: Start Daphne WebSocket server in background
+start cmd /c "echo Starting Daphne WebSocket server on port 8001... && python -m daphne -p 8001 agriconnect.asgi:application"
+
+:: Run the Django server
 echo Starting Django development server...
 python manage.py runserver
 

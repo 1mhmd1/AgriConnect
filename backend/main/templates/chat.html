@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/common.css' %}" />
     <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/alert.css' %}" />
 
     <!-- Google Font -->
     <link
@@ -95,6 +96,10 @@
         display: flex;
         align-items: center;
         gap: 5px;
+      }
+
+      .nav-link[href*="farmers"] {
+        font-weight: 700;
       }
 
       .dark-mode .nav-link {
@@ -569,7 +574,24 @@
           grid-template-columns: repeat(5, 1fr);
         }
       }
+      .user-greeting {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 10px;
+    margin-left: -10px;
+  }
     </style>
+    <script>
+      // Force reload if cached
+      if (performance.navigation.type !== 1) { // 1 is RELOAD
+        const cacheBustParam = 'nocache=' + Date.now();
+        if (window.location.href.indexOf('nocache=') === -1) {
+          const separator = window.location.href.indexOf('?') !== -1 ? '&' : '?';
+          window.location.href = window.location.href + separator + cacheBustParam;
+        }
+      }
+    </script>
   </head>
 
   <body>
@@ -588,14 +610,20 @@
         <a href="{% url 'farmers' %}" {% if request.resolver_match.url_name == 'farmers' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Farmers</a>
       </div>
       <div class="user-menu">
+        {% if user.is_authenticated %}
+        <span class="user-greeting">Hello, {{ user.first_name }}</span>
+        {% endif %}
         <i class="fa-solid fa-user" id="userIcon"></i>
         <div class="dropdown-menu">
-          <a href="{% url 'profile' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-user-circle"></i> Profile</a>
-          <a href="{% url 'chat' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-comments"></i> My Chats</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> Profile</a>
+          <a href="{% url 'chat' %}" class="active"><i class="fas fa-comments"></i> My Chats</a>
+          <a href="{% url 'wishlist' %}"><i class="fas fa-heart"></i> My Wishlist</a>
+          <a href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i> My Cart</a>
+          <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+          {% else %}
           <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
-          <a href="{% url 'wishlist' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-heart"></i> My Wishlist</a>
-          <a href="{% url 'cart' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-shopping-cart"></i> My Cart</a>
-          <a href="{% url 'logout' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-sign-out-alt"></i> Sign out</a>
+          {% endif %}
         </div>
       </div>
     </nav>
@@ -604,52 +632,55 @@
       <div class="chatbooth">
         <h2><i class="fa-solid fa-leaf"></i> Agri-Chat</h2>
 
-        <div class="user-card" data-user-id="1">
-          <div class="avatar">GM</div>
-          <div class="user-info">
-            <h3>Gaurav Mehta</h3>
-            <p>Available for wheat & corn farming</p>
+        {% if contacts %}
+          {% for contact in contacts %}
+            <div class="user-card" data-user-id="{{ contact.contact.id }}">
+              <div class="avatar">{{ contact.contact.first_name|slice:"0:1" }}{{ contact.contact.last_name|slice:"0:1" }}</div>
+              <div class="user-info">
+                <h3>{{ contact.contact.first_name }} {{ contact.contact.last_name }}</h3>
+                <p>{{ contact.last_message|truncatechars:30 }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div style="padding: 20px; text-align: center; margin-top: 30px; color: #777;">
+            <p style="margin-bottom: 15px; font-size: 0.95rem;">No conversations yet.</p>
+            <p style="font-size: 0.95rem;">Visit the <a href="{% url 'farmers' %}" style="color: var(--primary-color); font-weight: 500; text-decoration: none;">Farmers</a> page to connect with farmers.</p>
           </div>
-        </div>
-
-        <div class="user-card" data-user-id="2">
-          <div class="avatar">PJ</div>
-          <div class="user-info">
-            <h3>Paarth Jain</h3>
-            <p>Specialist in soil analysis</p>
-          </div>
-        </div>
-
-        <div class="user-card" data-user-id="3">
-          <div class="avatar">SS</div>
-          <div class="user-info">
-            <h3>Sayam Sarkar</h3>
-            <p>Looking for farm partnerships</p>
-          </div>
-        </div>
-
-        <div class="user-card" data-user-id="4">
-          <div class="avatar">SC</div>
-          <div class="user-info">
-            <h3>Sagnik Chakraborty</h3>
-            <p>Offers harvesting services</p>
-          </div>
-        </div>
+        {% endif %}
       </div>
 
       <div class="active-chat">
         <div class="chat-header">
           <div class="header-top">
-            <span id="chat-username">Paarth Jain</span>
+            <span id="chat-username">{% if latest_contact %}{{ latest_contact.contact.first_name }} {{ latest_contact.contact.last_name }}{% else %}Welcome to AgriChat{% endif %}</span>
             <label class="switch">
               <input type="checkbox" />
               <span class="slider"></span>
             </label>
           </div>
-          <div class="status">Online - Active now</div>
+          <div class="status">{% if latest_contact %}Online - Active now{% else %}Start a conversation{% endif %}</div>
         </div>
 
-        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-messages" id="chat-messages">
+          {% if messages %}
+            {% for message in messages %}
+              {% if "Connection established" not in message.message %}
+                <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+                  {% if message.sender != user %}<strong>{{ message.sender.first_name }}:</strong> {% endif %}
+                  {{ message.message }}
+                  <span class="timestamp">{{ message.timestamp|date:"g:i A" }}</span>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% elif not latest_contact %}
+            <div style="text-align: center; padding: 40px 20px; color: #888;">
+              <h3 style="margin-bottom: 15px; color: var(--primary-color);">Welcome to Agri-Chat!</h3>
+              <p style="margin-bottom: 15px;">Connect with farmers and landowners through our real-time chat feature.</p>
+              <p>Start by browsing the <a href="{% url 'farmers' %}" style="color: var(--primary-color); font-weight: 500; text-decoration: none;">Farmers</a> directory to find someone to chat with.</p>
+            </div>
+          {% endif %}
+        </div>
 
         <div class="message-input-container">
           <button class="icon-btn" id="emoji-btn">
@@ -707,6 +738,22 @@
       </div>
     </main>
 
+    <script>
+      // Set the current user ID from Django template
+      var currentUserId = "{% if latest_contact %}{{ latest_contact.contact.id }}{% else %}null{% endif %}";
+      
+      // Convert the string "null" to actual null
+      if (currentUserId === "null") {
+        currentUserId = null;
+      } else {
+        currentUserId = parseInt(currentUserId);
+      }
+      
+      // Store logged in user's ID
+      var loggedInUserId = "{{ user.id }}";
+      loggedInUserId = parseInt(loggedInUserId);
+    </script>
+    
     <script>
       const toggleSwitch = document.querySelector(".switch input");
       toggleSwitch.addEventListener("change", () => {
@@ -777,8 +824,6 @@
         ],
       };
 
-      // Current active user
-      let currentUserId = 2;
       const chatMessages = document.getElementById("chat-messages");
       const chatUsername = document.getElementById("chat-username");
       const userCards = document.querySelectorAll(".user-card");
@@ -789,6 +834,125 @@
         "emoji-picker-container"
       );
       const emojiOptions = document.querySelectorAll(".emoji-option");
+
+      // Initialize WebSocket connection
+      let chatSocket = null;
+
+      // When selecting a contact, join the private room
+      function connectToPrivateRoom(contactId) {
+        try {
+          // Close existing connection if any
+          if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+            console.log("Closing existing WebSocket connection");
+            chatSocket.close();
+          }
+          
+          // Create a unique room name based on user IDs (always sorted for consistency)
+          const userIds = [loggedInUserId, contactId].sort();
+          const roomName = `private_${userIds[0]}_${userIds[1]}`;
+          
+          console.log(`Connecting to private room: ${roomName} with contact ID: ${contactId}`);
+          
+          // IMPORTANT: Force WebSocket to connect to port 8001 explicitly
+          const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+          const socketUrl = `${wsProtocol}127.0.0.1:8001/ws/chat/${roomName}/`;
+          
+          console.log("WebSocket URL:", socketUrl, "- Using PORT 8001 explicitly");
+          
+          // Create and connect the WebSocket
+          chatSocket = new WebSocket(socketUrl);
+          
+          chatSocket.onopen = function(e) {
+            console.log("SUCCESS! WebSocket connection established!", e);
+            
+            // No need to send a test message - removed
+            console.log("WebSocket connection ready to use");
+          };
+          
+          chatSocket.onmessage = function(e) {
+            console.log("WebSocket message received:", e.data);
+            try {
+              const data = JSON.parse(e.data);
+              
+              // Handle connection confirmation
+              if (data.type === 'connection_established') {
+                console.log("Connection established:", data.message);
+                return;
+              }
+              
+              // Handle errors
+              if (data.type === 'error') {
+                console.error("WebSocket error:", data.error, data.message);
+                return;
+              }
+              
+              // Ignore test messages
+              if (data.type === 'test') {
+                console.log("Test message received:", data.message);
+                return;
+              }
+              
+              // Handle normal messages
+              const message = data.message;
+              const username = data.username || 'Anonymous';
+              const senderId = parseInt(data.sender_id);
+              
+              console.log(`Message from ${username} (ID: ${senderId}), logged in as: ${loggedInUserId}`);
+              
+              // Only display messages from other users as "received"
+              // Our own messages are displayed when we send them, not when they echo back
+              if (senderId !== loggedInUserId) {
+                // Create a new message element
+                const msgEl = document.createElement("div");
+                msgEl.classList.add("message", "received");
+                msgEl.innerHTML = `<strong>${username}:</strong> ${message} <span class="timestamp">${getCurrentTime()}</span>`;
+                chatMessages.appendChild(msgEl);
+                
+                // Scroll to bottom of chat
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Update stored chat data with the received message
+                if (!chatData[currentUserId]) {
+                  chatData[currentUserId] = [];
+                }
+                chatData[currentUserId].push({
+                  sender: "received",
+                  text: message,
+                  time: getCurrentTime()
+                });
+              }
+            } catch (error) {
+              console.error("Error processing message:", error);
+            }
+          };
+          
+          chatSocket.onclose = function(e) {
+            console.error("WebSocket connection closed:", e.code, e.reason);
+            
+            if (e.code === 1000) {
+              console.log("Normal closure");
+            } else {
+              // Attempt to reconnect after delay only for abnormal closures
+              setTimeout(() => {
+                console.log("Attempting to reconnect...");
+                if (currentUserId) {
+                  connectToPrivateRoom(currentUserId);
+                }
+              }, 3000);
+            }
+          };
+          
+          chatSocket.onerror = function(e) {
+            console.error("WebSocket error occurred:", e);
+          };
+          
+          // Log authentication status to help with debugging
+          console.log("Auth state:", loggedInUserId ? "Authenticated" : "Not authenticated", "User ID:", loggedInUserId);
+          
+        } catch (error) {
+          console.error("Error creating WebSocket:", error);
+        }
+      }
 
       // Function to get current time in HH:MM AM/PM format
       function getCurrentTime() {
@@ -804,12 +968,22 @@
       // Function to render messages
       function renderMessages(messages) {
         chatMessages.innerHTML = "";
-        messages.forEach((msg) => {
-          const msgEl = document.createElement("div");
-          msgEl.classList.add("message", msg.sender);
-          msgEl.innerHTML = `${msg.text} <span class="timestamp">${msg.time}</span>`;
-          chatMessages.appendChild(msgEl);
-        });
+        if (messages && Array.isArray(messages)) {
+          messages.forEach((msg) => {
+            const msgEl = document.createElement("div");
+            msgEl.classList.add("message", msg.sender);
+            msgEl.innerHTML = `${msg.text} <span class="timestamp">${msg.time}</span>`;
+            chatMessages.appendChild(msgEl);
+          });
+        } else {
+          // Display welcome message or notice when no messages available
+          chatMessages.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #888;">
+              <h3 style="margin-bottom: 15px; color: var(--primary-color);">Start a conversation</h3>
+              <p>No messages yet. Start typing to send your first message!</p>
+            </div>
+          `;
+        }
         // Scroll to bottom of chat
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
@@ -817,47 +991,51 @@
       // Function to send a message
       function sendMessage() {
         const messageText = messageInput.value.trim();
-        if (messageText === "") return;
+        if (messageText === "" || !currentUserId) return;
 
+        // Create a new message for display
         const newMessage = {
           sender: "sent",
           text: messageText,
           time: getCurrentTime(),
         };
 
-        // Add message to chat data
+        // Add message to chat data for local display
+        if (!chatData[currentUserId]) {
+          chatData[currentUserId] = [];
+        }
         chatData[currentUserId].push(newMessage);
 
-        // Render updated messages
+        // Render updated messages (only our message)
         renderMessages(chatData[currentUserId]);
+
+        // Send message through WebSocket
+        if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+          chatSocket.send(JSON.stringify({
+            'message': messageText,
+            'username': '{{ user.first_name }} {{ user.last_name }}',
+            'receiver_id': currentUserId,
+            'sender_id': loggedInUserId
+          }));
+        } else {
+          console.error("WebSocket is not connected");
+          // Try to reconnect
+          connectToPrivateRoom(currentUserId);
+          setTimeout(() => {
+            // Try sending again after a brief delay to allow connection
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+              chatSocket.send(JSON.stringify({
+                'message': messageText,
+                'username': '{{ user.first_name }} {{ user.last_name }}',
+                'receiver_id': currentUserId,
+                'sender_id': loggedInUserId
+              }));
+            }
+          }, 1000);
+        }
 
         // Clear input
         messageInput.value = "";
-
-        // Simulate reply after 1 second
-        setTimeout(() => {
-          const replies = [
-            "Thanks for your message! 😊",
-            "I'll get back to you soon. 👍",
-            "That's interesting, tell me more. 🤔",
-            "I appreciate your message. 🙏",
-            "Let me think about that. 💭",
-            "Great point! 👌",
-            "I agree with you. ✅",
-            "That's helpful information. 💡",
-          ];
-          const randomReply =
-            replies[Math.floor(Math.random() * replies.length)];
-
-          const replyMessage = {
-            sender: "received",
-            text: randomReply,
-            time: getCurrentTime(),
-          };
-
-          chatData[currentUserId].push(replyMessage);
-          renderMessages(chatData[currentUserId]);
-        }, 1000);
       }
 
       // Event listeners for user cards
@@ -866,7 +1044,32 @@
           currentUserId = parseInt(card.dataset.userId);
           const userName = card.querySelector("h3").textContent;
           chatUsername.textContent = userName;
-          renderMessages(chatData[currentUserId] || []);
+          
+          // Connect to private room for this contact
+          connectToPrivateRoom(currentUserId);
+          
+          // Fetch chat history from database for this contact
+          fetch(`/api/chat/history/${currentUserId}/`)
+            .then(response => response.json())
+            .then(data => {
+              // Convert database messages to the format expected by renderMessages
+              const formattedMessages = data.messages.map(msg => ({
+                sender: msg.sender_id === loggedInUserId ? "sent" : "received",
+                text: msg.message,
+                time: new Date(msg.timestamp).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'})
+              }));
+              
+              // Update chatData with the messages from database
+              chatData[currentUserId] = formattedMessages;
+              
+              // Render the messages
+              renderMessages(chatData[currentUserId] || []);
+            })
+            .catch(error => {
+              console.error("Error fetching chat history:", error);
+              // Fallback to local storage if API fails
+              renderMessages(chatData[currentUserId] || []);
+            });
         });
       });
 
@@ -905,8 +1108,14 @@
         });
       });
 
-      // Initialize with default user
-      renderMessages(chatData[currentUserId]);
+      // Initialize with default user or empty chat
+      if (currentUserId) {
+        // Connect to the private room for the initial contact
+        connectToPrivateRoom(currentUserId);
+        renderMessages(chatData[currentUserId] || []);
+      } else {
+        renderMessages(null);
+      }
     </script>
   </body>
 </html>

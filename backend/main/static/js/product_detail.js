@@ -10,19 +10,30 @@ document.addEventListener("DOMContentLoaded", function () {
   wishlistBtn.addEventListener("click", async function (e) {
     e.preventDefault();
     try {
+      // Log the request for debugging
+      console.log(
+        `Sending wishlist toggle request for product ID: ${productId}`
+      );
+
+      const csrfToken = getCookie("csrftoken");
+      console.log(`CSRF Token: ${csrfToken ? "Found" : "Not found"}`);
+
       const response = await fetch(`/api/wishlist/toggle/${productId}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
+          "X-CSRFToken": csrfToken,
         },
+        credentials: "same-origin", // Include cookies in the request
       });
 
       if (!response.ok) {
+        console.error(`Server responded with status: ${response.status}`);
         throw new Error("Failed to update wishlist");
       }
 
       const data = await response.json();
+      console.log(`Server response:`, data);
       updateWishlistButtonState(wishlistBtn, data.status === "added");
       showNotification(data.message);
     } catch (error) {

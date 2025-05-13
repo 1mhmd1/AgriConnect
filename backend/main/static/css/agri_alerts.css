@@ -1,0 +1,838 @@
+/* 
+ * Agricultural Alerts Styling
+ * Provides styles for agricultural alerts modal and alert components
+ */
+
+/* Main modal container */
+.agri-alerts-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Alert Modal Content */
+.alerts-modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 0;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 800px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  animation: alertsSlideIn 0.3s ease;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Modal Header */
+.alerts-modal-header {
+  background-color: #4caf50;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px 10px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alerts-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+/* Modal Body - scrollable content */
+.alerts-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(85vh - 60px);
+}
+
+/* Close Button */
+.alerts-close-btn {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.alerts-close-btn:hover {
+  color: #eee;
+}
+
+/* Loading and Error States */
+.alerts-loading,
+.alerts-error {
+  text-align: center;
+  padding: 30px 0;
+  color: #666;
+}
+
+.alerts-loading i {
+  margin-right: 10px;
+  color: #4caf50;
+}
+
+.alerts-error {
+  color: #f44336;
+}
+
+/* Alerts Container */
+.agri-alerts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Location Header */
+.alerts-location-header {
+  background-color: #e8f5e9;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.alerts-location-header h3 {
+  margin: 0;
+  color: #2e7d32;
+  font-size: 18px;
+}
+
+.weather-info {
+  display: flex;
+  gap: 15px;
+  color: #388e3c;
+}
+
+.weather-info span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Alerts Sections */
+.alerts-section {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.alerts-section h4 {
+  margin: 0;
+  padding: 15px;
+  background-color: #f1f8e9;
+  color: #33691e;
+  font-size: 16px;
+  border-bottom: 1px solid #e8f5e9;
+}
+
+.alerts-section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Individual Alert Items */
+.alert-item {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+.alert-item.cold {
+  border-left: 4px solid #2196f3;
+}
+
+.alert-item.cool {
+  border-left: 4px solid #00bcd4;
+}
+
+.alert-item.mild {
+  border-left: 4px solid #4caf50;
+}
+
+.alert-item.tropical {
+  border-left: 4px solid #ff9800;
+}
+
+.alert-item.mediterranean {
+  border-left: 4px solid #ff5722;
+}
+
+.alert-item.vegetables {
+  border-left: 4px solid #8bc34a;
+}
+
+.alert-item.ornamentals {
+  border-left: 4px solid #9c27b0;
+}
+
+.alert-item.normal {
+  border-left: 4px solid #4caf50;
+}
+
+.alert-item.warning {
+  border-left: 4px solid #f44336;
+}
+
+.alert-item.pest {
+  border-left: 4px solid #e91e63;
+}
+
+.alert-item.drought {
+  border-left: 4px solid #ff9800;
+}
+
+.alert-item.frost {
+  border-left: 4px solid #2196f3;
+}
+
+.alert-item.heatwave {
+  border-left: 4px solid #f44336;
+}
+
+/* Alert content styling */
+.alert-title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.alert-description {
+  margin: 0 0 10px 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.alert-message {
+  margin: 0 0 10px 0;
+  font-size: 15px;
+  color: #333;
+}
+
+.alert-link {
+  display: inline-block;
+  color: #2196f3;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.alert-link:hover {
+  text-decoration: underline;
+}
+
+/* Footer with buttons */
+.alerts-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.refresh-alerts-btn,
+.dismiss-alerts-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.refresh-alerts-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.refresh-alerts-btn:hover {
+  background-color: #388e3c;
+}
+
+.dismiss-alerts-btn {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.dismiss-alerts-btn:hover {
+  background-color: #bdbdbd;
+}
+
+/* View Alerts Button */
+.agri-alerts-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto 20px;
+  padding: 12px 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.agri-alerts-btn i {
+  margin-right: 8px;
+}
+
+.agri-alerts-btn:hover {
+  background-color: #388e3c;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes alertsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .alerts-modal-content {
+    width: 95%;
+    margin: 10% auto;
+    max-height: 80vh;
+  }
+
+  .alerts-location-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .weather-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .alerts-footer {
+    flex-direction: column;
+  }
+}
+
+/* Location selector styling */
+.location-selector {
+  display: flex;
+  align-items: center;
+  background-color: #f8f8f8;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.location-selector label {
+  font-weight: 600;
+  margin-right: 12px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.location-selector select {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  appearance: none;
+  background-color: white;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.location-selector select:hover {
+  border-color: #aaa;
+}
+
+.location-selector select:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Alerts container styling */
+.agri-alerts-container {
+  font-size: 15px;
+  color: #333;
+}
+
+.alerts-location-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #eef7ee;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.alerts-location-header h3 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 18px;
+  color: #2c3e50;
+}
+
+.alerts-location-header i {
+  color: #4caf50;
+  margin-right: 8px;
+}
+
+.weather-info {
+  display: flex;
+  gap: 15px;
+}
+
+.weather-info span {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.weather-info i {
+  margin-right: 5px;
+  color: #3498db;
+}
+
+/* Sections styling */
+.alerts-section {
+  margin-bottom: 25px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.alerts-section h4 {
+  margin: 0;
+  padding: 12px 15px;
+  background-color: #f8f8f8;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.alerts-section h4 i {
+  margin-right: 8px;
+  color: #4caf50;
+}
+
+.alerts-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.alert-item {
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+/* Alert types styling */
+.alert-item.cold {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.alert-item.cool {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+}
+
+.alert-item.mild {
+  background-color: #fffde7;
+  border-left: 4px solid #ffc107;
+}
+
+.alert-item.warm {
+  background-color: #fff8e1;
+  border-left: 4px solid #ff9800;
+}
+
+.alert-item.hot,
+.alert-item.heatwave {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+}
+
+.alert-item.normal {
+  background-color: #f5f5f5;
+  border-left: 4px solid #9e9e9e;
+}
+
+.alert-item.drought {
+  background-color: #fff3e0;
+  border-left: 4px solid #ff9800;
+}
+
+.alert-item.frost {
+  background-color: #e8eaf6;
+  border-left: 4px solid #3f51b5;
+}
+
+.alert-item.pest {
+  background-color: #f9fbe7;
+  border-left: 4px solid #8bc34a;
+}
+
+.alert-item.warning {
+  background-color: #fff8e1;
+  border-left: 4px solid #ffc107;
+}
+
+/* Pest alerts specific styling */
+.alert-item.pest {
+  padding: 15px;
+}
+
+.alert-title {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.alert-description {
+  margin: 0 0 10px 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+.alert-link {
+  display: inline-block;
+  color: #2196f3;
+  text-decoration: none;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+.alert-link:hover {
+  text-decoration: underline;
+}
+
+/* Loading and error states */
+.alerts-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  color: #666;
+}
+
+.alerts-loading i {
+  margin-right: 10px;
+  color: #4caf50;
+}
+
+.alerts-error {
+  padding: 20px;
+  text-align: center;
+  color: #f44336;
+  background-color: #ffebee;
+  border-radius: 8px;
+}
+
+/* Footer styling */
+.alerts-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 10px;
+}
+
+.refresh-alerts-btn,
+.dismiss-alerts-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.refresh-alerts-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.refresh-alerts-btn:hover {
+  background-color: #45a049;
+}
+
+.dismiss-alerts-btn {
+  background-color: #f5f5f5;
+  color: #555;
+}
+
+.dismiss-alerts-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.refresh-alerts-btn i {
+  margin-right: 5px;
+}
+
+/* Button to open the agricultural alerts */
+.agri-alerts-btn {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 20px 0;
+  padding: 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.agri-alerts-btn:hover {
+  background-color: #45a049;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.agri-alerts-btn i {
+  margin-right: 8px;
+}
+
+/* Risk level containers and styling */
+.risk-container {
+  margin-bottom: 20px;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.risk-container.high-risk {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid #f44336;
+}
+
+.risk-container.medium-risk {
+  background-color: rgba(255, 152, 0, 0.1);
+  border-left: 4px solid #ff9800;
+}
+
+.risk-container.safe {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid #4caf50;
+}
+
+.risk-header {
+  font-size: 16px;
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.risk-header.high-risk {
+  color: #d32f2f;
+}
+
+.risk-header.medium-risk {
+  color: #f57c00;
+}
+
+.risk-header.safe {
+  color: #388e3c;
+}
+
+.risk-header i {
+  margin-right: 8px;
+}
+
+/* Alert item styling based on risk */
+.alert-item {
+  margin-bottom: 15px;
+  padding: 15px;
+  border-radius: 6px;
+  position: relative;
+}
+
+.alert-item.high-risk {
+  background-color: #fff8f8;
+  border: 1px solid #ffcdd2;
+}
+
+.alert-item.medium-risk {
+  background-color: #fffaf0;
+  border: 1px solid #ffe0b2;
+}
+
+.alert-item.safe-risk {
+  background-color: #f1f8e9;
+  border: 1px solid #dcedc8;
+}
+
+.alert-item.unknown-risk {
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+}
+
+/* Risk analysis and source styling */
+.risk-analysis {
+  font-style: italic;
+  color: #555;
+  margin: 8px 0;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.alert-source {
+  font-size: 13px;
+  color: #666;
+  margin: 8px 0;
+}
+
+/* Weather alert specific styles */
+.alert-item.weather {
+  display: flex;
+  align-items: flex-start;
+}
+
+.alert-item.weather i {
+  margin-right: 15px;
+  font-size: 24px;
+  color: #42a5f5;
+  margin-top: 5px;
+}
+
+.alert-item.weather.high-risk i {
+  color: #f44336;
+}
+
+.alert-item.weather.medium-risk i {
+  color: #ff9800;
+}
+
+.alert-item.weather.safe-risk i {
+  color: #4caf50;
+}
+
+.alert-content {
+  flex: 1;
+}
+
+/* Location styling */
+.alert-location {
+  font-size: 14px;
+  font-weight: normal;
+  color: #555;
+  font-style: italic;
+  margin-left: 8px;
+  display: inline-block;
+  background-color: rgba(0, 0, 0, 0.04);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Make sure the title and location look good on mobile */
+@media (max-width: 480px) {
+  .alert-title {
+    line-height: 1.4;
+  }
+
+  .alert-location {
+    display: block;
+    margin-left: 0;
+    margin-top: 5px;
+    padding: 3px 8px;
+  }
+}
+
+/* Agri-alerts city selection in profile page */
+.agri-alerts-city-select {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agri-alerts-city-select label {
+  font-weight: 600;
+  color: #336633;
+}
+
+.agri-alerts-city-select select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  font-size: 14px;
+  color: #333;
+  min-width: 150px;
+}
+
+.agri-alerts-city-select select:focus {
+  outline: none;
+  border-color: #336633;
+  box-shadow: 0 0 0 2px rgba(51, 102, 51, 0.2);
+}

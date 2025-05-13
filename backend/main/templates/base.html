@@ -10,13 +10,14 @@
     <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/common.css' %}" />
     <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/alert.css' %}" />
     
     <!-- Page specific styles -->
     {% block extra_css %}{% endblock %}
     
     <title>{% block title %}Agri-Connect{% endblock %}</title>
   </head>
-  <body>
+  <body {% if user.is_authenticated and user.profile.role == 'landowner' %}data-user-role="landowner"{% endif %} class="{% if user.is_authenticated %}{% if user.profile.role %}{{user.profile.role}}-user{% endif %}{% endif %}">
     <!-- Navigation -->
     <nav class="nav">
       <div class="logo">
@@ -32,14 +33,20 @@
         <a href="{% url 'farmers' %}" {% if request.resolver_match.url_name == 'farmers' %}class="active"{% endif %} {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}>Farmers</a>
       </div>
       <div class="user-menu">
+        {% if user.is_authenticated %}
+        <span class="user-greeting">Hello, {{ user.first_name }}</span>
+        {% endif %}
         <i class="fa-solid fa-user" id="userIcon"></i>
         <div class="dropdown-menu">
-          <a href="{% url 'profile' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-user-circle"></i> Profile</a>
-          <a href="{% url 'chat' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-comments"></i> My Chats</a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'profile' %}"><i class="fas fa-user-circle"></i> Profile</a>
+          <a href="{% url 'chat' %}"><i class="fas fa-comments"></i> My Chats</a>
+          <a href="{% url 'wishlist' %}"><i class="fas fa-heart"></i> My Wishlist</a>
+          <a href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i> My Cart</a>
+          <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+          {% else %}
           <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
-          <a href="{% url 'wishlist' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-heart"></i> My Wishlist</a>
-          <a href="{% url 'cart' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-shopping-cart"></i> My Cart</a>
-          <a href="{% url 'logout' %}" {% if not user.is_authenticated %}class="disabled-link" onclick="return false;"{% endif %}><i class="fas fa-sign-out-alt"></i> Sign out</a>
+          {% endif %}
         </div>
       </div>
     </nav>
@@ -89,6 +96,11 @@
     </footer>
 
     <style>
+      .elements a{
+        font-size: 14px;
+  font-weight: 700;
+
+      }
       .site-footer {
         background-color: #2c3e50;
         color: #ecf0f1;
@@ -234,6 +246,14 @@
           flex-direction: column;
         }
       }
+      .user-greeting {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  margin-right: 10px;
+  
+}
+
     </style>
 
     <!-- Core scripts -->

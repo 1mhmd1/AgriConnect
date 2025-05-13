@@ -1,5 +1,6 @@
 {% extends 'base.html' %} {% load static %} {% block title %}Land Owner
 Dashboard{% endblock %} {% block extra_css %} {% csrf_token %}
+<link rel="stylesheet" href="{% static 'css/agri_alerts.css' %}" />
 <style>
   body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -521,6 +522,8 @@ Dashboard{% endblock %} {% block extra_css %} {% csrf_token %}
 </style>
 {% endblock %} {% block content %}
 <div class="dashboard-container">
+  <!-- The alerts component will be injected here by JavaScript -->
+
   <h1 class="dashboard-title">Land Listings</h1>
 
   <!-- Filter Section -->
@@ -951,6 +954,7 @@ Dashboard{% endblock %} {% block extra_css %} {% csrf_token %}
 </div>
 
 {% block extra_js %}
+<script src="{% static 'js/agri_alerts.js' %}"></script>
 <script>
   // Function to show notifications
   function showNotification(message, type = "success") {

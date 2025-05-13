@@ -310,6 +310,10 @@
     background-color: #e9ecef;
     border-color: #ced4da;
   }
+  .elements a {
+    font-weight: 700;
+    font-size: 20px;
+  }
 </style>
 {% endblock extra_css %} {% block content %}
 <div class="container">
@@ -411,7 +415,10 @@
           >
             <i class="fas fa-user"></i> View Profile
           </button>
-          <a href="{% url 'chat' %}?user={{ profile.id }}" class="contact-btn">
+          <a
+            href="{% url 'initiate_chat' user_id=profile.user_id %}"
+            class="contact-btn"
+          >
             <i class="fas fa-comments"></i> Contact Me
           </a>
         </div>
@@ -498,7 +505,10 @@
               <span id="modal-phone-{{ profile.id }}"></span>
             </p>
           </div>
-          <a href="{% url 'chat' %}?user={{ profile.id }}" class="contact-btn">
+          <a
+            href="{% url 'initiate_chat' user_id=profile.user_id %}"
+            class="contact-btn"
+          >
             <i class="fas fa-comments"></i> Contact Me
           </a>
         </div>
